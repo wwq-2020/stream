@@ -18,4 +18,7 @@ use:
   fmt.Println(reflect.DeepEqual(r, []*tests.Some{&tests.Some{A: "hello"}, &tests.Some{"world"}}))
 
   output should be true
+  
+more:
+  see tests or commons
 ```
