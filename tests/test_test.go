@@ -94,3 +94,135 @@ func TestUnique(t *testing.T) {
 		t.Fatal("mistach")
 	}
 }
+
+func TestAppend(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}}
+	c := NewSomeChain(data)
+	r := c.Append(&Some{A: "world"}).Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestLen(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}}
+	c := NewSomeChain(data)
+	if r := c.Len(); r != len(data) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestIsEmpty(t *testing.T) {
+	var data []*Some
+	c := NewSomeChain(data)
+	if !c.IsEmpty() {
+		t.Fatal("mistach")
+	}
+}
+
+func TestIsNotEmpty(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}}
+	c := NewSomeChain(data)
+	if !c.IsNotEmpty() {
+		t.Fatal("mistach")
+	}
+}
+
+func TestSort(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
+	c := NewSomeChain(data)
+	r := c.Sort().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestAll(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "world"}}
+	c := NewSomeChain(data)
+	if !c.All(func(i int, some *Some) bool {
+		return some.A == "world"
+	}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestAny(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
+	c := NewSomeChain(data)
+	if !c.Any(func(i int, some *Some) bool {
+		return some.A == "world"
+	}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestPaginate(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
+	c := NewSomeChain(data)
+	pages := c.Paginate(1)
+	if len(pages) != 2 {
+		t.Fatal("mistach")
+	}
+	if !reflect.DeepEqual(pages[0], []*Some{&Some{A: "hello"}}) {
+		t.Fatal("mistach")
+	}
+	if !reflect.DeepEqual(pages[1], []*Some{&Some{A: "world"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestPop(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
+	c := NewSomeChain(data)
+	r := c.Pop()
+	if !reflect.DeepEqual(r, &Some{A: "world"}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestPrepend(t *testing.T) {
+	data := []*Some{&Some{A: "world"}}
+	c := NewSomeChain(data)
+	r := c.Prepend(&Some{A: "hello"}).Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestMax(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
+	c := NewSomeChain(data)
+	r := c.Max()
+	if !reflect.DeepEqual(r, &Some{"world"}) {
+		t.Fatal("mistach")
+	}
+}
+func TestMin(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
+	c := NewSomeChain(data)
+	r := c.Min()
+	if !reflect.DeepEqual(r, &Some{"hello"}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestRandom(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
+	c := NewSomeChain(data)
+	if r := c.Random(); r == nil {
+		t.Fatal("mistach")
+	}
+}
+
+func TestShuffle(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
+	c := NewSomeChain(data)
+	r := c.Shuffle().Collect()
+	if len(r) != 2 {
+		t.Fatal("mistach")
+	}
+	if reflect.DeepEqual(r[0], r[1]) {
+		t.Fatal("mistach")
+	}
+}

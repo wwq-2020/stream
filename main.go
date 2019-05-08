@@ -21,6 +21,11 @@ const (
 	builtinPkg    = "commons"
 	structTplStr  = `
 package {{.Pkg}}
+
+import (
+	"sort"
+	"math/rand"
+)
 type {{.Name}}Chain struct{
 	value	[]*{{.Name}}
 }
@@ -107,7 +112,7 @@ func(c *{{.Name}}Chain) Unique()  *{{.Name}}Chain{
 			if i==j {
 				continue
 			}
-			if inner.Compare(outter){
+			if inner.Compare(outter) == 0 {
 				seen[j]=struct{}{}				
 				dup=true
 			}
@@ -121,6 +126,136 @@ func(c *{{.Name}}Chain) Unique()  *{{.Name}}Chain{
 	return c
 }
 
+func(c *{{.Name}}Chain) Append(given *{{.Name}}) *{{.Name}}Chain {
+	c.value=append(c.value,given)
+	return c
+}
+
+func(c *{{.Name}}Chain) Len() int {
+	return len(c.value)
+}
+
+func(c *{{.Name}}Chain) IsEmpty() bool {
+	return len(c.value) == 0
+}
+
+func(c *{{.Name}}Chain) IsNotEmpty() bool {
+	return len(c.value) != 0
+}
+
+func(c *{{.Name}}Chain)  Sort()  *{{.Name}}Chain {
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i].Compare(c.value[j]){{.Le}}0
+	})
+	return c 
+}
+
+func(c *{{.Name}}Chain) All(fn func(int, *{{.Name}})bool)  bool {
+	for i, each := range c.value {
+		if !fn(i,each){
+			return false
+		}
+	}
+	return true
+}
+
+func(c *{{.Name}}Chain) Any(fn func(int, *{{.Name}})bool)  bool {
+	for i, each := range c.value {
+		if fn(i,each){
+			return true
+		}
+	}
+	return false
+}
+
+func(c *{{.Name}}Chain) Paginate(size int)  [][]*{{.Name}} {
+	var pages  [][]*{{.Name}}
+	prev := -1
+	for i := range c.value {
+		if (i-prev) {{.Le}} size-1 && i != (len(c.value)-1) {
+			continue
+		}
+		pages=append(pages,c.value[prev+1:i+1])
+		prev=i
+	}
+	return pages
+}
+
+func(c *{{.Name}}Chain) Pop() *{{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return nil
+	}
+	lastIdx := len(c.value)-1
+	val:=c.value[lastIdx]
+	c.value[lastIdx]=nil
+	c.value=c.value[:lastIdx]
+	return val
+}
+
+func(c *{{.Name}}Chain) Prepend(given *{{.Name}}) *{{.Name}}Chain {
+	c.value = append([]*{{.Name}}{given},c.value...)
+	return c
+}
+
+func(c *{{.Name}}Chain) Max() *{{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return nil
+	}
+	var max *{{.Name}}
+	for _,each := range c.value {
+		if max==nil{
+			max=each
+			continue
+		}
+		if max.Compare(each) {{.Le}} 0 {
+			max = each
+		}
+	}
+	return max
+}
+
+
+func(c *{{.Name}}Chain) Min() *{{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return nil
+	}
+	var min *{{.Name}}
+	for _,each := range c.value {
+		if min==nil{
+			min=each
+			continue
+		}
+		if each.Compare(min) {{.Le}} 0 {
+			min = each
+		}
+	}
+	return min
+}
+
+func(c *{{.Name}}Chain) Random() *{{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return nil
+	}
+	n := rand.Intn(len(c.value))
+	return c.value[n]
+}
+
+func(c *{{.Name}}Chain) Shuffle() *{{.Name}}Chain {
+	if len(c.value) {{.Le}} 0 {
+		return nil
+	}
+	indexes := make([]int, len(c.value))
+	for i := range c.value {
+		indexes[i] = i
+	}
+	
+	rand.Shuffle(len(c.value), func(i, j int) {
+		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	})
+	
+	return c
+}
+
 func(c *{{.Name}}Chain) Collect() []*{{.Name}}{
 	return c.value
 }
@@ -128,6 +263,11 @@ func(c *{{.Name}}Chain) Collect() []*{{.Name}}{
 
 	builtinTplStr = `
 package {{.Pkg}}
+
+import (
+	"sort"
+	"math/rand"
+)
 
 const Empty{{.TitleName}} {{.Name}} ={{.Empty}}
 
@@ -216,6 +356,135 @@ func(c *{{.TitleName}}Chain) Unique()  *{{.TitleName}}Chain{
 		value=append(value,each)			
 	}
 	c.value = value
+	return c
+}
+
+func(c *{{.TitleName}}Chain) Append(given {{.Name}}) *{{.TitleName}}Chain {
+	c.value=append(c.value,given)
+	return c
+}
+
+func(c *{{.TitleName}}Chain) Len() int {
+	return len(c.value)
+}
+
+func(c *{{.TitleName}}Chain) IsEmpty() bool {
+	return len(c.value) == 0
+}
+
+func(c *{{.TitleName}}Chain) IsNotEmpty() bool {
+	return len(c.value) != 0
+}
+
+func(c *{{.TitleName}}Chain)  Sort()  *{{.TitleName}}Chain {
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i] {{.Le}} (c.value[j])
+	})
+	return c 
+}
+
+func(c *{{.TitleName}}Chain) All(fn func(int, {{.Name}})bool)  bool {
+	for i, each := range c.value {
+		if !fn(i,each){
+			return false
+		}
+	}
+	return true
+}
+
+func(c *{{.TitleName}}Chain) Any(fn func(int, {{.Name}})bool)  bool {
+	for i, each := range c.value {
+		if fn(i,each){
+			return true
+		}
+	}
+	return false
+}
+
+func(c *{{.TitleName}}Chain) Paginate(size int)  [][]{{.Name}} {
+	var pages  [][]{{.Name}}
+	prev := -1
+	for i := range c.value {
+		if (i-prev) {{.Le}} size-1 && i != (len(c.value)-1) {
+			continue
+		}
+		pages=append(pages,c.value[prev+1:i+1])
+		prev=i
+	}
+	return pages
+}
+
+func(c *{{.TitleName}}Chain) Pop() {{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return Empty{{.TitleName}} 
+	}
+	lastIdx := len(c.value)-1
+	val:=c.value[lastIdx]
+	c.value=c.value[:lastIdx]
+	return val
+}
+
+func(c *{{.TitleName}}Chain) Prepend(given {{.Name}}) *{{.TitleName}}Chain {
+	c.value = append([]{{.Name}}{given},c.value...)
+	return c
+}
+
+func(c *{{.TitleName}}Chain) Max() {{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return Empty{{.TitleName}} 
+	}
+	var max {{.Name}}
+	for idx,each := range c.value {
+		if idx==0{
+			max=each
+			continue
+		}
+		if max {{.Le}} each {
+			max = each
+		}
+	}
+	return max
+}
+
+
+func(c *{{.TitleName}}Chain) Min() {{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return Empty{{.TitleName}} 
+	}
+	var min {{.Name}}
+	for idx,each := range c.value {
+		if idx==0{
+			min=each
+			continue
+		}
+		if each  {{.Le}} min {
+			min = each
+		}
+	}
+	return min
+}
+
+func(c *{{.TitleName}}Chain) Random() {{.Name}}{
+	if len(c.value) {{.Le}} 0 {
+		return Empty{{.TitleName}} 
+	}
+	n := rand.Intn(len(c.value))
+	return c.value[n]
+}
+
+func(c *{{.TitleName}}Chain) Shuffle() *{{.TitleName}}Chain {
+	if len(c.value) {{.Le}} 0 {
+		return nil
+	}
+	indexes := make([]int, len(c.value))
+	for i := range c.value {
+		indexes[i] = i
+	}
+	
+	rand.Shuffle(len(c.value), func(i, j int) {
+		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	})
+	
 	return c
 }
 
