@@ -8,15 +8,15 @@ import (
 
 const EmptyFloat64 float64 =0.0
 
-type Float64Chain struct{
+type Float64Collection struct{
 	value	[]float64
 }
 
-func NewFloat64Chain(value []float64) *Float64Chain {
-	return &Float64Chain{value:value}
+func NewFloat64Collection(value []float64) *Float64Collection {
+	return &Float64Collection{value:value}
 }
 
-func(c *Float64Chain) Concate(given []float64)  *Float64Chain {
+func(c *Float64Collection) Concate(given []float64)  *Float64Collection {
 	value := make([]float64, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *Float64Chain) Concate(given []float64)  *Float64Chain {
 	return c
 }
 
-func(c *Float64Chain) Drop(n int)  *Float64Chain {
+func(c *Float64Collection) Drop(n int)  *Float64Collection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *Float64Chain) Drop(n int)  *Float64Chain {
 	return c
 }
 
-func(c *Float64Chain) Filter(fn func(int, float64)bool)  *Float64Chain {
+func(c *Float64Collection) Filter(fn func(int, float64)bool)  *Float64Collection {
 	value := make([]float64, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Float64Chain) Filter(fn func(int, float64)bool)  *Float64Chain {
 	return c
 }
 
-func(c *Float64Chain) First() float64 {
+func(c *Float64Collection) First() float64 {
 	if len(c.value) <= 0 {
 		return EmptyFloat64
 	} 
 	return c.value[0]
 }
 
-func(c *Float64Chain) Last() float64 {
+func(c *Float64Collection) Last() float64 {
 	if len(c.value) <= 0 {
 		return EmptyFloat64
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Float64Chain) Map(fn func(int, float64)) *Float64Chain {
+func(c *Float64Collection) Map(fn func(int, float64)) *Float64Collection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Float64Chain) Reduce(fn func(float64, float64, int) float64,initial float64) float64   {
+func(c *Float64Collection) Reduce(fn func(float64, float64, int) float64,initial float64) float64   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Float64Chain) Reduce(fn func(float64, float64, int) float64,initial floa
 	return final
 }
 
-func(c *Float64Chain) Reverse()  *Float64Chain {
+func(c *Float64Collection) Reverse()  *Float64Collection {
 	value := make([]float64, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Float64Chain) Reverse()  *Float64Chain {
 	return c
 }
 
-func(c *Float64Chain) Unique()  *Float64Chain{
+func(c *Float64Collection) Unique()  *Float64Collection{
 	value := make([]float64, 0, len(c.value))
 	seen:=make(map[float64]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Float64Chain) Unique()  *Float64Chain{
 	return c
 }
 
-func(c *Float64Chain) Append(given float64) *Float64Chain {
+func(c *Float64Collection) Append(given float64) *Float64Collection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Float64Chain) Len() int {
+func(c *Float64Collection) Len() int {
 	return len(c.value)
 }
 
-func(c *Float64Chain) IsEmpty() bool {
+func(c *Float64Collection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Float64Chain) IsNotEmpty() bool {
+func(c *Float64Collection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Float64Chain)  Sort()  *Float64Chain {
+func(c *Float64Collection)  Sort()  *Float64Collection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *Float64Chain) All(fn func(int, float64)bool)  bool {
+func(c *Float64Collection) All(fn func(int, float64)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Float64Chain) All(fn func(int, float64)bool)  bool {
 	return true
 }
 
-func(c *Float64Chain) Any(fn func(int, float64)bool)  bool {
+func(c *Float64Collection) Any(fn func(int, float64)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *Float64Chain) Any(fn func(int, float64)bool)  bool {
 	return false
 }
 
-func(c *Float64Chain) Paginate(size int)  [][]float64 {
+func(c *Float64Collection) Paginate(size int)  [][]float64 {
 	var pages  [][]float64
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *Float64Chain) Paginate(size int)  [][]float64 {
 	return pages
 }
 
-func(c *Float64Chain) Pop() float64{
+func(c *Float64Collection) Pop() float64{
 	if len(c.value) <= 0 {
 		return EmptyFloat64 
 	}
@@ -161,12 +161,12 @@ func(c *Float64Chain) Pop() float64{
 	return val
 }
 
-func(c *Float64Chain) Prepend(given float64) *Float64Chain {
+func(c *Float64Collection) Prepend(given float64) *Float64Collection {
 	c.value = append([]float64{given},c.value...)
 	return c
 }
 
-func(c *Float64Chain) Max() float64{
+func(c *Float64Collection) Max() float64{
 	if len(c.value) <= 0 {
 		return EmptyFloat64 
 	}
@@ -184,7 +184,7 @@ func(c *Float64Chain) Max() float64{
 }
 
 
-func(c *Float64Chain) Min() float64{
+func(c *Float64Collection) Min() float64{
 	if len(c.value) <= 0 {
 		return EmptyFloat64 
 	}
@@ -201,7 +201,7 @@ func(c *Float64Chain) Min() float64{
 	return min
 }
 
-func(c *Float64Chain) Random() float64{
+func(c *Float64Collection) Random() float64{
 	if len(c.value) <= 0 {
 		return EmptyFloat64 
 	}
@@ -209,7 +209,7 @@ func(c *Float64Chain) Random() float64{
 	return c.value[n]
 }
 
-func(c *Float64Chain) Shuffle() *Float64Chain {
+func(c *Float64Collection) Shuffle() *Float64Collection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *Float64Chain) Shuffle() *Float64Chain {
 	return c
 }
 
-func(c *Float64Chain) Collect() []float64{
+func(c *Float64Collection) Collect() []float64{
 	return c.value
 }

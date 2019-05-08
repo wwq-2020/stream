@@ -8,15 +8,15 @@ import (
 
 const EmptyInt int =0
 
-type IntChain struct{
+type IntCollection struct{
 	value	[]int
 }
 
-func NewIntChain(value []int) *IntChain {
-	return &IntChain{value:value}
+func NewIntCollection(value []int) *IntCollection {
+	return &IntCollection{value:value}
 }
 
-func(c *IntChain) Concate(given []int)  *IntChain {
+func(c *IntCollection) Concate(given []int)  *IntCollection {
 	value := make([]int, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *IntChain) Concate(given []int)  *IntChain {
 	return c
 }
 
-func(c *IntChain) Drop(n int)  *IntChain {
+func(c *IntCollection) Drop(n int)  *IntCollection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *IntChain) Drop(n int)  *IntChain {
 	return c
 }
 
-func(c *IntChain) Filter(fn func(int, int)bool)  *IntChain {
+func(c *IntCollection) Filter(fn func(int, int)bool)  *IntCollection {
 	value := make([]int, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *IntChain) Filter(fn func(int, int)bool)  *IntChain {
 	return c
 }
 
-func(c *IntChain) First() int {
+func(c *IntCollection) First() int {
 	if len(c.value) <= 0 {
 		return EmptyInt
 	} 
 	return c.value[0]
 }
 
-func(c *IntChain) Last() int {
+func(c *IntCollection) Last() int {
 	if len(c.value) <= 0 {
 		return EmptyInt
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *IntChain) Map(fn func(int, int)) *IntChain {
+func(c *IntCollection) Map(fn func(int, int)) *IntCollection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *IntChain) Reduce(fn func(int, int, int) int,initial int) int   {
+func(c *IntCollection) Reduce(fn func(int, int, int) int,initial int) int   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *IntChain) Reduce(fn func(int, int, int) int,initial int) int   {
 	return final
 }
 
-func(c *IntChain) Reverse()  *IntChain {
+func(c *IntCollection) Reverse()  *IntCollection {
 	value := make([]int, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *IntChain) Reverse()  *IntChain {
 	return c
 }
 
-func(c *IntChain) Unique()  *IntChain{
+func(c *IntCollection) Unique()  *IntCollection{
 	value := make([]int, 0, len(c.value))
 	seen:=make(map[int]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *IntChain) Unique()  *IntChain{
 	return c
 }
 
-func(c *IntChain) Append(given int) *IntChain {
+func(c *IntCollection) Append(given int) *IntCollection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *IntChain) Len() int {
+func(c *IntCollection) Len() int {
 	return len(c.value)
 }
 
-func(c *IntChain) IsEmpty() bool {
+func(c *IntCollection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *IntChain) IsNotEmpty() bool {
+func(c *IntCollection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *IntChain)  Sort()  *IntChain {
+func(c *IntCollection)  Sort()  *IntCollection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *IntChain) All(fn func(int, int)bool)  bool {
+func(c *IntCollection) All(fn func(int, int)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *IntChain) All(fn func(int, int)bool)  bool {
 	return true
 }
 
-func(c *IntChain) Any(fn func(int, int)bool)  bool {
+func(c *IntCollection) Any(fn func(int, int)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *IntChain) Any(fn func(int, int)bool)  bool {
 	return false
 }
 
-func(c *IntChain) Paginate(size int)  [][]int {
+func(c *IntCollection) Paginate(size int)  [][]int {
 	var pages  [][]int
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *IntChain) Paginate(size int)  [][]int {
 	return pages
 }
 
-func(c *IntChain) Pop() int{
+func(c *IntCollection) Pop() int{
 	if len(c.value) <= 0 {
 		return EmptyInt 
 	}
@@ -161,12 +161,12 @@ func(c *IntChain) Pop() int{
 	return val
 }
 
-func(c *IntChain) Prepend(given int) *IntChain {
+func(c *IntCollection) Prepend(given int) *IntCollection {
 	c.value = append([]int{given},c.value...)
 	return c
 }
 
-func(c *IntChain) Max() int{
+func(c *IntCollection) Max() int{
 	if len(c.value) <= 0 {
 		return EmptyInt 
 	}
@@ -184,7 +184,7 @@ func(c *IntChain) Max() int{
 }
 
 
-func(c *IntChain) Min() int{
+func(c *IntCollection) Min() int{
 	if len(c.value) <= 0 {
 		return EmptyInt 
 	}
@@ -201,7 +201,7 @@ func(c *IntChain) Min() int{
 	return min
 }
 
-func(c *IntChain) Random() int{
+func(c *IntCollection) Random() int{
 	if len(c.value) <= 0 {
 		return EmptyInt 
 	}
@@ -209,7 +209,7 @@ func(c *IntChain) Random() int{
 	return c.value[n]
 }
 
-func(c *IntChain) Shuffle() *IntChain {
+func(c *IntCollection) Shuffle() *IntCollection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *IntChain) Shuffle() *IntChain {
 	return c
 }
 
-func(c *IntChain) Collect() []int{
+func(c *IntCollection) Collect() []int{
 	return c.value
 }

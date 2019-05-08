@@ -8,7 +8,7 @@ import (
 func TestConcate(t *testing.T) {
 	data1 := []*Some{&Some{"hello"}}
 	data2 := []*Some{&Some{"world"}}
-	c := NewSomeChain(data1)
+	c := NewSomeCollection(data1)
 	r := c.Concate(data2).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
 		t.Fatal("mistach")
@@ -17,7 +17,7 @@ func TestConcate(t *testing.T) {
 
 func TestDrop(t *testing.T) {
 	data := []*Some{&Some{"hello"}, &Some{"world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Drop(1).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{"world"}}) {
 		t.Fatal("mistach")
@@ -26,7 +26,7 @@ func TestDrop(t *testing.T) {
 
 func TestFilter(t *testing.T) {
 	data := []*Some{&Some{"hello"}, &Some{"world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	filter := func(idx int, some *Some) bool {
 		return idx == 0
 	}
@@ -38,7 +38,7 @@ func TestFilter(t *testing.T) {
 
 func TestFirst(t *testing.T) {
 	data := []*Some{&Some{"hello"}, &Some{"world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.First()
 	if !reflect.DeepEqual(r, &Some{"hello"}) {
 		t.Fatal("mistach")
@@ -47,7 +47,7 @@ func TestFirst(t *testing.T) {
 
 func TestLast(t *testing.T) {
 	data := []*Some{&Some{"hello"}, &Some{"world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Last()
 	if !reflect.DeepEqual(r, &Some{"world"}) {
 		t.Fatal("mistach")
@@ -56,7 +56,7 @@ func TestLast(t *testing.T) {
 
 func TestMap(t *testing.T) {
 	data := []*Some{&Some{"hello"}, &Some{"world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	mapFn := func(idx int, some *Some) {
 		some.A += "_test"
 	}
@@ -68,7 +68,7 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	data := []*Some{&Some{"hello"}, &Some{"world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	reduceFn := func(initial *Some, cur *Some, idx int) *Some {
 		return &Some{initial.A + " " + cur.A}
 	}
@@ -79,7 +79,7 @@ func TestReduce(t *testing.T) {
 }
 func TestReverse(t *testing.T) {
 	data := []*Some{&Some{"world"}, &Some{"hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Reverse().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
 		t.Fatal("mistach")
@@ -88,7 +88,7 @@ func TestReverse(t *testing.T) {
 
 func TestUnique(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{"world"}, &Some{"hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Unique().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
 		t.Fatal("mistach")
@@ -97,7 +97,7 @@ func TestUnique(t *testing.T) {
 
 func TestAppend(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Append(&Some{A: "world"}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
 		t.Fatal("mistach")
@@ -106,7 +106,7 @@ func TestAppend(t *testing.T) {
 
 func TestLen(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	if r := c.Len(); r != len(data) {
 		t.Fatal("mistach")
 	}
@@ -114,7 +114,7 @@ func TestLen(t *testing.T) {
 
 func TestIsEmpty(t *testing.T) {
 	var data []*Some
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	if !c.IsEmpty() {
 		t.Fatal("mistach")
 	}
@@ -122,7 +122,7 @@ func TestIsEmpty(t *testing.T) {
 
 func TestIsNotEmpty(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	if !c.IsNotEmpty() {
 		t.Fatal("mistach")
 	}
@@ -130,7 +130,7 @@ func TestIsNotEmpty(t *testing.T) {
 
 func TestSort(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Sort().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
 		t.Fatal("mistach")
@@ -139,7 +139,7 @@ func TestSort(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	if !c.All(func(i int, some *Some) bool {
 		return some.A == "world"
 	}) {
@@ -149,7 +149,7 @@ func TestAll(t *testing.T) {
 
 func TestAny(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	if !c.Any(func(i int, some *Some) bool {
 		return some.A == "world"
 	}) {
@@ -159,7 +159,7 @@ func TestAny(t *testing.T) {
 
 func TestPaginate(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	pages := c.Paginate(1)
 	if len(pages) != 2 {
 		t.Fatal("mistach")
@@ -174,7 +174,7 @@ func TestPaginate(t *testing.T) {
 
 func TestPop(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Pop()
 	if !reflect.DeepEqual(r, &Some{A: "world"}) {
 		t.Fatal("mistach")
@@ -183,7 +183,7 @@ func TestPop(t *testing.T) {
 
 func TestPrepend(t *testing.T) {
 	data := []*Some{&Some{A: "world"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Prepend(&Some{A: "hello"}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
 		t.Fatal("mistach")
@@ -192,7 +192,7 @@ func TestPrepend(t *testing.T) {
 
 func TestMax(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Max()
 	if !reflect.DeepEqual(r, &Some{"world"}) {
 		t.Fatal("mistach")
@@ -200,7 +200,7 @@ func TestMax(t *testing.T) {
 }
 func TestMin(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Min()
 	if !reflect.DeepEqual(r, &Some{"hello"}) {
 		t.Fatal("mistach")
@@ -209,7 +209,7 @@ func TestMin(t *testing.T) {
 
 func TestRandom(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	if r := c.Random(); r == nil {
 		t.Fatal("mistach")
 	}
@@ -217,7 +217,7 @@ func TestRandom(t *testing.T) {
 
 func TestShuffle(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := NewSomeChain(data)
+	c := NewSomeCollection(data)
 	r := c.Shuffle().Collect()
 	if len(r) != 2 {
 		t.Fatal("mistach")

@@ -8,15 +8,15 @@ import (
 
 const EmptyString string =""
 
-type StringChain struct{
+type StringCollection struct{
 	value	[]string
 }
 
-func NewStringChain(value []string) *StringChain {
-	return &StringChain{value:value}
+func NewStringCollection(value []string) *StringCollection {
+	return &StringCollection{value:value}
 }
 
-func(c *StringChain) Concate(given []string)  *StringChain {
+func(c *StringCollection) Concate(given []string)  *StringCollection {
 	value := make([]string, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *StringChain) Concate(given []string)  *StringChain {
 	return c
 }
 
-func(c *StringChain) Drop(n int)  *StringChain {
+func(c *StringCollection) Drop(n int)  *StringCollection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *StringChain) Drop(n int)  *StringChain {
 	return c
 }
 
-func(c *StringChain) Filter(fn func(int, string)bool)  *StringChain {
+func(c *StringCollection) Filter(fn func(int, string)bool)  *StringCollection {
 	value := make([]string, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *StringChain) Filter(fn func(int, string)bool)  *StringChain {
 	return c
 }
 
-func(c *StringChain) First() string {
+func(c *StringCollection) First() string {
 	if len(c.value) <= 0 {
 		return EmptyString
 	} 
 	return c.value[0]
 }
 
-func(c *StringChain) Last() string {
+func(c *StringCollection) Last() string {
 	if len(c.value) <= 0 {
 		return EmptyString
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *StringChain) Map(fn func(int, string)) *StringChain {
+func(c *StringCollection) Map(fn func(int, string)) *StringCollection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *StringChain) Reduce(fn func(string, string, int) string,initial string) string   {
+func(c *StringCollection) Reduce(fn func(string, string, int) string,initial string) string   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *StringChain) Reduce(fn func(string, string, int) string,initial string) 
 	return final
 }
 
-func(c *StringChain) Reverse()  *StringChain {
+func(c *StringCollection) Reverse()  *StringCollection {
 	value := make([]string, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *StringChain) Reverse()  *StringChain {
 	return c
 }
 
-func(c *StringChain) Unique()  *StringChain{
+func(c *StringCollection) Unique()  *StringCollection{
 	value := make([]string, 0, len(c.value))
 	seen:=make(map[string]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *StringChain) Unique()  *StringChain{
 	return c
 }
 
-func(c *StringChain) Append(given string) *StringChain {
+func(c *StringCollection) Append(given string) *StringCollection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *StringChain) Len() int {
+func(c *StringCollection) Len() int {
 	return len(c.value)
 }
 
-func(c *StringChain) IsEmpty() bool {
+func(c *StringCollection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *StringChain) IsNotEmpty() bool {
+func(c *StringCollection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *StringChain)  Sort()  *StringChain {
+func(c *StringCollection)  Sort()  *StringCollection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *StringChain) All(fn func(int, string)bool)  bool {
+func(c *StringCollection) All(fn func(int, string)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *StringChain) All(fn func(int, string)bool)  bool {
 	return true
 }
 
-func(c *StringChain) Any(fn func(int, string)bool)  bool {
+func(c *StringCollection) Any(fn func(int, string)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *StringChain) Any(fn func(int, string)bool)  bool {
 	return false
 }
 
-func(c *StringChain) Paginate(size int)  [][]string {
+func(c *StringCollection) Paginate(size int)  [][]string {
 	var pages  [][]string
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *StringChain) Paginate(size int)  [][]string {
 	return pages
 }
 
-func(c *StringChain) Pop() string{
+func(c *StringCollection) Pop() string{
 	if len(c.value) <= 0 {
 		return EmptyString 
 	}
@@ -161,12 +161,12 @@ func(c *StringChain) Pop() string{
 	return val
 }
 
-func(c *StringChain) Prepend(given string) *StringChain {
+func(c *StringCollection) Prepend(given string) *StringCollection {
 	c.value = append([]string{given},c.value...)
 	return c
 }
 
-func(c *StringChain) Max() string{
+func(c *StringCollection) Max() string{
 	if len(c.value) <= 0 {
 		return EmptyString 
 	}
@@ -184,7 +184,7 @@ func(c *StringChain) Max() string{
 }
 
 
-func(c *StringChain) Min() string{
+func(c *StringCollection) Min() string{
 	if len(c.value) <= 0 {
 		return EmptyString 
 	}
@@ -201,7 +201,7 @@ func(c *StringChain) Min() string{
 	return min
 }
 
-func(c *StringChain) Random() string{
+func(c *StringCollection) Random() string{
 	if len(c.value) <= 0 {
 		return EmptyString 
 	}
@@ -209,7 +209,7 @@ func(c *StringChain) Random() string{
 	return c.value[n]
 }
 
-func(c *StringChain) Shuffle() *StringChain {
+func(c *StringCollection) Shuffle() *StringCollection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *StringChain) Shuffle() *StringChain {
 	return c
 }
 
-func(c *StringChain) Collect() []string{
+func(c *StringCollection) Collect() []string{
 	return c.value
 }

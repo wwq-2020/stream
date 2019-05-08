@@ -8,15 +8,15 @@ import (
 
 const EmptyUint64 uint64 =0
 
-type Uint64Chain struct{
+type Uint64Collection struct{
 	value	[]uint64
 }
 
-func NewUint64Chain(value []uint64) *Uint64Chain {
-	return &Uint64Chain{value:value}
+func NewUint64Collection(value []uint64) *Uint64Collection {
+	return &Uint64Collection{value:value}
 }
 
-func(c *Uint64Chain) Concate(given []uint64)  *Uint64Chain {
+func(c *Uint64Collection) Concate(given []uint64)  *Uint64Collection {
 	value := make([]uint64, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *Uint64Chain) Concate(given []uint64)  *Uint64Chain {
 	return c
 }
 
-func(c *Uint64Chain) Drop(n int)  *Uint64Chain {
+func(c *Uint64Collection) Drop(n int)  *Uint64Collection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *Uint64Chain) Drop(n int)  *Uint64Chain {
 	return c
 }
 
-func(c *Uint64Chain) Filter(fn func(int, uint64)bool)  *Uint64Chain {
+func(c *Uint64Collection) Filter(fn func(int, uint64)bool)  *Uint64Collection {
 	value := make([]uint64, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Uint64Chain) Filter(fn func(int, uint64)bool)  *Uint64Chain {
 	return c
 }
 
-func(c *Uint64Chain) First() uint64 {
+func(c *Uint64Collection) First() uint64 {
 	if len(c.value) <= 0 {
 		return EmptyUint64
 	} 
 	return c.value[0]
 }
 
-func(c *Uint64Chain) Last() uint64 {
+func(c *Uint64Collection) Last() uint64 {
 	if len(c.value) <= 0 {
 		return EmptyUint64
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Uint64Chain) Map(fn func(int, uint64)) *Uint64Chain {
+func(c *Uint64Collection) Map(fn func(int, uint64)) *Uint64Collection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Uint64Chain) Reduce(fn func(uint64, uint64, int) uint64,initial uint64) uint64   {
+func(c *Uint64Collection) Reduce(fn func(uint64, uint64, int) uint64,initial uint64) uint64   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Uint64Chain) Reduce(fn func(uint64, uint64, int) uint64,initial uint64) 
 	return final
 }
 
-func(c *Uint64Chain) Reverse()  *Uint64Chain {
+func(c *Uint64Collection) Reverse()  *Uint64Collection {
 	value := make([]uint64, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Uint64Chain) Reverse()  *Uint64Chain {
 	return c
 }
 
-func(c *Uint64Chain) Unique()  *Uint64Chain{
+func(c *Uint64Collection) Unique()  *Uint64Collection{
 	value := make([]uint64, 0, len(c.value))
 	seen:=make(map[uint64]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Uint64Chain) Unique()  *Uint64Chain{
 	return c
 }
 
-func(c *Uint64Chain) Append(given uint64) *Uint64Chain {
+func(c *Uint64Collection) Append(given uint64) *Uint64Collection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Uint64Chain) Len() int {
+func(c *Uint64Collection) Len() int {
 	return len(c.value)
 }
 
-func(c *Uint64Chain) IsEmpty() bool {
+func(c *Uint64Collection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Uint64Chain) IsNotEmpty() bool {
+func(c *Uint64Collection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Uint64Chain)  Sort()  *Uint64Chain {
+func(c *Uint64Collection)  Sort()  *Uint64Collection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *Uint64Chain) All(fn func(int, uint64)bool)  bool {
+func(c *Uint64Collection) All(fn func(int, uint64)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Uint64Chain) All(fn func(int, uint64)bool)  bool {
 	return true
 }
 
-func(c *Uint64Chain) Any(fn func(int, uint64)bool)  bool {
+func(c *Uint64Collection) Any(fn func(int, uint64)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *Uint64Chain) Any(fn func(int, uint64)bool)  bool {
 	return false
 }
 
-func(c *Uint64Chain) Paginate(size int)  [][]uint64 {
+func(c *Uint64Collection) Paginate(size int)  [][]uint64 {
 	var pages  [][]uint64
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *Uint64Chain) Paginate(size int)  [][]uint64 {
 	return pages
 }
 
-func(c *Uint64Chain) Pop() uint64{
+func(c *Uint64Collection) Pop() uint64{
 	if len(c.value) <= 0 {
 		return EmptyUint64 
 	}
@@ -161,12 +161,12 @@ func(c *Uint64Chain) Pop() uint64{
 	return val
 }
 
-func(c *Uint64Chain) Prepend(given uint64) *Uint64Chain {
+func(c *Uint64Collection) Prepend(given uint64) *Uint64Collection {
 	c.value = append([]uint64{given},c.value...)
 	return c
 }
 
-func(c *Uint64Chain) Max() uint64{
+func(c *Uint64Collection) Max() uint64{
 	if len(c.value) <= 0 {
 		return EmptyUint64 
 	}
@@ -184,7 +184,7 @@ func(c *Uint64Chain) Max() uint64{
 }
 
 
-func(c *Uint64Chain) Min() uint64{
+func(c *Uint64Collection) Min() uint64{
 	if len(c.value) <= 0 {
 		return EmptyUint64 
 	}
@@ -201,7 +201,7 @@ func(c *Uint64Chain) Min() uint64{
 	return min
 }
 
-func(c *Uint64Chain) Random() uint64{
+func(c *Uint64Collection) Random() uint64{
 	if len(c.value) <= 0 {
 		return EmptyUint64 
 	}
@@ -209,7 +209,7 @@ func(c *Uint64Chain) Random() uint64{
 	return c.value[n]
 }
 
-func(c *Uint64Chain) Shuffle() *Uint64Chain {
+func(c *Uint64Collection) Shuffle() *Uint64Collection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *Uint64Chain) Shuffle() *Uint64Chain {
 	return c
 }
 
-func(c *Uint64Chain) Collect() []uint64{
+func(c *Uint64Collection) Collect() []uint64{
 	return c.value
 }

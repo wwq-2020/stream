@@ -8,15 +8,15 @@ import (
 
 const EmptyFloat32 float32 =0.0
 
-type Float32Chain struct{
+type Float32Collection struct{
 	value	[]float32
 }
 
-func NewFloat32Chain(value []float32) *Float32Chain {
-	return &Float32Chain{value:value}
+func NewFloat32Collection(value []float32) *Float32Collection {
+	return &Float32Collection{value:value}
 }
 
-func(c *Float32Chain) Concate(given []float32)  *Float32Chain {
+func(c *Float32Collection) Concate(given []float32)  *Float32Collection {
 	value := make([]float32, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *Float32Chain) Concate(given []float32)  *Float32Chain {
 	return c
 }
 
-func(c *Float32Chain) Drop(n int)  *Float32Chain {
+func(c *Float32Collection) Drop(n int)  *Float32Collection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *Float32Chain) Drop(n int)  *Float32Chain {
 	return c
 }
 
-func(c *Float32Chain) Filter(fn func(int, float32)bool)  *Float32Chain {
+func(c *Float32Collection) Filter(fn func(int, float32)bool)  *Float32Collection {
 	value := make([]float32, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Float32Chain) Filter(fn func(int, float32)bool)  *Float32Chain {
 	return c
 }
 
-func(c *Float32Chain) First() float32 {
+func(c *Float32Collection) First() float32 {
 	if len(c.value) <= 0 {
 		return EmptyFloat32
 	} 
 	return c.value[0]
 }
 
-func(c *Float32Chain) Last() float32 {
+func(c *Float32Collection) Last() float32 {
 	if len(c.value) <= 0 {
 		return EmptyFloat32
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Float32Chain) Map(fn func(int, float32)) *Float32Chain {
+func(c *Float32Collection) Map(fn func(int, float32)) *Float32Collection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Float32Chain) Reduce(fn func(float32, float32, int) float32,initial float32) float32   {
+func(c *Float32Collection) Reduce(fn func(float32, float32, int) float32,initial float32) float32   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Float32Chain) Reduce(fn func(float32, float32, int) float32,initial floa
 	return final
 }
 
-func(c *Float32Chain) Reverse()  *Float32Chain {
+func(c *Float32Collection) Reverse()  *Float32Collection {
 	value := make([]float32, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Float32Chain) Reverse()  *Float32Chain {
 	return c
 }
 
-func(c *Float32Chain) Unique()  *Float32Chain{
+func(c *Float32Collection) Unique()  *Float32Collection{
 	value := make([]float32, 0, len(c.value))
 	seen:=make(map[float32]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Float32Chain) Unique()  *Float32Chain{
 	return c
 }
 
-func(c *Float32Chain) Append(given float32) *Float32Chain {
+func(c *Float32Collection) Append(given float32) *Float32Collection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Float32Chain) Len() int {
+func(c *Float32Collection) Len() int {
 	return len(c.value)
 }
 
-func(c *Float32Chain) IsEmpty() bool {
+func(c *Float32Collection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Float32Chain) IsNotEmpty() bool {
+func(c *Float32Collection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Float32Chain)  Sort()  *Float32Chain {
+func(c *Float32Collection)  Sort()  *Float32Collection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *Float32Chain) All(fn func(int, float32)bool)  bool {
+func(c *Float32Collection) All(fn func(int, float32)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Float32Chain) All(fn func(int, float32)bool)  bool {
 	return true
 }
 
-func(c *Float32Chain) Any(fn func(int, float32)bool)  bool {
+func(c *Float32Collection) Any(fn func(int, float32)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *Float32Chain) Any(fn func(int, float32)bool)  bool {
 	return false
 }
 
-func(c *Float32Chain) Paginate(size int)  [][]float32 {
+func(c *Float32Collection) Paginate(size int)  [][]float32 {
 	var pages  [][]float32
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *Float32Chain) Paginate(size int)  [][]float32 {
 	return pages
 }
 
-func(c *Float32Chain) Pop() float32{
+func(c *Float32Collection) Pop() float32{
 	if len(c.value) <= 0 {
 		return EmptyFloat32 
 	}
@@ -161,12 +161,12 @@ func(c *Float32Chain) Pop() float32{
 	return val
 }
 
-func(c *Float32Chain) Prepend(given float32) *Float32Chain {
+func(c *Float32Collection) Prepend(given float32) *Float32Collection {
 	c.value = append([]float32{given},c.value...)
 	return c
 }
 
-func(c *Float32Chain) Max() float32{
+func(c *Float32Collection) Max() float32{
 	if len(c.value) <= 0 {
 		return EmptyFloat32 
 	}
@@ -184,7 +184,7 @@ func(c *Float32Chain) Max() float32{
 }
 
 
-func(c *Float32Chain) Min() float32{
+func(c *Float32Collection) Min() float32{
 	if len(c.value) <= 0 {
 		return EmptyFloat32 
 	}
@@ -201,7 +201,7 @@ func(c *Float32Chain) Min() float32{
 	return min
 }
 
-func(c *Float32Chain) Random() float32{
+func(c *Float32Collection) Random() float32{
 	if len(c.value) <= 0 {
 		return EmptyFloat32 
 	}
@@ -209,7 +209,7 @@ func(c *Float32Chain) Random() float32{
 	return c.value[n]
 }
 
-func(c *Float32Chain) Shuffle() *Float32Chain {
+func(c *Float32Collection) Shuffle() *Float32Collection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *Float32Chain) Shuffle() *Float32Chain {
 	return c
 }
 
-func(c *Float32Chain) Collect() []float32{
+func(c *Float32Collection) Collect() []float32{
 	return c.value
 }

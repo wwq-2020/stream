@@ -13,7 +13,7 @@ use:
 
   data1 := []*tests.Some{&tests.Some{"hello"}}
   data2 := []*tests.Some{&tests.Some{"world"}}
-  c := tests.NewSomeChain(data1)
+  c := tests.NewSomeCollection(data1)
   r := c.Concate(data2).Collect()
   fmt.Println(reflect.DeepEqual(r, []*tests.Some{&tests.Some{A: "hello"}, &tests.Some{"world"}}))
 

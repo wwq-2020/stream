@@ -26,15 +26,15 @@ import (
 	"sort"
 	"math/rand"
 )
-type {{.Name}}Chain struct{
+type {{.Name}}Collection struct{
 	value	[]*{{.Name}}
 }
 
-func New{{.Name}}Chain(value []*{{.Name}}) *{{.Name}}Chain {
-	return &{{.Name}}Chain{value:value}
+func New{{.Name}}Collection(value []*{{.Name}}) *{{.Name}}Collection {
+	return &{{.Name}}Collection{value:value}
 }
 
-func(c *{{.Name}}Chain) Concate(given []*{{.Name}})  *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Concate(given []*{{.Name}})  *{{.Name}}Collection {
 	value := make([]*{{.Name}}, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -42,7 +42,7 @@ func(c *{{.Name}}Chain) Concate(given []*{{.Name}})  *{{.Name}}Chain {
 	return c
 }
 
-func(c *{{.Name}}Chain) Drop(n int)  *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Drop(n int)  *{{.Name}}Collection {
 	l := len(c.value) - n
 	if l {{.Le}} 0 {
 		l = 0
@@ -51,7 +51,7 @@ func(c *{{.Name}}Chain) Drop(n int)  *{{.Name}}Chain {
 	return c
 }
 
-func(c *{{.Name}}Chain) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}Collection {
 	value := make([]*{{.Name}}, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -62,28 +62,28 @@ func(c *{{.Name}}Chain) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}Chain {
 	return c
 }
 
-func(c *{{.Name}}Chain) First() *{{.Name}} {
+func(c *{{.Name}}Collection) First() *{{.Name}} {
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	} 
 	return c.value[0]
 }
 
-func(c *{{.Name}}Chain) Last() *{{.Name}} {
+func(c *{{.Name}}Collection) Last() *{{.Name}} {
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *{{.Name}}Chain) Map(fn func(int, *{{.Name}})) *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Map(fn func(int, *{{.Name}})) *{{.Name}}Collection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *{{.Name}}Chain) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
+func(c *{{.Name}}Collection) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -91,7 +91,7 @@ func(c *{{.Name}}Chain) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},i
 	return final
 }
 
-func(c *{{.Name}}Chain) Reverse()  *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Reverse()  *{{.Name}}Collection {
 	value := make([]*{{.Name}}, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -100,7 +100,7 @@ func(c *{{.Name}}Chain) Reverse()  *{{.Name}}Chain {
 	return c
 }
 
-func(c *{{.Name}}Chain) Unique()  *{{.Name}}Chain{
+func(c *{{.Name}}Collection) Unique()  *{{.Name}}Collection{
 	value := make([]*{{.Name}}, 0, len(c.value))
 	seen:=make(map[int]struct{})
 	for i, outter := range c.value {
@@ -126,31 +126,31 @@ func(c *{{.Name}}Chain) Unique()  *{{.Name}}Chain{
 	return c
 }
 
-func(c *{{.Name}}Chain) Append(given *{{.Name}}) *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Append(given *{{.Name}}) *{{.Name}}Collection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *{{.Name}}Chain) Len() int {
+func(c *{{.Name}}Collection) Len() int {
 	return len(c.value)
 }
 
-func(c *{{.Name}}Chain) IsEmpty() bool {
+func(c *{{.Name}}Collection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *{{.Name}}Chain) IsNotEmpty() bool {
+func(c *{{.Name}}Collection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *{{.Name}}Chain)  Sort()  *{{.Name}}Chain {
+func(c *{{.Name}}Collection)  Sort()  *{{.Name}}Collection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i].Compare(c.value[j]){{.Le}}0
 	})
 	return c 
 }
 
-func(c *{{.Name}}Chain) All(fn func(int, *{{.Name}})bool)  bool {
+func(c *{{.Name}}Collection) All(fn func(int, *{{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -159,7 +159,7 @@ func(c *{{.Name}}Chain) All(fn func(int, *{{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.Name}}Chain) Any(fn func(int, *{{.Name}})bool)  bool {
+func(c *{{.Name}}Collection) Any(fn func(int, *{{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -168,7 +168,7 @@ func(c *{{.Name}}Chain) Any(fn func(int, *{{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.Name}}Chain) Paginate(size int)  [][]*{{.Name}} {
+func(c *{{.Name}}Collection) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}
 	prev := -1
 	for i := range c.value {
@@ -181,7 +181,7 @@ func(c *{{.Name}}Chain) Paginate(size int)  [][]*{{.Name}} {
 	return pages
 }
 
-func(c *{{.Name}}Chain) Pop() *{{.Name}}{
+func(c *{{.Name}}Collection) Pop() *{{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	}
@@ -192,12 +192,12 @@ func(c *{{.Name}}Chain) Pop() *{{.Name}}{
 	return val
 }
 
-func(c *{{.Name}}Chain) Prepend(given *{{.Name}}) *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Prepend(given *{{.Name}}) *{{.Name}}Collection {
 	c.value = append([]*{{.Name}}{given},c.value...)
 	return c
 }
 
-func(c *{{.Name}}Chain) Max() *{{.Name}}{
+func(c *{{.Name}}Collection) Max() *{{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	}
@@ -215,7 +215,7 @@ func(c *{{.Name}}Chain) Max() *{{.Name}}{
 }
 
 
-func(c *{{.Name}}Chain) Min() *{{.Name}}{
+func(c *{{.Name}}Collection) Min() *{{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	}
@@ -232,7 +232,7 @@ func(c *{{.Name}}Chain) Min() *{{.Name}}{
 	return min
 }
 
-func(c *{{.Name}}Chain) Random() *{{.Name}}{
+func(c *{{.Name}}Collection) Random() *{{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	}
@@ -240,7 +240,7 @@ func(c *{{.Name}}Chain) Random() *{{.Name}}{
 	return c.value[n]
 }
 
-func(c *{{.Name}}Chain) Shuffle() *{{.Name}}Chain {
+func(c *{{.Name}}Collection) Shuffle() *{{.Name}}Collection {
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	}
@@ -256,7 +256,7 @@ func(c *{{.Name}}Chain) Shuffle() *{{.Name}}Chain {
 	return c
 }
 
-func(c *{{.Name}}Chain) Collect() []*{{.Name}}{
+func(c *{{.Name}}Collection) Collect() []*{{.Name}}{
 	return c.value
 }
 `
@@ -271,15 +271,15 @@ import (
 
 const Empty{{.TitleName}} {{.Name}} ={{.Empty}}
 
-type {{.TitleName}}Chain struct{
+type {{.TitleName}}Collection struct{
 	value	[]{{.Name}}
 }
 
-func New{{.TitleName}}Chain(value []{{.Name}}) *{{.TitleName}}Chain {
-	return &{{.TitleName}}Chain{value:value}
+func New{{.TitleName}}Collection(value []{{.Name}}) *{{.TitleName}}Collection {
+	return &{{.TitleName}}Collection{value:value}
 }
 
-func(c *{{.TitleName}}Chain) Concate(given []{{.Name}})  *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Concate(given []{{.Name}})  *{{.TitleName}}Collection {
 	value := make([]{{.Name}}, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -287,7 +287,7 @@ func(c *{{.TitleName}}Chain) Concate(given []{{.Name}})  *{{.TitleName}}Chain {
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Drop(n int)  *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Drop(n int)  *{{.TitleName}}Collection {
 	l := len(c.value) - n
 	if l {{.Le}} 0 {
 		l = 0
@@ -296,7 +296,7 @@ func(c *{{.TitleName}}Chain) Drop(n int)  *{{.TitleName}}Chain {
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Collection {
 	value := make([]{{.Name}}, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -307,28 +307,28 @@ func(c *{{.TitleName}}Chain) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}
 	return c
 }
 
-func(c *{{.TitleName}}Chain) First() {{.Name}} {
+func(c *{{.TitleName}}Collection) First() {{.Name}} {
 	if len(c.value) {{.Le}} 0 {
 		return Empty{{.TitleName}}
 	} 
 	return c.value[0]
 }
 
-func(c *{{.TitleName}}Chain) Last() {{.Name}} {
+func(c *{{.TitleName}}Collection) Last() {{.Name}} {
 	if len(c.value) {{.Le}} 0 {
 		return Empty{{.TitleName}}
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *{{.TitleName}}Chain) Map(fn func(int, {{.Name}})) *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Map(fn func(int, {{.Name}})) *{{.TitleName}}Collection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
+func(c *{{.TitleName}}Collection) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -336,7 +336,7 @@ func(c *{{.TitleName}}Chain) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}}
 	return final
 }
 
-func(c *{{.TitleName}}Chain) Reverse()  *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Reverse()  *{{.TitleName}}Collection {
 	value := make([]{{.Name}}, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -345,7 +345,7 @@ func(c *{{.TitleName}}Chain) Reverse()  *{{.TitleName}}Chain {
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Unique()  *{{.TitleName}}Chain{
+func(c *{{.TitleName}}Collection) Unique()  *{{.TitleName}}Collection{
 	value := make([]{{.Name}}, 0, len(c.value))
 	seen:=make(map[{{.Name}}]struct{})
 	for _, each := range c.value {
@@ -359,31 +359,31 @@ func(c *{{.TitleName}}Chain) Unique()  *{{.TitleName}}Chain{
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Append(given {{.Name}}) *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Append(given {{.Name}}) *{{.TitleName}}Collection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Len() int {
+func(c *{{.TitleName}}Collection) Len() int {
 	return len(c.value)
 }
 
-func(c *{{.TitleName}}Chain) IsEmpty() bool {
+func(c *{{.TitleName}}Collection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *{{.TitleName}}Chain) IsNotEmpty() bool {
+func(c *{{.TitleName}}Collection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *{{.TitleName}}Chain)  Sort()  *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection)  Sort()  *{{.TitleName}}Collection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] {{.Le}} (c.value[j])
 	})
 	return c 
 }
 
-func(c *{{.TitleName}}Chain) All(fn func(int, {{.Name}})bool)  bool {
+func(c *{{.TitleName}}Collection) All(fn func(int, {{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -392,7 +392,7 @@ func(c *{{.TitleName}}Chain) All(fn func(int, {{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.TitleName}}Chain) Any(fn func(int, {{.Name}})bool)  bool {
+func(c *{{.TitleName}}Collection) Any(fn func(int, {{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -401,7 +401,7 @@ func(c *{{.TitleName}}Chain) Any(fn func(int, {{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.TitleName}}Chain) Paginate(size int)  [][]{{.Name}} {
+func(c *{{.TitleName}}Collection) Paginate(size int)  [][]{{.Name}} {
 	var pages  [][]{{.Name}}
 	prev := -1
 	for i := range c.value {
@@ -414,7 +414,7 @@ func(c *{{.TitleName}}Chain) Paginate(size int)  [][]{{.Name}} {
 	return pages
 }
 
-func(c *{{.TitleName}}Chain) Pop() {{.Name}}{
+func(c *{{.TitleName}}Collection) Pop() {{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return Empty{{.TitleName}} 
 	}
@@ -424,12 +424,12 @@ func(c *{{.TitleName}}Chain) Pop() {{.Name}}{
 	return val
 }
 
-func(c *{{.TitleName}}Chain) Prepend(given {{.Name}}) *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Prepend(given {{.Name}}) *{{.TitleName}}Collection {
 	c.value = append([]{{.Name}}{given},c.value...)
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Max() {{.Name}}{
+func(c *{{.TitleName}}Collection) Max() {{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return Empty{{.TitleName}} 
 	}
@@ -447,7 +447,7 @@ func(c *{{.TitleName}}Chain) Max() {{.Name}}{
 }
 
 
-func(c *{{.TitleName}}Chain) Min() {{.Name}}{
+func(c *{{.TitleName}}Collection) Min() {{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return Empty{{.TitleName}} 
 	}
@@ -464,7 +464,7 @@ func(c *{{.TitleName}}Chain) Min() {{.Name}}{
 	return min
 }
 
-func(c *{{.TitleName}}Chain) Random() {{.Name}}{
+func(c *{{.TitleName}}Collection) Random() {{.Name}}{
 	if len(c.value) {{.Le}} 0 {
 		return Empty{{.TitleName}} 
 	}
@@ -472,7 +472,7 @@ func(c *{{.TitleName}}Chain) Random() {{.Name}}{
 	return c.value[n]
 }
 
-func(c *{{.TitleName}}Chain) Shuffle() *{{.TitleName}}Chain {
+func(c *{{.TitleName}}Collection) Shuffle() *{{.TitleName}}Collection {
 	if len(c.value) {{.Le}} 0 {
 		return nil
 	}
@@ -488,7 +488,7 @@ func(c *{{.TitleName}}Chain) Shuffle() *{{.TitleName}}Chain {
 	return c
 }
 
-func(c *{{.TitleName}}Chain) Collect() []{{.Name}}{
+func(c *{{.TitleName}}Collection) Collect() []{{.Name}}{
 	return c.value
 }
 `

@@ -8,15 +8,15 @@ import (
 
 const EmptyUint uint =0
 
-type UintChain struct{
+type UintCollection struct{
 	value	[]uint
 }
 
-func NewUintChain(value []uint) *UintChain {
-	return &UintChain{value:value}
+func NewUintCollection(value []uint) *UintCollection {
+	return &UintCollection{value:value}
 }
 
-func(c *UintChain) Concate(given []uint)  *UintChain {
+func(c *UintCollection) Concate(given []uint)  *UintCollection {
 	value := make([]uint, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *UintChain) Concate(given []uint)  *UintChain {
 	return c
 }
 
-func(c *UintChain) Drop(n int)  *UintChain {
+func(c *UintCollection) Drop(n int)  *UintCollection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *UintChain) Drop(n int)  *UintChain {
 	return c
 }
 
-func(c *UintChain) Filter(fn func(int, uint)bool)  *UintChain {
+func(c *UintCollection) Filter(fn func(int, uint)bool)  *UintCollection {
 	value := make([]uint, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *UintChain) Filter(fn func(int, uint)bool)  *UintChain {
 	return c
 }
 
-func(c *UintChain) First() uint {
+func(c *UintCollection) First() uint {
 	if len(c.value) <= 0 {
 		return EmptyUint
 	} 
 	return c.value[0]
 }
 
-func(c *UintChain) Last() uint {
+func(c *UintCollection) Last() uint {
 	if len(c.value) <= 0 {
 		return EmptyUint
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *UintChain) Map(fn func(int, uint)) *UintChain {
+func(c *UintCollection) Map(fn func(int, uint)) *UintCollection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *UintChain) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
+func(c *UintCollection) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *UintChain) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
 	return final
 }
 
-func(c *UintChain) Reverse()  *UintChain {
+func(c *UintCollection) Reverse()  *UintCollection {
 	value := make([]uint, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *UintChain) Reverse()  *UintChain {
 	return c
 }
 
-func(c *UintChain) Unique()  *UintChain{
+func(c *UintCollection) Unique()  *UintCollection{
 	value := make([]uint, 0, len(c.value))
 	seen:=make(map[uint]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *UintChain) Unique()  *UintChain{
 	return c
 }
 
-func(c *UintChain) Append(given uint) *UintChain {
+func(c *UintCollection) Append(given uint) *UintCollection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *UintChain) Len() int {
+func(c *UintCollection) Len() int {
 	return len(c.value)
 }
 
-func(c *UintChain) IsEmpty() bool {
+func(c *UintCollection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *UintChain) IsNotEmpty() bool {
+func(c *UintCollection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *UintChain)  Sort()  *UintChain {
+func(c *UintCollection)  Sort()  *UintCollection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *UintChain) All(fn func(int, uint)bool)  bool {
+func(c *UintCollection) All(fn func(int, uint)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *UintChain) All(fn func(int, uint)bool)  bool {
 	return true
 }
 
-func(c *UintChain) Any(fn func(int, uint)bool)  bool {
+func(c *UintCollection) Any(fn func(int, uint)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *UintChain) Any(fn func(int, uint)bool)  bool {
 	return false
 }
 
-func(c *UintChain) Paginate(size int)  [][]uint {
+func(c *UintCollection) Paginate(size int)  [][]uint {
 	var pages  [][]uint
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *UintChain) Paginate(size int)  [][]uint {
 	return pages
 }
 
-func(c *UintChain) Pop() uint{
+func(c *UintCollection) Pop() uint{
 	if len(c.value) <= 0 {
 		return EmptyUint 
 	}
@@ -161,12 +161,12 @@ func(c *UintChain) Pop() uint{
 	return val
 }
 
-func(c *UintChain) Prepend(given uint) *UintChain {
+func(c *UintCollection) Prepend(given uint) *UintCollection {
 	c.value = append([]uint{given},c.value...)
 	return c
 }
 
-func(c *UintChain) Max() uint{
+func(c *UintCollection) Max() uint{
 	if len(c.value) <= 0 {
 		return EmptyUint 
 	}
@@ -184,7 +184,7 @@ func(c *UintChain) Max() uint{
 }
 
 
-func(c *UintChain) Min() uint{
+func(c *UintCollection) Min() uint{
 	if len(c.value) <= 0 {
 		return EmptyUint 
 	}
@@ -201,7 +201,7 @@ func(c *UintChain) Min() uint{
 	return min
 }
 
-func(c *UintChain) Random() uint{
+func(c *UintCollection) Random() uint{
 	if len(c.value) <= 0 {
 		return EmptyUint 
 	}
@@ -209,7 +209,7 @@ func(c *UintChain) Random() uint{
 	return c.value[n]
 }
 
-func(c *UintChain) Shuffle() *UintChain {
+func(c *UintCollection) Shuffle() *UintCollection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *UintChain) Shuffle() *UintChain {
 	return c
 }
 
-func(c *UintChain) Collect() []uint{
+func(c *UintCollection) Collect() []uint{
 	return c.value
 }

@@ -8,15 +8,15 @@ import (
 
 const EmptyUint8 uint8 =0
 
-type Uint8Chain struct{
+type Uint8Collection struct{
 	value	[]uint8
 }
 
-func NewUint8Chain(value []uint8) *Uint8Chain {
-	return &Uint8Chain{value:value}
+func NewUint8Collection(value []uint8) *Uint8Collection {
+	return &Uint8Collection{value:value}
 }
 
-func(c *Uint8Chain) Concate(given []uint8)  *Uint8Chain {
+func(c *Uint8Collection) Concate(given []uint8)  *Uint8Collection {
 	value := make([]uint8, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,7 +24,7 @@ func(c *Uint8Chain) Concate(given []uint8)  *Uint8Chain {
 	return c
 }
 
-func(c *Uint8Chain) Drop(n int)  *Uint8Chain {
+func(c *Uint8Collection) Drop(n int)  *Uint8Collection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -33,7 +33,7 @@ func(c *Uint8Chain) Drop(n int)  *Uint8Chain {
 	return c
 }
 
-func(c *Uint8Chain) Filter(fn func(int, uint8)bool)  *Uint8Chain {
+func(c *Uint8Collection) Filter(fn func(int, uint8)bool)  *Uint8Collection {
 	value := make([]uint8, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Uint8Chain) Filter(fn func(int, uint8)bool)  *Uint8Chain {
 	return c
 }
 
-func(c *Uint8Chain) First() uint8 {
+func(c *Uint8Collection) First() uint8 {
 	if len(c.value) <= 0 {
 		return EmptyUint8
 	} 
 	return c.value[0]
 }
 
-func(c *Uint8Chain) Last() uint8 {
+func(c *Uint8Collection) Last() uint8 {
 	if len(c.value) <= 0 {
 		return EmptyUint8
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Uint8Chain) Map(fn func(int, uint8)) *Uint8Chain {
+func(c *Uint8Collection) Map(fn func(int, uint8)) *Uint8Collection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Uint8Chain) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8   {
+func(c *Uint8Collection) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Uint8Chain) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8
 	return final
 }
 
-func(c *Uint8Chain) Reverse()  *Uint8Chain {
+func(c *Uint8Collection) Reverse()  *Uint8Collection {
 	value := make([]uint8, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Uint8Chain) Reverse()  *Uint8Chain {
 	return c
 }
 
-func(c *Uint8Chain) Unique()  *Uint8Chain{
+func(c *Uint8Collection) Unique()  *Uint8Collection{
 	value := make([]uint8, 0, len(c.value))
 	seen:=make(map[uint8]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Uint8Chain) Unique()  *Uint8Chain{
 	return c
 }
 
-func(c *Uint8Chain) Append(given uint8) *Uint8Chain {
+func(c *Uint8Collection) Append(given uint8) *Uint8Collection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Uint8Chain) Len() int {
+func(c *Uint8Collection) Len() int {
 	return len(c.value)
 }
 
-func(c *Uint8Chain) IsEmpty() bool {
+func(c *Uint8Collection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Uint8Chain) IsNotEmpty() bool {
+func(c *Uint8Collection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Uint8Chain)  Sort()  *Uint8Chain {
+func(c *Uint8Collection)  Sort()  *Uint8Collection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i] <= (c.value[j])
 	})
 	return c 
 }
 
-func(c *Uint8Chain) All(fn func(int, uint8)bool)  bool {
+func(c *Uint8Collection) All(fn func(int, uint8)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Uint8Chain) All(fn func(int, uint8)bool)  bool {
 	return true
 }
 
-func(c *Uint8Chain) Any(fn func(int, uint8)bool)  bool {
+func(c *Uint8Collection) Any(fn func(int, uint8)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,7 +138,7 @@ func(c *Uint8Chain) Any(fn func(int, uint8)bool)  bool {
 	return false
 }
 
-func(c *Uint8Chain) Paginate(size int)  [][]uint8 {
+func(c *Uint8Collection) Paginate(size int)  [][]uint8 {
 	var pages  [][]uint8
 	prev := -1
 	for i := range c.value {
@@ -151,7 +151,7 @@ func(c *Uint8Chain) Paginate(size int)  [][]uint8 {
 	return pages
 }
 
-func(c *Uint8Chain) Pop() uint8{
+func(c *Uint8Collection) Pop() uint8{
 	if len(c.value) <= 0 {
 		return EmptyUint8 
 	}
@@ -161,12 +161,12 @@ func(c *Uint8Chain) Pop() uint8{
 	return val
 }
 
-func(c *Uint8Chain) Prepend(given uint8) *Uint8Chain {
+func(c *Uint8Collection) Prepend(given uint8) *Uint8Collection {
 	c.value = append([]uint8{given},c.value...)
 	return c
 }
 
-func(c *Uint8Chain) Max() uint8{
+func(c *Uint8Collection) Max() uint8{
 	if len(c.value) <= 0 {
 		return EmptyUint8 
 	}
@@ -184,7 +184,7 @@ func(c *Uint8Chain) Max() uint8{
 }
 
 
-func(c *Uint8Chain) Min() uint8{
+func(c *Uint8Collection) Min() uint8{
 	if len(c.value) <= 0 {
 		return EmptyUint8 
 	}
@@ -201,7 +201,7 @@ func(c *Uint8Chain) Min() uint8{
 	return min
 }
 
-func(c *Uint8Chain) Random() uint8{
+func(c *Uint8Collection) Random() uint8{
 	if len(c.value) <= 0 {
 		return EmptyUint8 
 	}
@@ -209,7 +209,7 @@ func(c *Uint8Chain) Random() uint8{
 	return c.value[n]
 }
 
-func(c *Uint8Chain) Shuffle() *Uint8Chain {
+func(c *Uint8Collection) Shuffle() *Uint8Collection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -225,6 +225,6 @@ func(c *Uint8Chain) Shuffle() *Uint8Chain {
 	return c
 }
 
-func(c *Uint8Chain) Collect() []uint8{
+func(c *Uint8Collection) Collect() []uint8{
 	return c.value
 }

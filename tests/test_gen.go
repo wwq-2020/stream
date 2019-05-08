@@ -5,15 +5,15 @@ import (
 	"sort"
 	"math/rand"
 )
-type SomeChain struct{
+type SomeCollection struct{
 	value	[]*Some
 }
 
-func NewSomeChain(value []*Some) *SomeChain {
-	return &SomeChain{value:value}
+func NewSomeCollection(value []*Some) *SomeCollection {
+	return &SomeCollection{value:value}
 }
 
-func(c *SomeChain) Concate(given []*Some)  *SomeChain {
+func(c *SomeCollection) Concate(given []*Some)  *SomeCollection {
 	value := make([]*Some, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -21,7 +21,7 @@ func(c *SomeChain) Concate(given []*Some)  *SomeChain {
 	return c
 }
 
-func(c *SomeChain) Drop(n int)  *SomeChain {
+func(c *SomeCollection) Drop(n int)  *SomeCollection {
 	l := len(c.value) - n
 	if l <= 0 {
 		l = 0
@@ -30,7 +30,7 @@ func(c *SomeChain) Drop(n int)  *SomeChain {
 	return c
 }
 
-func(c *SomeChain) Filter(fn func(int, *Some)bool)  *SomeChain {
+func(c *SomeCollection) Filter(fn func(int, *Some)bool)  *SomeCollection {
 	value := make([]*Some, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -41,28 +41,28 @@ func(c *SomeChain) Filter(fn func(int, *Some)bool)  *SomeChain {
 	return c
 }
 
-func(c *SomeChain) First() *Some {
+func(c *SomeCollection) First() *Some {
 	if len(c.value) <= 0 {
 		return nil
 	} 
 	return c.value[0]
 }
 
-func(c *SomeChain) Last() *Some {
+func(c *SomeCollection) Last() *Some {
 	if len(c.value) <= 0 {
 		return nil
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *SomeChain) Map(fn func(int, *Some)) *SomeChain {
+func(c *SomeCollection) Map(fn func(int, *Some)) *SomeCollection {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *SomeChain) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some   {
+func(c *SomeCollection) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -70,7 +70,7 @@ func(c *SomeChain) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some 
 	return final
 }
 
-func(c *SomeChain) Reverse()  *SomeChain {
+func(c *SomeCollection) Reverse()  *SomeCollection {
 	value := make([]*Some, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -79,7 +79,7 @@ func(c *SomeChain) Reverse()  *SomeChain {
 	return c
 }
 
-func(c *SomeChain) Unique()  *SomeChain{
+func(c *SomeCollection) Unique()  *SomeCollection{
 	value := make([]*Some, 0, len(c.value))
 	seen:=make(map[int]struct{})
 	for i, outter := range c.value {
@@ -105,31 +105,31 @@ func(c *SomeChain) Unique()  *SomeChain{
 	return c
 }
 
-func(c *SomeChain) Append(given *Some) *SomeChain {
+func(c *SomeCollection) Append(given *Some) *SomeCollection {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *SomeChain) Len() int {
+func(c *SomeCollection) Len() int {
 	return len(c.value)
 }
 
-func(c *SomeChain) IsEmpty() bool {
+func(c *SomeCollection) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *SomeChain) IsNotEmpty() bool {
+func(c *SomeCollection) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *SomeChain)  Sort()  *SomeChain {
+func(c *SomeCollection)  Sort()  *SomeCollection {
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i].Compare(c.value[j])<=0
 	})
 	return c 
 }
 
-func(c *SomeChain) All(fn func(int, *Some)bool)  bool {
+func(c *SomeCollection) All(fn func(int, *Some)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -138,7 +138,7 @@ func(c *SomeChain) All(fn func(int, *Some)bool)  bool {
 	return true
 }
 
-func(c *SomeChain) Any(fn func(int, *Some)bool)  bool {
+func(c *SomeCollection) Any(fn func(int, *Some)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -147,7 +147,7 @@ func(c *SomeChain) Any(fn func(int, *Some)bool)  bool {
 	return false
 }
 
-func(c *SomeChain) Paginate(size int)  [][]*Some {
+func(c *SomeCollection) Paginate(size int)  [][]*Some {
 	var pages  [][]*Some
 	prev := -1
 	for i := range c.value {
@@ -160,7 +160,7 @@ func(c *SomeChain) Paginate(size int)  [][]*Some {
 	return pages
 }
 
-func(c *SomeChain) Pop() *Some{
+func(c *SomeCollection) Pop() *Some{
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -171,12 +171,12 @@ func(c *SomeChain) Pop() *Some{
 	return val
 }
 
-func(c *SomeChain) Prepend(given *Some) *SomeChain {
+func(c *SomeCollection) Prepend(given *Some) *SomeCollection {
 	c.value = append([]*Some{given},c.value...)
 	return c
 }
 
-func(c *SomeChain) Max() *Some{
+func(c *SomeCollection) Max() *Some{
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -194,7 +194,7 @@ func(c *SomeChain) Max() *Some{
 }
 
 
-func(c *SomeChain) Min() *Some{
+func(c *SomeCollection) Min() *Some{
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -211,7 +211,7 @@ func(c *SomeChain) Min() *Some{
 	return min
 }
 
-func(c *SomeChain) Random() *Some{
+func(c *SomeCollection) Random() *Some{
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -219,7 +219,7 @@ func(c *SomeChain) Random() *Some{
 	return c.value[n]
 }
 
-func(c *SomeChain) Shuffle() *SomeChain {
+func(c *SomeCollection) Shuffle() *SomeCollection {
 	if len(c.value) <= 0 {
 		return nil
 	}
@@ -235,6 +235,6 @@ func(c *SomeChain) Shuffle() *SomeChain {
 	return c
 }
 
-func(c *SomeChain) Collect() []*Some{
+func(c *SomeCollection) Collect() []*Some{
 	return c.value
 }
