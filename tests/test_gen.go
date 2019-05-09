@@ -237,16 +237,32 @@ func(c *SomeCollection) Shuffle() *SomeCollection {
 
 
 func(c *SomeCollection)  SortByA()  *SomeCollection {
+	
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i].A <= c.value[j].A
 	})
+	
+
 	return c 
 }
 
 func(c *SomeCollection)  SortByB()  *SomeCollection {
+	
 	sort.Slice(c.value, func(i,j int)bool{
 		return c.value[i].B <= c.value[j].B
 	})
+	
+
+	return c 
+}
+
+func(c *SomeCollection)  SortByC()  *SomeCollection {
+	
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i].C.Compare(c.value[j].C)<=0
+	})
+	
+
 	return c 
 }
 
@@ -274,6 +290,20 @@ func(c *SomeCollection)  UniqueByB()  *SomeCollection {
 			continue
 		}		
 		seen[each.B]=struct{}{}
+		value=append(value,each)			
+	}
+	c.value = value
+	return c
+}
+
+func(c *SomeCollection)  UniqueByC()  *SomeCollection {
+	value := make([]*Some, 0, len(c.value))
+	seen:=make(map[interface{}]struct{})
+	for _, each := range c.value {
+		if _,exist:=seen[each.C];exist{
+			continue
+		}		
+		seen[each.C]=struct{}{}
 		value=append(value,each)			
 	}
 	c.value = value

@@ -258,23 +258,30 @@ func(c *{{.Name}}Collection) Shuffle() *{{.Name}}Collection {
 }
 
 {{range $idx,$each := .Sorts}}
-func(c *{{$.Name}}Collection)  SortBy{{$each}}()  *{{$.Name}}Collection {
+func(c *{{$.Name}}Collection)  SortBy{{$each.Name}}()  *{{$.Name}}Collection {
+	{{if $each.Builtin}}
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i].{{$each}} {{$.Le}} c.value[j].{{$each}}
+		return c.value[i].{{$each.Name}} {{$.Le}} c.value[j].{{$each.Name}}
 	})
+	{{else}}
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i].{{$each.Name}}.Compare(c.value[j].{{$each.Name}}){{$.Le}}0
+	})
+	{{end}}
+
 	return c 
 }
 {{end}}
 
 {{range $idx,$each := .Uniques}}
-func(c *{{$.Name}}Collection)  UniqueBy{{$each}}()  *{{$.Name}}Collection {
+func(c *{{$.Name}}Collection)  UniqueBy{{$each.Name}}()  *{{$.Name}}Collection {
 	value := make([]*{{$.Name}}, 0, len(c.value))
 	seen:=make(map[interface{}]struct{})
 	for _, each := range c.value {
-		if _,exist:=seen[each.{{$each}}];exist{
+		if _,exist:=seen[each.{{$each.Name}}];exist{
 			continue
 		}		
-		seen[each.{{$each}}]=struct{}{}
+		seen[each.{{$each.Name}}]=struct{}{}
 		value=append(value,each)			
 	}
 	c.value = value
@@ -528,18 +535,29 @@ var (
 	curTplStr    string
 	curEmpty     string
 	curTitleName string
-	curSorts     []string
-	curUniques   []string
+	curSorts     []SortInfo
+	curUniques   []UniqueInfo
 	builtin      bool
 )
+
+type SortInfo struct {
+	Name    string
+	Builtin bool
+}
+
+type UniqueInfo struct {
+	Name    string
+	Builtin bool
+}
 
 type tpl struct {
 	Pkg       string
 	Name      string
 	Le        template.HTML
 	TitleName string
-	Sorts     []string
-	Uniques   []string
+	Sorts     []SortInfo
+	Uniques   []UniqueInfo
+	Builtin   bool
 	Empty     interface{}
 }
 
@@ -650,13 +668,19 @@ func setTagInfo(fields *ast.FieldList) {
 		if field.Tag == nil {
 			continue
 		}
+		ts, ok := field.Names[0].Obj.Decl.(*ast.Field)
+		if !ok {
+			continue
+		}
+		_, builtin := ts.Type.(*ast.Ident)
+
 		allTags := strings.TrimSuffix(strings.TrimPrefix(field.Tag.Value, "`"), "`")
 		collectionTag := reflect.StructTag(allTags).Get("collections")
 		if strings.Contains(collectionTag, "sort") {
-			curSorts = append(curSorts, field.Names[0].Name)
+			curSorts = append(curSorts, SortInfo{Name: field.Names[0].Name, Builtin: builtin})
 		}
 		if strings.Contains(collectionTag, "unique") {
-			curUniques = append(curUniques, field.Names[0].Name)
+			curUniques = append(curUniques, UniqueInfo{Name: field.Names[0].Name, Builtin: builtin})
 		}
 	}
 
