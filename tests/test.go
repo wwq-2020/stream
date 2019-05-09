@@ -1,7 +1,8 @@
 package tests
 
 type Some struct {
-	A string
+	A string `collections:"sort,unique"`
+	B string `collections:"sort,unique"`
 }
 
 func (s *Some) Compare(src *Some) int {

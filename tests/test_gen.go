@@ -235,6 +235,52 @@ func(c *SomeCollection) Shuffle() *SomeCollection {
 	return c
 }
 
+
+func(c *SomeCollection)  SortByA()  *SomeCollection {
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i].A <= c.value[j].A
+	})
+	return c 
+}
+
+func(c *SomeCollection)  SortByB()  *SomeCollection {
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i].B <= c.value[j].B
+	})
+	return c 
+}
+
+
+
+func(c *SomeCollection)  UniqueByA()  *SomeCollection {
+	value := make([]*Some, 0, len(c.value))
+	seen:=make(map[interface{}]struct{})
+	for _, each := range c.value {
+		if _,exist:=seen[each.A];exist{
+			continue
+		}		
+		seen[each.A]=struct{}{}
+		value=append(value,each)			
+	}
+	c.value = value
+	return c
+}
+
+func(c *SomeCollection)  UniqueByB()  *SomeCollection {
+	value := make([]*Some, 0, len(c.value))
+	seen:=make(map[interface{}]struct{})
+	for _, each := range c.value {
+		if _,exist:=seen[each.B];exist{
+			continue
+		}		
+		seen[each.B]=struct{}{}
+		value=append(value,each)			
+	}
+	c.value = value
+	return c
+}
+
+
 func(c *SomeCollection) Collect() []*Some{
 	return c.value
 }

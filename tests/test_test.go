@@ -6,91 +6,91 @@ import (
 )
 
 func TestConcate(t *testing.T) {
-	data1 := []*Some{&Some{"hello"}}
-	data2 := []*Some{&Some{"world"}}
+	data1 := []*Some{&Some{A: "hello"}}
+	data2 := []*Some{&Some{A: "world"}}
 	c := NewSomeCollection(data1)
 	r := c.Concate(data2).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestDrop(t *testing.T) {
-	data := []*Some{&Some{"hello"}, &Some{"world"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := NewSomeCollection(data)
 	r := c.Drop(1).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestFilter(t *testing.T) {
-	data := []*Some{&Some{"hello"}, &Some{"world"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := NewSomeCollection(data)
 	filter := func(idx int, some *Some) bool {
 		return idx == 0
 	}
 	r := c.Filter(filter).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{"hello"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestFirst(t *testing.T) {
-	data := []*Some{&Some{"hello"}, &Some{"world"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := NewSomeCollection(data)
 	r := c.First()
-	if !reflect.DeepEqual(r, &Some{"hello"}) {
+	if !reflect.DeepEqual(r, &Some{A: "hello"}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestLast(t *testing.T) {
-	data := []*Some{&Some{"hello"}, &Some{"world"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := NewSomeCollection(data)
 	r := c.Last()
-	if !reflect.DeepEqual(r, &Some{"world"}) {
+	if !reflect.DeepEqual(r, &Some{A: "world"}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestMap(t *testing.T) {
-	data := []*Some{&Some{"hello"}, &Some{"world"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := NewSomeCollection(data)
 	mapFn := func(idx int, some *Some) {
 		some.A += "_test"
 	}
 	r := c.Map(mapFn).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{"hello_test"}, &Some{"world_test"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello_test"}, &Some{A: "world_test"}}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestReduce(t *testing.T) {
-	data := []*Some{&Some{"hello"}, &Some{"world"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := NewSomeCollection(data)
 	reduceFn := func(initial *Some, cur *Some, idx int) *Some {
-		return &Some{initial.A + " " + cur.A}
+		return &Some{A: initial.A + " " + cur.A}
 	}
-	r := c.Reduce(reduceFn, &Some{"initial"})
-	if !reflect.DeepEqual(r, &Some{"initial hello world"}) {
+	r := c.Reduce(reduceFn, &Some{A: "initial"})
+	if !reflect.DeepEqual(r, &Some{A: "initial hello world"}) {
 		t.Fatal("mistach")
 	}
 }
 func TestReverse(t *testing.T) {
-	data := []*Some{&Some{"world"}, &Some{"hello"}}
+	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
 	c := NewSomeCollection(data)
 	r := c.Reverse().Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestUnique(t *testing.T) {
-	data := []*Some{&Some{A: "hello"}, &Some{"world"}, &Some{"hello"}}
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}, &Some{A: "hello"}}
 	c := NewSomeCollection(data)
 	r := c.Unique().Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
@@ -99,7 +99,7 @@ func TestAppend(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
 	c := NewSomeCollection(data)
 	r := c.Append(&Some{A: "world"}).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
@@ -132,7 +132,7 @@ func TestSort(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
 	c := NewSomeCollection(data)
 	r := c.Sort().Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
@@ -185,7 +185,7 @@ func TestPrepend(t *testing.T) {
 	data := []*Some{&Some{A: "world"}}
 	c := NewSomeCollection(data)
 	r := c.Prepend(&Some{A: "hello"}).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{"world"}}) {
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
 	}
 }
@@ -194,7 +194,7 @@ func TestMax(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
 	c := NewSomeCollection(data)
 	r := c.Max()
-	if !reflect.DeepEqual(r, &Some{"world"}) {
+	if !reflect.DeepEqual(r, &Some{A: "world"}) {
 		t.Fatal("mistach")
 	}
 }
@@ -202,7 +202,7 @@ func TestMin(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
 	c := NewSomeCollection(data)
 	r := c.Min()
-	if !reflect.DeepEqual(r, &Some{"hello"}) {
+	if !reflect.DeepEqual(r, &Some{A: "hello"}) {
 		t.Fatal("mistach")
 	}
 }
@@ -223,6 +223,42 @@ func TestShuffle(t *testing.T) {
 		t.Fatal("mistach")
 	}
 	if reflect.DeepEqual(r[0], r[1]) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestSortByA(t *testing.T) {
+	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
+	c := NewSomeCollection(data)
+	r := c.SortByA().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "hello"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestSortByB(t *testing.T) {
+	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
+	c := NewSomeCollection(data)
+	r := c.SortByB().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestUniqueByA(t *testing.T) {
+	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "world", B: "world"}}
+	c := NewSomeCollection(data)
+	r := c.UniqueByA().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "world", B: "hello"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestUniqueByB(t *testing.T) {
+	data := []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "world"}}
+	c := NewSomeCollection(data)
+	r := c.UniqueByB().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}}) {
 		t.Fatal("mistach")
 	}
 }

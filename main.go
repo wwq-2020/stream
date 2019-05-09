@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 )
 
@@ -255,6 +256,31 @@ func(c *{{.Name}}Collection) Shuffle() *{{.Name}}Collection {
 	
 	return c
 }
+
+{{range $idx,$each := .Sorts}}
+func(c *{{$.Name}}Collection)  SortBy{{$each}}()  *{{$.Name}}Collection {
+	sort.Slice(c.value, func(i,j int)bool{
+		return c.value[i].{{$each}} {{$.Le}} c.value[j].{{$each}}
+	})
+	return c 
+}
+{{end}}
+
+{{range $idx,$each := .Uniques}}
+func(c *{{$.Name}}Collection)  UniqueBy{{$each}}()  *{{$.Name}}Collection {
+	value := make([]*{{$.Name}}, 0, len(c.value))
+	seen:=make(map[interface{}]struct{})
+	for _, each := range c.value {
+		if _,exist:=seen[each.{{$each}}];exist{
+			continue
+		}		
+		seen[each.{{$each}}]=struct{}{}
+		value=append(value,each)			
+	}
+	c.value = value
+	return c
+}
+{{end}}
 
 func(c *{{.Name}}Collection) Collect() []*{{.Name}}{
 	return c.value
@@ -502,6 +528,8 @@ var (
 	curTplStr    string
 	curEmpty     string
 	curTitleName string
+	curSorts     []string
+	curUniques   []string
 	builtin      bool
 )
 
@@ -510,6 +538,8 @@ type tpl struct {
 	Name      string
 	Le        template.HTML
 	TitleName string
+	Sorts     []string
+	Uniques   []string
 	Empty     interface{}
 }
 
@@ -585,7 +615,9 @@ func generate(path string, buf io.Writer) error {
 		if !ok || gd.Tok != token.TYPE {
 			continue
 		}
-		walkGd(gd, buf)
+		if err := walkGd(gd, buf); err != nil {
+			return err
+		}
 
 	}
 
@@ -598,11 +630,12 @@ func walkGd(gd *ast.GenDecl, buf io.Writer) error {
 		if !ok {
 			continue
 		}
-		_, ok = ts.Type.(*ast.StructType)
+		st, ok := ts.Type.(*ast.StructType)
 		if !ok {
 			continue
 		}
 		curStruct = ts.Name.Name
+		setTagInfo(st.Fields)
 		if err := execTpl(buf); err != nil {
 			return err
 		}
@@ -610,8 +643,26 @@ func walkGd(gd *ast.GenDecl, buf io.Writer) error {
 	return nil
 }
 
+func setTagInfo(fields *ast.FieldList) {
+	curSorts = nil
+	curUniques = nil
+	for _, field := range fields.List {
+		if field.Tag == nil {
+			continue
+		}
+		allTags := strings.TrimSuffix(strings.TrimPrefix(field.Tag.Value, "`"), "`")
+		collectionTag := reflect.StructTag(allTags).Get("collections")
+		if strings.Contains(collectionTag, "sort") {
+			curSorts = append(curSorts, field.Names[0].Name)
+		}
+		if strings.Contains(collectionTag, "unique") {
+			curUniques = append(curUniques, field.Names[0].Name)
+		}
+	}
+
+}
 func execTpl(buf io.Writer) error {
-	tpl := tpl{Name: curStruct, Pkg: curPkg, Le: template.HTML("<="), Empty: template.HTML(curEmpty), TitleName: curTitleName}
+	tpl := tpl{Name: curStruct, Pkg: curPkg, Le: template.HTML("<="), Empty: template.HTML(curEmpty), TitleName: curTitleName, Sorts: curSorts, Uniques: curUniques}
 	t, err := template.New("collection").Parse(curTplStr)
 	if err != nil {
 		return err
