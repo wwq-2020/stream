@@ -270,6 +270,8 @@ func(c *SomeCollection)  SortByC()  *SomeCollection {
 
 func(c *SomeCollection)  UniqueByA()  *SomeCollection {
 	value := make([]*Some, 0, len(c.value))
+	
+		
 	seen:=make(map[interface{}]struct{})
 	for _, each := range c.value {
 		if _,exist:=seen[each.A];exist{
@@ -278,12 +280,16 @@ func(c *SomeCollection)  UniqueByA()  *SomeCollection {
 		seen[each.A]=struct{}{}
 		value=append(value,each)			
 	}
+	
 	c.value = value
+	
 	return c
 }
 
 func(c *SomeCollection)  UniqueByB()  *SomeCollection {
 	value := make([]*Some, 0, len(c.value))
+	
+		
 	seen:=make(map[interface{}]struct{})
 	for _, each := range c.value {
 		if _,exist:=seen[each.B];exist{
@@ -292,21 +298,40 @@ func(c *SomeCollection)  UniqueByB()  *SomeCollection {
 		seen[each.B]=struct{}{}
 		value=append(value,each)			
 	}
+	
 	c.value = value
+	
 	return c
 }
 
 func(c *SomeCollection)  UniqueByC()  *SomeCollection {
 	value := make([]*Some, 0, len(c.value))
-	seen:=make(map[interface{}]struct{})
-	for _, each := range c.value {
-		if _,exist:=seen[each.C];exist{
+	
+	
+	
+	seen:=make(map[int]struct{})
+	for i, outter := range c.value {
+		dup:=false
+		if _,exist:=seen[i];exist{
 			continue
 		}		
-		seen[each.C]=struct{}{}
-		value=append(value,each)			
+		for j,inner :=range c.value {
+			if i==j {
+				continue
+			}
+			if inner.C.Compare(outter.C) == 0 {
+				seen[j]=struct{}{}				
+				dup=true
+			}
+		}
+		if dup {
+			seen[i]=struct{}{}
+		}
+		value=append(value,outter)			
 	}
+	
 	c.value = value
+	
 	return c
 }
 

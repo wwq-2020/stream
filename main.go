@@ -276,6 +276,8 @@ func(c *{{$.Name}}Collection)  SortBy{{$each.Name}}()  *{{$.Name}}Collection {
 {{range $idx,$each := .Uniques}}
 func(c *{{$.Name}}Collection)  UniqueBy{{$each.Name}}()  *{{$.Name}}Collection {
 	value := make([]*{{$.Name}}, 0, len(c.value))
+	
+	{{if $each.Builtin}}	
 	seen:=make(map[interface{}]struct{})
 	for _, each := range c.value {
 		if _,exist:=seen[each.{{$each.Name}}];exist{
@@ -284,7 +286,31 @@ func(c *{{$.Name}}Collection)  UniqueBy{{$each.Name}}()  *{{$.Name}}Collection {
 		seen[each.{{$each.Name}}]=struct{}{}
 		value=append(value,each)			
 	}
+	{{else}}
+	
+	seen:=make(map[int]struct{})
+	for i, outter := range c.value {
+		dup:=false
+		if _,exist:=seen[i];exist{
+			continue
+		}		
+		for j,inner :=range c.value {
+			if i==j {
+				continue
+			}
+			if inner.{{.Name}}.Compare(outter.{{.Name}}) == 0 {
+				seen[j]=struct{}{}				
+				dup=true
+			}
+		}
+		if dup {
+			seen[i]=struct{}{}
+		}
+		value=append(value,outter)			
+	}
+	{{end}}
 	c.value = value
+	
 	return c
 }
 {{end}}

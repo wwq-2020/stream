@@ -245,6 +245,15 @@ func TestSortByB(t *testing.T) {
 	}
 }
 
+func TestSortByC(t *testing.T) {
+	data := []*Some{&Some{A: "world", B: "hello", C: &Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}}
+	c := NewSomeCollection(data)
+	r := c.SortByC().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}, &Some{A: "world", B: "hello", C: &Some{A: "world", B: "hello"}}}) {
+		t.Fatal("mistach")
+	}
+}
+
 func TestUniqueByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "world", B: "world"}}
 	c := NewSomeCollection(data)
@@ -259,6 +268,15 @@ func TestUniqueByB(t *testing.T) {
 	c := NewSomeCollection(data)
 	r := c.UniqueByB().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestUniqueByC(t *testing.T) {
+	data := []*Some{&Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}}
+	c := NewSomeCollection(data)
+	r := c.UniqueByC().Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}}) {
 		t.Fatal("mistach")
 	}
 }
