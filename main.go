@@ -21,21 +21,15 @@ const (
 	defaultSuffix = "_gen.go"
 	builtinPkg    = "commons"
 	structTplStr  = `
-package {{.Pkg}}
-
-import (
-	"sort"
-	"math/rand"
-)
-type {{.Name}}Collection struct{
+type {{.Name}}Stream struct{
 	value	[]*{{.Name}}
 }
 
-func New{{.Name}}Collection(value []*{{.Name}}) *{{.Name}}Collection {
-	return &{{.Name}}Collection{value:value}
+func StreamOf{{.Name}}(value []*{{.Name}}) *{{.Name}}Stream {
+	return &{{.Name}}Stream{value:value}
 }
 
-func(c *{{.Name}}Collection) Concate(given []*{{.Name}})  *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Concate(given []*{{.Name}})  *{{.Name}}Stream {
 	value := make([]*{{.Name}}, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -43,16 +37,16 @@ func(c *{{.Name}}Collection) Concate(given []*{{.Name}})  *{{.Name}}Collection {
 	return c
 }
 
-func(c *{{.Name}}Collection) Drop(n int)  *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Drop(n int)  *{{.Name}}Stream {
 	l := len(c.value) - n
-	if l {{.Le}} 0 {
+	if l {{.Lt}} 0 {
 		l = 0
 	}
 	c.value = c.value[len(c.value)-l:]
 	return c
 }
 
-func(c *{{.Name}}Collection) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}Stream {
 	value := make([]*{{.Name}}, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -63,28 +57,28 @@ func(c *{{.Name}}Collection) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}Col
 	return c
 }
 
-func(c *{{.Name}}Collection) First() *{{.Name}} {
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) First() *{{.Name}} {
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	} 
 	return c.value[0]
 }
 
-func(c *{{.Name}}Collection) Last() *{{.Name}} {
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) Last() *{{.Name}} {
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *{{.Name}}Collection) Map(fn func(int, *{{.Name}})) *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Map(fn func(int, *{{.Name}})) *{{.Name}}Stream {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *{{.Name}}Collection) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
+func(c *{{.Name}}Stream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -92,7 +86,7 @@ func(c *{{.Name}}Collection) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Nam
 	return final
 }
 
-func(c *{{.Name}}Collection) Reverse()  *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Reverse()  *{{.Name}}Stream {
 	value := make([]*{{.Name}}, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -101,7 +95,7 @@ func(c *{{.Name}}Collection) Reverse()  *{{.Name}}Collection {
 	return c
 }
 
-func(c *{{.Name}}Collection) Unique()  *{{.Name}}Collection{
+func(c *{{.Name}}Stream) UniqueBy(compare func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}Stream{
 	value := make([]*{{.Name}}, 0, len(c.value))
 	seen:=make(map[int]struct{})
 	for i, outter := range c.value {
@@ -113,7 +107,7 @@ func(c *{{.Name}}Collection) Unique()  *{{.Name}}Collection{
 			if i==j {
 				continue
 			}
-			if inner.Compare(outter) == 0 {
+			if compare(inner,outter) {
 				seen[j]=struct{}{}				
 				dup=true
 			}
@@ -127,31 +121,31 @@ func(c *{{.Name}}Collection) Unique()  *{{.Name}}Collection{
 	return c
 }
 
-func(c *{{.Name}}Collection) Append(given *{{.Name}}) *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Append(given *{{.Name}}) *{{.Name}}Stream {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *{{.Name}}Collection) Len() int {
+func(c *{{.Name}}Stream) Len() int {
 	return len(c.value)
 }
 
-func(c *{{.Name}}Collection) IsEmpty() bool {
+func(c *{{.Name}}Stream) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *{{.Name}}Collection) IsNotEmpty() bool {
+func(c *{{.Name}}Stream) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *{{.Name}}Collection)  Sort()  *{{.Name}}Collection {
+func(c *{{.Name}}Stream)  SortBy(less func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}Stream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i].Compare(c.value[j]){{.Le}}0
+		return less(c.value[i],c.value[j])
 	})
 	return c 
 }
 
-func(c *{{.Name}}Collection) All(fn func(int, *{{.Name}})bool)  bool {
+func(c *{{.Name}}Stream) All(fn func(int, *{{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -160,7 +154,7 @@ func(c *{{.Name}}Collection) All(fn func(int, *{{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.Name}}Collection) Any(fn func(int, *{{.Name}})bool)  bool {
+func(c *{{.Name}}Stream) Any(fn func(int, *{{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -169,11 +163,11 @@ func(c *{{.Name}}Collection) Any(fn func(int, *{{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.Name}}Collection) Paginate(size int)  [][]*{{.Name}} {
+func(c *{{.Name}}Stream) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}
 	prev := -1
 	for i := range c.value {
-		if (i-prev) {{.Le}} size-1 && i != (len(c.value)-1) {
+		if (i-prev) {{.Lt}} size-1 && i != (len(c.value)-1) {
 			continue
 		}
 		pages=append(pages,c.value[prev+1:i+1])
@@ -182,8 +176,8 @@ func(c *{{.Name}}Collection) Paginate(size int)  [][]*{{.Name}} {
 	return pages
 }
 
-func(c *{{.Name}}Collection) Pop() *{{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) Pop() *{{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	}
 	lastIdx := len(c.value)-1
@@ -193,13 +187,13 @@ func(c *{{.Name}}Collection) Pop() *{{.Name}}{
 	return val
 }
 
-func(c *{{.Name}}Collection) Prepend(given *{{.Name}}) *{{.Name}}Collection {
+func(c *{{.Name}}Stream) Prepend(given *{{.Name}}) *{{.Name}}Stream {
 	c.value = append([]*{{.Name}}{given},c.value...)
 	return c
 }
 
-func(c *{{.Name}}Collection) Max() *{{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) Max(bigger func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	}
 	var max *{{.Name}}
@@ -208,7 +202,7 @@ func(c *{{.Name}}Collection) Max() *{{.Name}}{
 			max=each
 			continue
 		}
-		if max.Compare(each) {{.Le}} 0 {
+		if bigger(each, max) {
 			max = each
 		}
 	}
@@ -216,8 +210,8 @@ func(c *{{.Name}}Collection) Max() *{{.Name}}{
 }
 
 
-func(c *{{.Name}}Collection) Min() *{{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) Min(less func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	}
 	var min *{{.Name}}
@@ -226,23 +220,23 @@ func(c *{{.Name}}Collection) Min() *{{.Name}}{
 			min=each
 			continue
 		}
-		if each.Compare(min) {{.Le}} 0 {
+		if less(each, min) {
 			min = each
 		}
 	}
 	return min
 }
 
-func(c *{{.Name}}Collection) Random() *{{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) Random() *{{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	}
 	n := rand.Intn(len(c.value))
 	return c.value[n]
 }
 
-func(c *{{.Name}}Collection) Shuffle() *{{.Name}}Collection {
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.Name}}Stream) Shuffle() *{{.Name}}Stream {
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	}
 	indexes := make([]int, len(c.value))
@@ -258,36 +252,17 @@ func(c *{{.Name}}Collection) Shuffle() *{{.Name}}Collection {
 }
 
 {{range $idx,$each := .Sorts}}
-func(c *{{$.Name}}Collection)  SortBy{{$each.Name}}()  *{{$.Name}}Collection {
-	{{if $each.Builtin}}
+func(c *{{$.Name}}Stream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i].{{$each.Name}} {{$.Le}} c.value[j].{{$each.Name}}
+		return less(c.value[i].{{$each.Name}},c.value[j].{{$each.Name}})
 	})
-	{{else}}
-	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i].{{$each.Name}}.Compare(c.value[j].{{$each.Name}}){{$.Le}}0
-	})
-	{{end}}
-
 	return c 
 }
 {{end}}
 
 {{range $idx,$each := .Uniques}}
-func(c *{{$.Name}}Collection)  UniqueBy{{$each.Name}}()  *{{$.Name}}Collection {
+func(c *{{$.Name}}Stream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
 	value := make([]*{{$.Name}}, 0, len(c.value))
-	
-	{{if $each.Builtin}}	
-	seen:=make(map[interface{}]struct{})
-	for _, each := range c.value {
-		if _,exist:=seen[each.{{$each.Name}}];exist{
-			continue
-		}		
-		seen[each.{{$each.Name}}]=struct{}{}
-		value=append(value,each)			
-	}
-	{{else}}
-	
 	seen:=make(map[int]struct{})
 	for i, outter := range c.value {
 		dup:=false
@@ -298,7 +273,7 @@ func(c *{{$.Name}}Collection)  UniqueBy{{$each.Name}}()  *{{$.Name}}Collection {
 			if i==j {
 				continue
 			}
-			if inner.{{.Name}}.Compare(outter.{{.Name}}) == 0 {
+			if compare(inner.{{.Name}},outter.{{.Name}}) {
 				seen[j]=struct{}{}				
 				dup=true
 			}
@@ -308,14 +283,15 @@ func(c *{{$.Name}}Collection)  UniqueBy{{$each.Name}}()  *{{$.Name}}Collection {
 		}
 		value=append(value,outter)			
 	}
-	{{end}}
 	c.value = value
 	
 	return c
 }
 {{end}}
 
-func(c *{{.Name}}Collection) Collect() []*{{.Name}}{
+
+
+func(c *{{.Name}}Stream) Collect() []*{{.Name}}{
 	return c.value
 }
 `
@@ -330,15 +306,15 @@ import (
 
 const Empty{{.TitleName}} {{.Name}} ={{.Empty}}
 
-type {{.TitleName}}Collection struct{
+type {{.TitleName}}Stream struct{
 	value	[]{{.Name}}
 }
 
-func New{{.TitleName}}Collection(value []{{.Name}}) *{{.TitleName}}Collection {
-	return &{{.TitleName}}Collection{value:value}
+func StreamOf{{.TitleName}}(value []{{.Name}}) *{{.TitleName}}Stream {
+	return &{{.TitleName}}Stream{value:value}
 }
 
-func(c *{{.TitleName}}Collection) Concate(given []{{.Name}})  *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Concate(given []{{.Name}})  *{{.TitleName}}Stream {
 	value := make([]{{.Name}}, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -346,16 +322,16 @@ func(c *{{.TitleName}}Collection) Concate(given []{{.Name}})  *{{.TitleName}}Col
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Drop(n int)  *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Drop(n int)  *{{.TitleName}}Stream {
 	l := len(c.value) - n
-	if l {{.Le}} 0 {
+	if l {{.Lt}} 0 {
 		l = 0
 	}
 	c.value = c.value[len(c.value)-l:]
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Stream {
 	value := make([]{{.Name}}, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -366,28 +342,28 @@ func(c *{{.TitleName}}Collection) Filter(fn func(int, {{.Name}})bool)  *{{.Title
 	return c
 }
 
-func(c *{{.TitleName}}Collection) First() {{.Name}} {
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) First() {{.Name}} {
+	if len(c.value) {{.Lt}} 0 {
 		return Empty{{.TitleName}}
 	} 
 	return c.value[0]
 }
 
-func(c *{{.TitleName}}Collection) Last() {{.Name}} {
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) Last() {{.Name}} {
+	if len(c.value) {{.Lt}} 0 {
 		return Empty{{.TitleName}}
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *{{.TitleName}}Collection) Map(fn func(int, {{.Name}})) *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Map(fn func(int, {{.Name}})) *{{.TitleName}}Stream {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
+func(c *{{.TitleName}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -395,7 +371,7 @@ func(c *{{.TitleName}}Collection) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.N
 	return final
 }
 
-func(c *{{.TitleName}}Collection) Reverse()  *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Reverse()  *{{.TitleName}}Stream {
 	value := make([]{{.Name}}, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -404,7 +380,7 @@ func(c *{{.TitleName}}Collection) Reverse()  *{{.TitleName}}Collection {
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Unique()  *{{.TitleName}}Collection{
+func(c *{{.TitleName}}Stream) Unique()  *{{.TitleName}}Stream{
 	value := make([]{{.Name}}, 0, len(c.value))
 	seen:=make(map[{{.Name}}]struct{})
 	for _, each := range c.value {
@@ -418,31 +394,31 @@ func(c *{{.TitleName}}Collection) Unique()  *{{.TitleName}}Collection{
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Append(given {{.Name}}) *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Append(given {{.Name}}) *{{.TitleName}}Stream {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Len() int {
+func(c *{{.TitleName}}Stream) Len() int {
 	return len(c.value)
 }
 
-func(c *{{.TitleName}}Collection) IsEmpty() bool {
+func(c *{{.TitleName}}Stream) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *{{.TitleName}}Collection) IsNotEmpty() bool {
+func(c *{{.TitleName}}Stream) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *{{.TitleName}}Collection)  Sort()  *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream)  SortBy(less func({{.Name}},{{.Name}}) bool )  *{{.TitleName}}Stream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] {{.Le}} (c.value[j])
+		return less(c.value[i],c.value[j])
 	})
 	return c 
 }
 
-func(c *{{.TitleName}}Collection) All(fn func(int, {{.Name}})bool)  bool {
+func(c *{{.TitleName}}Stream) All(fn func(int, {{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -451,7 +427,7 @@ func(c *{{.TitleName}}Collection) All(fn func(int, {{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.TitleName}}Collection) Any(fn func(int, {{.Name}})bool)  bool {
+func(c *{{.TitleName}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -460,11 +436,11 @@ func(c *{{.TitleName}}Collection) Any(fn func(int, {{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.TitleName}}Collection) Paginate(size int)  [][]{{.Name}} {
+func(c *{{.TitleName}}Stream) Paginate(size int)  [][]{{.Name}} {
 	var pages  [][]{{.Name}}
 	prev := -1
 	for i := range c.value {
-		if (i-prev) {{.Le}} size-1 && i != (len(c.value)-1) {
+		if (i-prev) {{.Lt}} size-1 && i != (len(c.value)-1) {
 			continue
 		}
 		pages=append(pages,c.value[prev+1:i+1])
@@ -473,8 +449,8 @@ func(c *{{.TitleName}}Collection) Paginate(size int)  [][]{{.Name}} {
 	return pages
 }
 
-func(c *{{.TitleName}}Collection) Pop() {{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) Pop() {{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return Empty{{.TitleName}} 
 	}
 	lastIdx := len(c.value)-1
@@ -483,13 +459,13 @@ func(c *{{.TitleName}}Collection) Pop() {{.Name}}{
 	return val
 }
 
-func(c *{{.TitleName}}Collection) Prepend(given {{.Name}}) *{{.TitleName}}Collection {
+func(c *{{.TitleName}}Stream) Prepend(given {{.Name}}) *{{.TitleName}}Stream {
 	c.value = append([]{{.Name}}{given},c.value...)
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Max() {{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) Max() {{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return Empty{{.TitleName}} 
 	}
 	var max {{.Name}}
@@ -498,7 +474,7 @@ func(c *{{.TitleName}}Collection) Max() {{.Name}}{
 			max=each
 			continue
 		}
-		if max {{.Le}} each {
+		if max {{.Lt}} each {
 			max = each
 		}
 	}
@@ -506,8 +482,8 @@ func(c *{{.TitleName}}Collection) Max() {{.Name}}{
 }
 
 
-func(c *{{.TitleName}}Collection) Min() {{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) Min() {{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return Empty{{.TitleName}} 
 	}
 	var min {{.Name}}
@@ -516,23 +492,23 @@ func(c *{{.TitleName}}Collection) Min() {{.Name}}{
 			min=each
 			continue
 		}
-		if each  {{.Le}} min {
+		if each  {{.Lt}} min {
 			min = each
 		}
 	}
 	return min
 }
 
-func(c *{{.TitleName}}Collection) Random() {{.Name}}{
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) Random() {{.Name}}{
+	if len(c.value) {{.Lt}} 0 {
 		return Empty{{.TitleName}} 
 	}
 	n := rand.Intn(len(c.value))
 	return c.value[n]
 }
 
-func(c *{{.TitleName}}Collection) Shuffle() *{{.TitleName}}Collection {
-	if len(c.value) {{.Le}} 0 {
+func(c *{{.TitleName}}Stream) Shuffle() *{{.TitleName}}Stream {
+	if len(c.value) {{.Lt}} 0 {
 		return nil
 	}
 	indexes := make([]int, len(c.value))
@@ -547,7 +523,7 @@ func(c *{{.TitleName}}Collection) Shuffle() *{{.TitleName}}Collection {
 	return c
 }
 
-func(c *{{.TitleName}}Collection) Collect() []{{.Name}}{
+func(c *{{.TitleName}}Stream) Collect() []{{.Name}}{
 	return c.value
 }
 `
@@ -567,19 +543,19 @@ var (
 )
 
 type SortInfo struct {
-	Name    string
-	Builtin bool
+	Name string
+	Type string
 }
 
 type UniqueInfo struct {
-	Name    string
-	Builtin bool
+	Name string
+	Type string
 }
 
 type tpl struct {
 	Pkg       string
 	Name      string
-	Le        template.HTML
+	Lt        template.HTML
 	TitleName string
 	Sorts     []SortInfo
 	Uniques   []UniqueInfo
@@ -637,7 +613,13 @@ func genStruct() {
 			return err
 		}
 		if len(buf.Bytes()) != 0 {
-			if err := ioutil.WriteFile(dst, buf.Bytes(), 0644); err != nil {
+			rd := io.MultiReader(strings.NewReader(fmt.Sprintf(`package %s
+				import (
+					"sort"
+					"math/rand"
+				)`, p.Name)), buf)
+			bytes, _ := ioutil.ReadAll(rd)
+			if err := ioutil.WriteFile(dst, bytes, 0644); err != nil {
 				return err
 			}
 		}
@@ -698,21 +680,27 @@ func setTagInfo(fields *ast.FieldList) {
 		if !ok {
 			continue
 		}
-		_, builtin := ts.Type.(*ast.Ident)
-
+		var typ string
+		ident, _ := ts.Type.(*ast.Ident)
+		if ident != nil {
+			typ = ident.Name
+		} else {
+			ident, _ = ts.Type.(*ast.StarExpr).X.(*ast.Ident)
+			typ = "*" + ident.Name
+		}
 		allTags := strings.TrimSuffix(strings.TrimPrefix(field.Tag.Value, "`"), "`")
 		collectionTag := reflect.StructTag(allTags).Get("collections")
 		if strings.Contains(collectionTag, "sort") {
-			curSorts = append(curSorts, SortInfo{Name: field.Names[0].Name, Builtin: builtin})
+			curSorts = append(curSorts, SortInfo{Name: field.Names[0].Name, Type: typ})
 		}
 		if strings.Contains(collectionTag, "unique") {
-			curUniques = append(curUniques, UniqueInfo{Name: field.Names[0].Name, Builtin: builtin})
+			curUniques = append(curUniques, UniqueInfo{Name: field.Names[0].Name, Type: typ})
 		}
 	}
 
 }
 func execTpl(buf io.Writer) error {
-	tpl := tpl{Name: curStruct, Pkg: curPkg, Le: template.HTML("<="), Empty: template.HTML(curEmpty), TitleName: curTitleName, Sorts: curSorts, Uniques: curUniques}
+	tpl := tpl{Name: curStruct, Pkg: curPkg, Lt: template.HTML("<"), Empty: template.HTML(curEmpty), TitleName: curTitleName, Sorts: curSorts, Uniques: curUniques}
 	t, err := template.New("collection").Parse(curTplStr)
 	if err != nil {
 		return err

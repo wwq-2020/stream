@@ -6,12 +6,5 @@ type Some struct {
 	C *Some  `collections:"sort,unique"`
 }
 
-func (s *Some) Compare(src *Some) int {
-	if s.A == src.A {
-		return 0
-	}
-	if s.A < src.A {
-		return -1
-	}
-	return 1
+type B struct {
 }

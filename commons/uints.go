@@ -8,15 +8,15 @@ import (
 
 const EmptyUint uint =0
 
-type UintCollection struct{
+type UintStream struct{
 	value	[]uint
 }
 
-func NewUintCollection(value []uint) *UintCollection {
-	return &UintCollection{value:value}
+func StreamOfUint(value []uint) *UintStream {
+	return &UintStream{value:value}
 }
 
-func(c *UintCollection) Concate(given []uint)  *UintCollection {
+func(c *UintStream) Concate(given []uint)  *UintStream {
 	value := make([]uint, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,16 +24,16 @@ func(c *UintCollection) Concate(given []uint)  *UintCollection {
 	return c
 }
 
-func(c *UintCollection) Drop(n int)  *UintCollection {
+func(c *UintStream) Drop(n int)  *UintStream {
 	l := len(c.value) - n
-	if l <= 0 {
+	if l < 0 {
 		l = 0
 	}
 	c.value = c.value[len(c.value)-l:]
 	return c
 }
 
-func(c *UintCollection) Filter(fn func(int, uint)bool)  *UintCollection {
+func(c *UintStream) Filter(fn func(int, uint)bool)  *UintStream {
 	value := make([]uint, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *UintCollection) Filter(fn func(int, uint)bool)  *UintCollection {
 	return c
 }
 
-func(c *UintCollection) First() uint {
-	if len(c.value) <= 0 {
+func(c *UintStream) First() uint {
+	if len(c.value) < 0 {
 		return EmptyUint
 	} 
 	return c.value[0]
 }
 
-func(c *UintCollection) Last() uint {
-	if len(c.value) <= 0 {
+func(c *UintStream) Last() uint {
+	if len(c.value) < 0 {
 		return EmptyUint
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *UintCollection) Map(fn func(int, uint)) *UintCollection {
+func(c *UintStream) Map(fn func(int, uint)) *UintStream {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *UintCollection) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
+func(c *UintStream) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *UintCollection) Reduce(fn func(uint, uint, int) uint,initial uint) uint 
 	return final
 }
 
-func(c *UintCollection) Reverse()  *UintCollection {
+func(c *UintStream) Reverse()  *UintStream {
 	value := make([]uint, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *UintCollection) Reverse()  *UintCollection {
 	return c
 }
 
-func(c *UintCollection) Unique()  *UintCollection{
+func(c *UintStream) Unique()  *UintStream{
 	value := make([]uint, 0, len(c.value))
 	seen:=make(map[uint]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *UintCollection) Unique()  *UintCollection{
 	return c
 }
 
-func(c *UintCollection) Append(given uint) *UintCollection {
+func(c *UintStream) Append(given uint) *UintStream {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *UintCollection) Len() int {
+func(c *UintStream) Len() int {
 	return len(c.value)
 }
 
-func(c *UintCollection) IsEmpty() bool {
+func(c *UintStream) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *UintCollection) IsNotEmpty() bool {
+func(c *UintStream) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *UintCollection)  Sort()  *UintCollection {
+func(c *UintStream)  SortBy(less func(uint,uint) bool )  *UintStream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] <= (c.value[j])
+		return less(c.value[i],c.value[j])
 	})
 	return c 
 }
 
-func(c *UintCollection) All(fn func(int, uint)bool)  bool {
+func(c *UintStream) All(fn func(int, uint)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *UintCollection) All(fn func(int, uint)bool)  bool {
 	return true
 }
 
-func(c *UintCollection) Any(fn func(int, uint)bool)  bool {
+func(c *UintStream) Any(fn func(int, uint)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,11 +138,11 @@ func(c *UintCollection) Any(fn func(int, uint)bool)  bool {
 	return false
 }
 
-func(c *UintCollection) Paginate(size int)  [][]uint {
+func(c *UintStream) Paginate(size int)  [][]uint {
 	var pages  [][]uint
 	prev := -1
 	for i := range c.value {
-		if (i-prev) <= size-1 && i != (len(c.value)-1) {
+		if (i-prev) < size-1 && i != (len(c.value)-1) {
 			continue
 		}
 		pages=append(pages,c.value[prev+1:i+1])
@@ -151,8 +151,8 @@ func(c *UintCollection) Paginate(size int)  [][]uint {
 	return pages
 }
 
-func(c *UintCollection) Pop() uint{
-	if len(c.value) <= 0 {
+func(c *UintStream) Pop() uint{
+	if len(c.value) < 0 {
 		return EmptyUint 
 	}
 	lastIdx := len(c.value)-1
@@ -161,13 +161,13 @@ func(c *UintCollection) Pop() uint{
 	return val
 }
 
-func(c *UintCollection) Prepend(given uint) *UintCollection {
+func(c *UintStream) Prepend(given uint) *UintStream {
 	c.value = append([]uint{given},c.value...)
 	return c
 }
 
-func(c *UintCollection) Max() uint{
-	if len(c.value) <= 0 {
+func(c *UintStream) Max() uint{
+	if len(c.value) < 0 {
 		return EmptyUint 
 	}
 	var max uint
@@ -176,7 +176,7 @@ func(c *UintCollection) Max() uint{
 			max=each
 			continue
 		}
-		if max <= each {
+		if max < each {
 			max = each
 		}
 	}
@@ -184,8 +184,8 @@ func(c *UintCollection) Max() uint{
 }
 
 
-func(c *UintCollection) Min() uint{
-	if len(c.value) <= 0 {
+func(c *UintStream) Min() uint{
+	if len(c.value) < 0 {
 		return EmptyUint 
 	}
 	var min uint
@@ -194,23 +194,23 @@ func(c *UintCollection) Min() uint{
 			min=each
 			continue
 		}
-		if each  <= min {
+		if each  < min {
 			min = each
 		}
 	}
 	return min
 }
 
-func(c *UintCollection) Random() uint{
-	if len(c.value) <= 0 {
+func(c *UintStream) Random() uint{
+	if len(c.value) < 0 {
 		return EmptyUint 
 	}
 	n := rand.Intn(len(c.value))
 	return c.value[n]
 }
 
-func(c *UintCollection) Shuffle() *UintCollection {
-	if len(c.value) <= 0 {
+func(c *UintStream) Shuffle() *UintStream {
+	if len(c.value) < 0 {
 		return nil
 	}
 	indexes := make([]int, len(c.value))
@@ -225,6 +225,6 @@ func(c *UintCollection) Shuffle() *UintCollection {
 	return c
 }
 
-func(c *UintCollection) Collect() []uint{
+func(c *UintStream) Collect() []uint{
 	return c.value
 }

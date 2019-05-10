@@ -8,15 +8,15 @@ import (
 
 const EmptyInt8 int8 =0
 
-type Int8Collection struct{
+type Int8Stream struct{
 	value	[]int8
 }
 
-func NewInt8Collection(value []int8) *Int8Collection {
-	return &Int8Collection{value:value}
+func StreamOfInt8(value []int8) *Int8Stream {
+	return &Int8Stream{value:value}
 }
 
-func(c *Int8Collection) Concate(given []int8)  *Int8Collection {
+func(c *Int8Stream) Concate(given []int8)  *Int8Stream {
 	value := make([]int8, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,16 +24,16 @@ func(c *Int8Collection) Concate(given []int8)  *Int8Collection {
 	return c
 }
 
-func(c *Int8Collection) Drop(n int)  *Int8Collection {
+func(c *Int8Stream) Drop(n int)  *Int8Stream {
 	l := len(c.value) - n
-	if l <= 0 {
+	if l < 0 {
 		l = 0
 	}
 	c.value = c.value[len(c.value)-l:]
 	return c
 }
 
-func(c *Int8Collection) Filter(fn func(int, int8)bool)  *Int8Collection {
+func(c *Int8Stream) Filter(fn func(int, int8)bool)  *Int8Stream {
 	value := make([]int8, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Int8Collection) Filter(fn func(int, int8)bool)  *Int8Collection {
 	return c
 }
 
-func(c *Int8Collection) First() int8 {
-	if len(c.value) <= 0 {
+func(c *Int8Stream) First() int8 {
+	if len(c.value) < 0 {
 		return EmptyInt8
 	} 
 	return c.value[0]
 }
 
-func(c *Int8Collection) Last() int8 {
-	if len(c.value) <= 0 {
+func(c *Int8Stream) Last() int8 {
+	if len(c.value) < 0 {
 		return EmptyInt8
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Int8Collection) Map(fn func(int, int8)) *Int8Collection {
+func(c *Int8Stream) Map(fn func(int, int8)) *Int8Stream {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Int8Collection) Reduce(fn func(int8, int8, int) int8,initial int8) int8   {
+func(c *Int8Stream) Reduce(fn func(int8, int8, int) int8,initial int8) int8   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Int8Collection) Reduce(fn func(int8, int8, int) int8,initial int8) int8 
 	return final
 }
 
-func(c *Int8Collection) Reverse()  *Int8Collection {
+func(c *Int8Stream) Reverse()  *Int8Stream {
 	value := make([]int8, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Int8Collection) Reverse()  *Int8Collection {
 	return c
 }
 
-func(c *Int8Collection) Unique()  *Int8Collection{
+func(c *Int8Stream) Unique()  *Int8Stream{
 	value := make([]int8, 0, len(c.value))
 	seen:=make(map[int8]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Int8Collection) Unique()  *Int8Collection{
 	return c
 }
 
-func(c *Int8Collection) Append(given int8) *Int8Collection {
+func(c *Int8Stream) Append(given int8) *Int8Stream {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Int8Collection) Len() int {
+func(c *Int8Stream) Len() int {
 	return len(c.value)
 }
 
-func(c *Int8Collection) IsEmpty() bool {
+func(c *Int8Stream) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Int8Collection) IsNotEmpty() bool {
+func(c *Int8Stream) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Int8Collection)  Sort()  *Int8Collection {
+func(c *Int8Stream)  SortBy(less func(int8,int8) bool )  *Int8Stream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] <= (c.value[j])
+		return less(c.value[i],c.value[j])
 	})
 	return c 
 }
 
-func(c *Int8Collection) All(fn func(int, int8)bool)  bool {
+func(c *Int8Stream) All(fn func(int, int8)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Int8Collection) All(fn func(int, int8)bool)  bool {
 	return true
 }
 
-func(c *Int8Collection) Any(fn func(int, int8)bool)  bool {
+func(c *Int8Stream) Any(fn func(int, int8)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,11 +138,11 @@ func(c *Int8Collection) Any(fn func(int, int8)bool)  bool {
 	return false
 }
 
-func(c *Int8Collection) Paginate(size int)  [][]int8 {
+func(c *Int8Stream) Paginate(size int)  [][]int8 {
 	var pages  [][]int8
 	prev := -1
 	for i := range c.value {
-		if (i-prev) <= size-1 && i != (len(c.value)-1) {
+		if (i-prev) < size-1 && i != (len(c.value)-1) {
 			continue
 		}
 		pages=append(pages,c.value[prev+1:i+1])
@@ -151,8 +151,8 @@ func(c *Int8Collection) Paginate(size int)  [][]int8 {
 	return pages
 }
 
-func(c *Int8Collection) Pop() int8{
-	if len(c.value) <= 0 {
+func(c *Int8Stream) Pop() int8{
+	if len(c.value) < 0 {
 		return EmptyInt8 
 	}
 	lastIdx := len(c.value)-1
@@ -161,13 +161,13 @@ func(c *Int8Collection) Pop() int8{
 	return val
 }
 
-func(c *Int8Collection) Prepend(given int8) *Int8Collection {
+func(c *Int8Stream) Prepend(given int8) *Int8Stream {
 	c.value = append([]int8{given},c.value...)
 	return c
 }
 
-func(c *Int8Collection) Max() int8{
-	if len(c.value) <= 0 {
+func(c *Int8Stream) Max() int8{
+	if len(c.value) < 0 {
 		return EmptyInt8 
 	}
 	var max int8
@@ -176,7 +176,7 @@ func(c *Int8Collection) Max() int8{
 			max=each
 			continue
 		}
-		if max <= each {
+		if max < each {
 			max = each
 		}
 	}
@@ -184,8 +184,8 @@ func(c *Int8Collection) Max() int8{
 }
 
 
-func(c *Int8Collection) Min() int8{
-	if len(c.value) <= 0 {
+func(c *Int8Stream) Min() int8{
+	if len(c.value) < 0 {
 		return EmptyInt8 
 	}
 	var min int8
@@ -194,23 +194,23 @@ func(c *Int8Collection) Min() int8{
 			min=each
 			continue
 		}
-		if each  <= min {
+		if each  < min {
 			min = each
 		}
 	}
 	return min
 }
 
-func(c *Int8Collection) Random() int8{
-	if len(c.value) <= 0 {
+func(c *Int8Stream) Random() int8{
+	if len(c.value) < 0 {
 		return EmptyInt8 
 	}
 	n := rand.Intn(len(c.value))
 	return c.value[n]
 }
 
-func(c *Int8Collection) Shuffle() *Int8Collection {
-	if len(c.value) <= 0 {
+func(c *Int8Stream) Shuffle() *Int8Stream {
+	if len(c.value) < 0 {
 		return nil
 	}
 	indexes := make([]int, len(c.value))
@@ -225,6 +225,6 @@ func(c *Int8Collection) Shuffle() *Int8Collection {
 	return c
 }
 
-func(c *Int8Collection) Collect() []int8{
+func(c *Int8Stream) Collect() []int8{
 	return c.value
 }

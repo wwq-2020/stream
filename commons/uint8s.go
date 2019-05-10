@@ -8,15 +8,15 @@ import (
 
 const EmptyUint8 uint8 =0
 
-type Uint8Collection struct{
+type Uint8Stream struct{
 	value	[]uint8
 }
 
-func NewUint8Collection(value []uint8) *Uint8Collection {
-	return &Uint8Collection{value:value}
+func StreamOfUint8(value []uint8) *Uint8Stream {
+	return &Uint8Stream{value:value}
 }
 
-func(c *Uint8Collection) Concate(given []uint8)  *Uint8Collection {
+func(c *Uint8Stream) Concate(given []uint8)  *Uint8Stream {
 	value := make([]uint8, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,16 +24,16 @@ func(c *Uint8Collection) Concate(given []uint8)  *Uint8Collection {
 	return c
 }
 
-func(c *Uint8Collection) Drop(n int)  *Uint8Collection {
+func(c *Uint8Stream) Drop(n int)  *Uint8Stream {
 	l := len(c.value) - n
-	if l <= 0 {
+	if l < 0 {
 		l = 0
 	}
 	c.value = c.value[len(c.value)-l:]
 	return c
 }
 
-func(c *Uint8Collection) Filter(fn func(int, uint8)bool)  *Uint8Collection {
+func(c *Uint8Stream) Filter(fn func(int, uint8)bool)  *Uint8Stream {
 	value := make([]uint8, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Uint8Collection) Filter(fn func(int, uint8)bool)  *Uint8Collection {
 	return c
 }
 
-func(c *Uint8Collection) First() uint8 {
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) First() uint8 {
+	if len(c.value) < 0 {
 		return EmptyUint8
 	} 
 	return c.value[0]
 }
 
-func(c *Uint8Collection) Last() uint8 {
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) Last() uint8 {
+	if len(c.value) < 0 {
 		return EmptyUint8
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Uint8Collection) Map(fn func(int, uint8)) *Uint8Collection {
+func(c *Uint8Stream) Map(fn func(int, uint8)) *Uint8Stream {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Uint8Collection) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8   {
+func(c *Uint8Stream) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Uint8Collection) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) 
 	return final
 }
 
-func(c *Uint8Collection) Reverse()  *Uint8Collection {
+func(c *Uint8Stream) Reverse()  *Uint8Stream {
 	value := make([]uint8, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Uint8Collection) Reverse()  *Uint8Collection {
 	return c
 }
 
-func(c *Uint8Collection) Unique()  *Uint8Collection{
+func(c *Uint8Stream) Unique()  *Uint8Stream{
 	value := make([]uint8, 0, len(c.value))
 	seen:=make(map[uint8]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Uint8Collection) Unique()  *Uint8Collection{
 	return c
 }
 
-func(c *Uint8Collection) Append(given uint8) *Uint8Collection {
+func(c *Uint8Stream) Append(given uint8) *Uint8Stream {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Uint8Collection) Len() int {
+func(c *Uint8Stream) Len() int {
 	return len(c.value)
 }
 
-func(c *Uint8Collection) IsEmpty() bool {
+func(c *Uint8Stream) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Uint8Collection) IsNotEmpty() bool {
+func(c *Uint8Stream) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Uint8Collection)  Sort()  *Uint8Collection {
+func(c *Uint8Stream)  SortBy(less func(uint8,uint8) bool )  *Uint8Stream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] <= (c.value[j])
+		return less(c.value[i],c.value[j])
 	})
 	return c 
 }
 
-func(c *Uint8Collection) All(fn func(int, uint8)bool)  bool {
+func(c *Uint8Stream) All(fn func(int, uint8)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Uint8Collection) All(fn func(int, uint8)bool)  bool {
 	return true
 }
 
-func(c *Uint8Collection) Any(fn func(int, uint8)bool)  bool {
+func(c *Uint8Stream) Any(fn func(int, uint8)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,11 +138,11 @@ func(c *Uint8Collection) Any(fn func(int, uint8)bool)  bool {
 	return false
 }
 
-func(c *Uint8Collection) Paginate(size int)  [][]uint8 {
+func(c *Uint8Stream) Paginate(size int)  [][]uint8 {
 	var pages  [][]uint8
 	prev := -1
 	for i := range c.value {
-		if (i-prev) <= size-1 && i != (len(c.value)-1) {
+		if (i-prev) < size-1 && i != (len(c.value)-1) {
 			continue
 		}
 		pages=append(pages,c.value[prev+1:i+1])
@@ -151,8 +151,8 @@ func(c *Uint8Collection) Paginate(size int)  [][]uint8 {
 	return pages
 }
 
-func(c *Uint8Collection) Pop() uint8{
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) Pop() uint8{
+	if len(c.value) < 0 {
 		return EmptyUint8 
 	}
 	lastIdx := len(c.value)-1
@@ -161,13 +161,13 @@ func(c *Uint8Collection) Pop() uint8{
 	return val
 }
 
-func(c *Uint8Collection) Prepend(given uint8) *Uint8Collection {
+func(c *Uint8Stream) Prepend(given uint8) *Uint8Stream {
 	c.value = append([]uint8{given},c.value...)
 	return c
 }
 
-func(c *Uint8Collection) Max() uint8{
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) Max() uint8{
+	if len(c.value) < 0 {
 		return EmptyUint8 
 	}
 	var max uint8
@@ -176,7 +176,7 @@ func(c *Uint8Collection) Max() uint8{
 			max=each
 			continue
 		}
-		if max <= each {
+		if max < each {
 			max = each
 		}
 	}
@@ -184,8 +184,8 @@ func(c *Uint8Collection) Max() uint8{
 }
 
 
-func(c *Uint8Collection) Min() uint8{
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) Min() uint8{
+	if len(c.value) < 0 {
 		return EmptyUint8 
 	}
 	var min uint8
@@ -194,23 +194,23 @@ func(c *Uint8Collection) Min() uint8{
 			min=each
 			continue
 		}
-		if each  <= min {
+		if each  < min {
 			min = each
 		}
 	}
 	return min
 }
 
-func(c *Uint8Collection) Random() uint8{
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) Random() uint8{
+	if len(c.value) < 0 {
 		return EmptyUint8 
 	}
 	n := rand.Intn(len(c.value))
 	return c.value[n]
 }
 
-func(c *Uint8Collection) Shuffle() *Uint8Collection {
-	if len(c.value) <= 0 {
+func(c *Uint8Stream) Shuffle() *Uint8Stream {
+	if len(c.value) < 0 {
 		return nil
 	}
 	indexes := make([]int, len(c.value))
@@ -225,6 +225,6 @@ func(c *Uint8Collection) Shuffle() *Uint8Collection {
 	return c
 }
 
-func(c *Uint8Collection) Collect() []uint8{
+func(c *Uint8Stream) Collect() []uint8{
 	return c.value
 }

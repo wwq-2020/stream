@@ -8,15 +8,15 @@ import (
 
 const EmptyInt32 int32 =0
 
-type Int32Collection struct{
+type Int32Stream struct{
 	value	[]int32
 }
 
-func NewInt32Collection(value []int32) *Int32Collection {
-	return &Int32Collection{value:value}
+func StreamOfInt32(value []int32) *Int32Stream {
+	return &Int32Stream{value:value}
 }
 
-func(c *Int32Collection) Concate(given []int32)  *Int32Collection {
+func(c *Int32Stream) Concate(given []int32)  *Int32Stream {
 	value := make([]int32, len(c.value)+len(given))
 	copy(value,c.value)
 	copy(value[len(c.value):],given)
@@ -24,16 +24,16 @@ func(c *Int32Collection) Concate(given []int32)  *Int32Collection {
 	return c
 }
 
-func(c *Int32Collection) Drop(n int)  *Int32Collection {
+func(c *Int32Stream) Drop(n int)  *Int32Stream {
 	l := len(c.value) - n
-	if l <= 0 {
+	if l < 0 {
 		l = 0
 	}
 	c.value = c.value[len(c.value)-l:]
 	return c
 }
 
-func(c *Int32Collection) Filter(fn func(int, int32)bool)  *Int32Collection {
+func(c *Int32Stream) Filter(fn func(int, int32)bool)  *Int32Stream {
 	value := make([]int32, 0, len(c.value))
 	for i, each := range c.value {
 		if fn(i,each){
@@ -44,28 +44,28 @@ func(c *Int32Collection) Filter(fn func(int, int32)bool)  *Int32Collection {
 	return c
 }
 
-func(c *Int32Collection) First() int32 {
-	if len(c.value) <= 0 {
+func(c *Int32Stream) First() int32 {
+	if len(c.value) < 0 {
 		return EmptyInt32
 	} 
 	return c.value[0]
 }
 
-func(c *Int32Collection) Last() int32 {
-	if len(c.value) <= 0 {
+func(c *Int32Stream) Last() int32 {
+	if len(c.value) < 0 {
 		return EmptyInt32
 	} 
 	return c.value[len(c.value)-1]
 }
 
-func(c *Int32Collection) Map(fn func(int, int32)) *Int32Collection {
+func(c *Int32Stream) Map(fn func(int, int32)) *Int32Stream {
 	for i, each := range c.value {
 		fn(i,each)
 	}
 	return c
 }
 
-func(c *Int32Collection) Reduce(fn func(int32, int32, int) int32,initial int32) int32   {
+func(c *Int32Stream) Reduce(fn func(int32, int32, int) int32,initial int32) int32   {
 	final := initial
 	for i, each := range c.value {
 		final = fn(final,each,i)
@@ -73,7 +73,7 @@ func(c *Int32Collection) Reduce(fn func(int32, int32, int) int32,initial int32) 
 	return final
 }
 
-func(c *Int32Collection) Reverse()  *Int32Collection {
+func(c *Int32Stream) Reverse()  *Int32Stream {
 	value := make([]int32, len(c.value))
 	for i, each := range c.value {
 		value[len(c.value)-1-i] = each
@@ -82,7 +82,7 @@ func(c *Int32Collection) Reverse()  *Int32Collection {
 	return c
 }
 
-func(c *Int32Collection) Unique()  *Int32Collection{
+func(c *Int32Stream) Unique()  *Int32Stream{
 	value := make([]int32, 0, len(c.value))
 	seen:=make(map[int32]struct{})
 	for _, each := range c.value {
@@ -96,31 +96,31 @@ func(c *Int32Collection) Unique()  *Int32Collection{
 	return c
 }
 
-func(c *Int32Collection) Append(given int32) *Int32Collection {
+func(c *Int32Stream) Append(given int32) *Int32Stream {
 	c.value=append(c.value,given)
 	return c
 }
 
-func(c *Int32Collection) Len() int {
+func(c *Int32Stream) Len() int {
 	return len(c.value)
 }
 
-func(c *Int32Collection) IsEmpty() bool {
+func(c *Int32Stream) IsEmpty() bool {
 	return len(c.value) == 0
 }
 
-func(c *Int32Collection) IsNotEmpty() bool {
+func(c *Int32Stream) IsNotEmpty() bool {
 	return len(c.value) != 0
 }
 
-func(c *Int32Collection)  Sort()  *Int32Collection {
+func(c *Int32Stream)  SortBy(less func(int32,int32) bool )  *Int32Stream {
 	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] <= (c.value[j])
+		return less(c.value[i],c.value[j])
 	})
 	return c 
 }
 
-func(c *Int32Collection) All(fn func(int, int32)bool)  bool {
+func(c *Int32Stream) All(fn func(int, int32)bool)  bool {
 	for i, each := range c.value {
 		if !fn(i,each){
 			return false
@@ -129,7 +129,7 @@ func(c *Int32Collection) All(fn func(int, int32)bool)  bool {
 	return true
 }
 
-func(c *Int32Collection) Any(fn func(int, int32)bool)  bool {
+func(c *Int32Stream) Any(fn func(int, int32)bool)  bool {
 	for i, each := range c.value {
 		if fn(i,each){
 			return true
@@ -138,11 +138,11 @@ func(c *Int32Collection) Any(fn func(int, int32)bool)  bool {
 	return false
 }
 
-func(c *Int32Collection) Paginate(size int)  [][]int32 {
+func(c *Int32Stream) Paginate(size int)  [][]int32 {
 	var pages  [][]int32
 	prev := -1
 	for i := range c.value {
-		if (i-prev) <= size-1 && i != (len(c.value)-1) {
+		if (i-prev) < size-1 && i != (len(c.value)-1) {
 			continue
 		}
 		pages=append(pages,c.value[prev+1:i+1])
@@ -151,8 +151,8 @@ func(c *Int32Collection) Paginate(size int)  [][]int32 {
 	return pages
 }
 
-func(c *Int32Collection) Pop() int32{
-	if len(c.value) <= 0 {
+func(c *Int32Stream) Pop() int32{
+	if len(c.value) < 0 {
 		return EmptyInt32 
 	}
 	lastIdx := len(c.value)-1
@@ -161,13 +161,13 @@ func(c *Int32Collection) Pop() int32{
 	return val
 }
 
-func(c *Int32Collection) Prepend(given int32) *Int32Collection {
+func(c *Int32Stream) Prepend(given int32) *Int32Stream {
 	c.value = append([]int32{given},c.value...)
 	return c
 }
 
-func(c *Int32Collection) Max() int32{
-	if len(c.value) <= 0 {
+func(c *Int32Stream) Max() int32{
+	if len(c.value) < 0 {
 		return EmptyInt32 
 	}
 	var max int32
@@ -176,7 +176,7 @@ func(c *Int32Collection) Max() int32{
 			max=each
 			continue
 		}
-		if max <= each {
+		if max < each {
 			max = each
 		}
 	}
@@ -184,8 +184,8 @@ func(c *Int32Collection) Max() int32{
 }
 
 
-func(c *Int32Collection) Min() int32{
-	if len(c.value) <= 0 {
+func(c *Int32Stream) Min() int32{
+	if len(c.value) < 0 {
 		return EmptyInt32 
 	}
 	var min int32
@@ -194,23 +194,23 @@ func(c *Int32Collection) Min() int32{
 			min=each
 			continue
 		}
-		if each  <= min {
+		if each  < min {
 			min = each
 		}
 	}
 	return min
 }
 
-func(c *Int32Collection) Random() int32{
-	if len(c.value) <= 0 {
+func(c *Int32Stream) Random() int32{
+	if len(c.value) < 0 {
 		return EmptyInt32 
 	}
 	n := rand.Intn(len(c.value))
 	return c.value[n]
 }
 
-func(c *Int32Collection) Shuffle() *Int32Collection {
-	if len(c.value) <= 0 {
+func(c *Int32Stream) Shuffle() *Int32Stream {
+	if len(c.value) < 0 {
 		return nil
 	}
 	indexes := make([]int, len(c.value))
@@ -225,6 +225,6 @@ func(c *Int32Collection) Shuffle() *Int32Collection {
 	return c
 }
 
-func(c *Int32Collection) Collect() []int32{
+func(c *Int32Stream) Collect() []int32{
 	return c.value
 }
