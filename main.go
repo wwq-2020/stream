@@ -1190,24 +1190,24 @@ func genStruct() {
 			return err
 		}
 		if buf.Len() != 0 {
-			var importStr string
-			if !curHasBuiltin {
-				importStr = fmt.Sprintf(`package %s
-					import (
-						"sort"
-						"math/rand"
-						"%s"						
-					)`, p.Name, curImport)
-			} else {
-				importStr = fmt.Sprintf(`package %s
-					import (
-						"sort"
-						"math/rand"
-						commons "%s"
-						"%s"						
-					)`, p.Name, commonStreamDir, curImport)
-			}
+			var importStr string = fmt.Sprintf(`package %s
+			import (
+				"sort"
+				"math/rand"`, p.Name)
+			if curHasBuiltin {
+				importStr = fmt.Sprintf(`%s
+						commons "%s"						
+					`, importStr, commonStreamDir)
 
+			}
+			if curImport != "" {
+				importStr = fmt.Sprintf(`%s
+					"%s"						
+				`, importStr, curImport)
+
+			}
+			importStr = fmt.Sprintf(`%s
+				)`, importStr)
 			rd := io.MultiReader(strings.NewReader(importStr), buf)
 			bytes, _ := ioutil.ReadAll(rd)
 			if err := ioutil.WriteFile(dst, bytes, 0644); err != nil {

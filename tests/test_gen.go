@@ -1,10 +1,12 @@
 package tests
-					import (
-						"sort"
-						"math/rand"
-						commons "github.com/wwq1988/stream/commons"
-						"github.com/wwq1988/stream/outter"						
-					)
+			import (
+				"sort"
+				"math/rand"
+						commons "github.com/wwq1988/stream/commons"						
+					
+					"github.com/wwq1988/stream/outter"						
+				
+				)
 	type SomeStream struct{
 		value	[]Some
 		defaultReturn Some
@@ -379,6 +381,16 @@ package tests
 	
 	
 	
+	
+	
+	func(c *SomeStream)  DPStream()  *outter.SomePStream {	
+		value := make([]*outter.Some, 0, len(c.value))	
+		for _, each := range c.value {
+			value = append(value, each.D)
+		}
+		newStream := outter.PStreamOfSome(value)
+		return newStream
+	}
 	
 	
 	
@@ -794,6 +806,16 @@ func(c *SomePStream)  CPStream()  *SomePStream {
 
 
 
+
+
+func(c *SomePStream)  DPStream()  *outter.SomePStream {	
+	value := make([]*outter.Some, 0, len(c.value))	
+	for _, each := range c.value {
+		value = append(value, each.D)
+	}
+	newStream := outter.PStreamOfSome(value)
+	return newStream
+}
 
 
 

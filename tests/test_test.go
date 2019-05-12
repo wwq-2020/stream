@@ -3,6 +3,8 @@ package tests
 import (
 	"reflect"
 	"testing"
+
+	"github.com/wwq1988/stream/outter"
 )
 
 func TestConcate(t *testing.T) {
@@ -297,6 +299,15 @@ func TestUniqueByC(t *testing.T) {
 		return one.A == another.A && one.B == another.B
 	}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestFieldStream(t *testing.T) {
+	data := []*Some{&Some{A: "hello", B: "world", D: &outter.Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", D: &outter.Some{A: "hello", B: "world"}}}
+	c := PStreamOfSome(data)
+	r := c.DPStream().First()
+	if !reflect.DeepEqual(r, &outter.Some{A: "world", B: "hello"}) {
 		t.Fatal("mistach")
 	}
 }
