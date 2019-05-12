@@ -13,12 +13,10 @@ package outter
 	func StreamOfSome(value []Some) *SomeStream {
 		return &SomeStream{value:value, defaultReturn:Some{}}
 	}
-
 	func(s *SomeStream) OrElse(defaultReturn Some)  *SomeStream {
 		s.defaultReturn = defaultReturn
 		return s
 	}	
-
 	func(s *SomeStream) Concate(given []Some)  *SomeStream {
 		value := make([]Some, len(s.value)+len(given))
 		copy(value,s.value)
@@ -46,6 +44,30 @@ package outter
 		s.value = value
 		return s
 	}
+
+	
+	func(s *SomeStream) FilterByA(fn func(int,string)bool)  *SomeStream {
+		value := make([]Some, 0, len(s.value))
+		for i, each := range s.value {
+			if fn(i,each.A){
+				value = append(value,each)
+			}
+		}
+		s.value = value
+		return s
+	}
+	
+	func(s *SomeStream) FilterByB(fn func(int,string)bool)  *SomeStream {
+		value := make([]Some, 0, len(s.value))
+		for i, each := range s.value {
+			if fn(i,each.B){
+				value = append(value,each)
+			}
+		}
+		s.value = value
+		return s
+	}
+	
 	
 	func(s *SomeStream) First() Some {
 		if len(s.value) <= 0 {
@@ -85,31 +107,39 @@ package outter
 		return s
 	}
 	
-	func(s *SomeStream) UniqueBy(compare func(Some,Some)bool)  *SomeStream{
+	
+	
+	func(s *SomeStream)  UniqueByA()  *SomeStream {
 		value := make([]Some, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
+		seen:=make(map[string]struct{})
+		for _, each := range s.value {
+			if _,dup:=seen[each.A];dup{
 				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner,outter) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
 			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
+			value = append(value, each)
+			seen[each.A]=struct{}{}	
 		}
 		s.value = value
 		return s
 	}
+	
+	
+	
+	func(s *SomeStream)  UniqueByB()  *SomeStream {
+		value := make([]Some, 0, len(s.value))
+		seen:=make(map[string]struct{})
+		for _, each := range s.value {
+			if _,dup:=seen[each.B];dup{
+				continue
+			}
+			value = append(value, each)
+			seen[each.B]=struct{}{}	
+		}
+		s.value = value
+		return s
+	}
+	
+	
 	
 	func(s *SomeStream) Append(given Some) *SomeStream {
 		s.value=append(s.value,given)
@@ -127,13 +157,8 @@ package outter
 	func(s *SomeStream) IsNotEmpty() bool {
 		return len(s.value) != 0
 	}
-	
-	func(s *SomeStream)  SortBy(less func(Some,Some)bool)  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return less(s.value[i],s.value[j])
-		})
-		return s 
-	}
+
+
 	
 	func(s *SomeStream) All(fn func(int, Some)bool)  bool {
 		for i, each := range s.value {
@@ -235,7 +260,25 @@ package outter
 	
 	
 	
+	func(s *SomeStream)  SortByA()  *SomeStream {
+		sort.Slice(s.value, func(i,j int)bool{
+			return s.value[i].A < s.value[j].A
+		})
+		return s 
+	}
 	
+	
+	
+	func(s *SomeStream)  SortByB()  *SomeStream {
+		sort.Slice(s.value, func(i,j int)bool{
+			return s.value[i].B < s.value[j].B
+		})
+		return s 
+	}
+	
+	
+	
+
 	
 	
 	
@@ -286,12 +329,10 @@ package outter
 	func(s *SomeStream) Collect() []Some{
 		return s.value
 	}
-
 type SomePStream struct{
 	value	[]*Some
 	defaultReturn *Some
 }
-
 func PStreamOfSome(value []*Some) *SomePStream {
 	return &SomePStream{value:value,defaultReturn:nil}
 }
@@ -299,7 +340,6 @@ func(s *SomePStream) OrElse(defaultReturn *Some)  *SomePStream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-
 func(s *SomePStream) Concate(given []*Some)  *SomePStream {
 	value := make([]*Some, len(s.value)+len(given))
 	copy(value,s.value)
@@ -307,7 +347,6 @@ func(s *SomePStream) Concate(given []*Some)  *SomePStream {
 	s.value = value
 	return s
 }
-
 func(s *SomePStream) Drop(n int)  *SomePStream {
 	l := len(s.value) - n
 	if l < 0 {
@@ -316,7 +355,6 @@ func(s *SomePStream) Drop(n int)  *SomePStream {
 	s.value = s.value[len(s.value)-l:]
 	return s
 }
-
 func(s *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
 	value := make([]*Some, 0, len(s.value))
 	for i, each := range s.value {
@@ -328,27 +366,48 @@ func(s *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
 	return s
 }
 
+
+func(s *SomePStream) FilterByA(fn func(int,string)bool)  *SomePStream {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i,each.A){
+			value = append(value,each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+func(s *SomePStream) FilterByB(fn func(int,string)bool)  *SomePStream {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i,each.B){
+			value = append(value,each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+
 func(s *SomePStream) First() *Some {
 	if len(s.value) <= 0 {
 		return s.defaultReturn 
 	} 
 	return s.value[0]
 }
-
 func(s *SomePStream) Last() *Some {
 	if len(s.value) <= 0 {
 		return s.defaultReturn 
 	} 
 	return s.value[len(s.value)-1]
 }
-
 func(s *SomePStream) Map(fn func(int, *Some)) *SomePStream {
 	for i, each := range s.value {
 		fn(i,each)
 	}
 	return s
 }
-
 func(s *SomePStream) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some   {
 	final := initial
 	for i, each := range s.value {
@@ -356,7 +415,6 @@ func(s *SomePStream) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Som
 	}
 	return final
 }
-
 func(s *SomePStream) Reverse()  *SomePStream {
 	value := make([]*Some, len(s.value))
 	for i, each := range s.value {
@@ -365,7 +423,6 @@ func(s *SomePStream) Reverse()  *SomePStream {
 	s.value = value
 	return s
 }
-
 func(s *SomePStream) UniqueBy(compare func(*Some,*Some)bool)  *SomePStream{
 	value := make([]*Some, 0, len(s.value))
 	seen:=make(map[int]struct{})
@@ -391,16 +448,13 @@ func(s *SomePStream) UniqueBy(compare func(*Some,*Some)bool)  *SomePStream{
 	s.value = value
 	return s
 }
-
 func(s *SomePStream) Append(given *Some) *SomePStream {
 	s.value=append(s.value,given)
 	return s
 }
-
 func(s *SomePStream) Len() int {
 	return len(s.value)
 }
-
 func(s *SomePStream) IsEmpty() bool {
 	return len(s.value) == 0
 }
@@ -425,6 +479,27 @@ func(s *SomePStream) All(fn func(int, *Some)bool)  bool {
 	return true
 }
 
+
+
+func(s *SomeStream) AllByA(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if !fn(i,each.A){
+			return false
+		}
+	}
+	return true
+}
+
+func(s *SomeStream) AllByB(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if !fn(i,each.B){
+			return false
+		}
+	}
+	return true
+}
+
+
 func(s *SomePStream) Any(fn func(int, *Some)bool)  bool {
 	for i, each := range s.value {
 		if fn(i,each){
@@ -433,6 +508,26 @@ func(s *SomePStream) Any(fn func(int, *Some)bool)  bool {
 	}
 	return false
 }
+
+
+func(s *SomeStream) AnyByA(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if fn(i,each.A){
+			return true
+		}
+	}
+	return false
+}
+
+func(s *SomeStream) AnyByB(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if fn(i,each.B){
+			return true
+		}
+	}
+	return false
+}
+
 
 func(s *SomePStream) Paginate(size int)  [][]*Some {
 	var pages  [][]*Some
@@ -476,7 +571,6 @@ func(s *SomePStream) Max(bigger func(*Some,*Some)bool) *Some{
 	return max
 }
 
-
 func(s *SomePStream) Min(less func(*Some,*Some)bool) *Some{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -516,6 +610,56 @@ func(s *SomePStream) Shuffle() *SomePStream {
 
 
 
+func(s *SomePStream)  SortByA()  *SomePStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i].A < s.value[j].A
+	})
+	return s 
+}
+
+
+
+func(s *SomePStream)  SortByB()  *SomePStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i].B < s.value[j].B
+	})
+	return s 
+}
+
+
+
+
+
+func(s *SomePStream)  UniqueByA()  *SomePStream {
+	value := make([]*Some, 0, len(s.value))
+	seen:=make(map[string]struct{})
+	for _, each := range s.value {
+		if _,dup:=seen[each.A];dup{
+			continue
+		}
+		value = append(value, each)
+		seen[each.A]=struct{}{}	
+	}
+	s.value = value
+	return s
+}
+
+
+
+func(s *SomePStream)  UniqueByB()  *SomePStream {
+	value := make([]*Some, 0, len(s.value))
+	seen:=make(map[string]struct{})
+	for _, each := range s.value {
+		if _,dup:=seen[each.B];dup{
+			continue
+		}
+		value = append(value, each)
+		seen[each.B]=struct{}{}	
+	}
+	s.value = value
+	return s
+}
+
 
 
 
@@ -546,7 +690,6 @@ func(s *SomePStream)  BStream()  *commons.StringStream {
 
 
 
-
 func(s *SomePStream)  As()  []string {	
 	value := make([]string, 0, len(s.value))	
 	for _, each := range s.value {
@@ -562,7 +705,6 @@ func(s *SomePStream)  Bs()  []string {
 	}
 	return value
 }
-
 
 func(s *SomePStream) Collect() []*Some{
 	return s.value

@@ -1,26 +1,20 @@
 
 package commons
-
 import (
 	"sort"
 	"math/rand"
 )
-
 type Float32Stream struct{
 	value	[]float32
 	defaultReturn float32
 }
-
 func StreamOfFloat32(value []float32) *Float32Stream {
 	return &Float32Stream{value:value,defaultReturn:0.0}
 }
-
 func(s *Float32Stream) OrElase(defaultReturn float32)  *Float32Stream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-
-
 func(s *Float32Stream) Concate(given []float32)  *Float32Stream {
 	value := make([]float32, len(s.value)+len(given))
 	copy(value,s.value)
@@ -28,7 +22,6 @@ func(s *Float32Stream) Concate(given []float32)  *Float32Stream {
 	s.value = value
 	return s
 }
-
 func(s *Float32Stream) Drop(n int)  *Float32Stream {
 	l := len(s.value) - n
 	if l < 0 {
@@ -37,7 +30,6 @@ func(s *Float32Stream) Drop(n int)  *Float32Stream {
 	s.value = s.value[len(s.value)-l:]
 	return s
 }
-
 func(s *Float32Stream) Filter(fn func(int, float32)bool)  *Float32Stream {
 	value := make([]float32, 0, len(s.value))
 	for i, each := range s.value {
@@ -48,28 +40,24 @@ func(s *Float32Stream) Filter(fn func(int, float32)bool)  *Float32Stream {
 	s.value = value
 	return s
 }
-
 func(s *Float32Stream) First() float32 {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[0]
 }
-
 func(s *Float32Stream) Last() float32 {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[len(s.value)-1]
 }
-
 func(s *Float32Stream) Map(fn func(int, float32)) *Float32Stream {
 	for i, each := range s.value {
 		fn(i,each)
 	}
 	return s
 }
-
 func(s *Float32Stream) Reduce(fn func(float32, float32, int) float32,initial float32) float32   {
 	final := initial
 	for i, each := range s.value {
@@ -77,7 +65,6 @@ func(s *Float32Stream) Reduce(fn func(float32, float32, int) float32,initial flo
 	}
 	return final
 }
-
 func(s *Float32Stream) Reverse()  *Float32Stream {
 	value := make([]float32, len(s.value))
 	for i, each := range s.value {
@@ -86,7 +73,6 @@ func(s *Float32Stream) Reverse()  *Float32Stream {
 	s.value = value
 	return s
 }
-
 func(s *Float32Stream) Unique()  *Float32Stream{
 	value := make([]float32, 0, len(s.value))
 	seen:=make(map[float32]struct{})
@@ -100,31 +86,25 @@ func(s *Float32Stream) Unique()  *Float32Stream{
 	s.value = value
 	return s
 }
-
 func(s *Float32Stream) Append(given float32) *Float32Stream {
 	s.value=append(s.value,given)
 	return s
 }
-
 func(s *Float32Stream) Len() int {
 	return len(s.value)
 }
-
 func(s *Float32Stream) IsEmpty() bool {
 	return len(s.value) == 0
 }
-
 func(s *Float32Stream) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-
 func(s *Float32Stream)  Sort()  *Float32Stream {
 	sort.Slice(s.value, func(i,j int)bool{
 		return s.value[i] < s.value[j]
 	})
 	return s 
 }
-
 func(s *Float32Stream) All(fn func(int, float32)bool)  bool {
 	for i, each := range s.value {
 		if !fn(i,each){
@@ -133,7 +113,6 @@ func(s *Float32Stream) All(fn func(int, float32)bool)  bool {
 	}
 	return true
 }
-
 func(s *Float32Stream) Any(fn func(int, float32)bool)  bool {
 	for i, each := range s.value {
 		if fn(i,each){
@@ -142,7 +121,6 @@ func(s *Float32Stream) Any(fn func(int, float32)bool)  bool {
 	}
 	return false
 }
-
 func(s *Float32Stream) Paginate(size int)  [][]float32 {
 	var pages  [][]float32
 	prev := -1
@@ -155,7 +133,6 @@ func(s *Float32Stream) Paginate(size int)  [][]float32 {
 	}
 	return pages
 }
-
 func(s *Float32Stream) Pop() float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -165,12 +142,10 @@ func(s *Float32Stream) Pop() float32{
 	s.value=s.value[:lastIdx]
 	return val
 }
-
 func(s *Float32Stream) Prepend(given float32) *Float32Stream {
 	s.value = append([]float32{given},s.value...)
 	return s
 }
-
 func(s *Float32Stream) Max() float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -183,8 +158,6 @@ func(s *Float32Stream) Max() float32{
 	}
 	return max
 }
-
-
 func(s *Float32Stream) Min() float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -197,7 +170,6 @@ func(s *Float32Stream) Min() float32{
 	}
 	return min
 }
-
 func(s *Float32Stream) Random() float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -205,7 +177,6 @@ func(s *Float32Stream) Random() float32{
 	n := rand.Intn(len(s.value))
 	return s.value[n]
 }
-
 func(s *Float32Stream) Shuffle() *Float32Stream {
 	if len(s.value) <= 0 {
 		return s
@@ -221,26 +192,20 @@ func(s *Float32Stream) Shuffle() *Float32Stream {
 	
 	return s
 }
-
 func(s *Float32Stream) Collect() []float32{
 	return s.value
 }
-
-
 type Float32PStream struct{
 	value	[]*float32
 	defaultReturn *float32
 }
-
 func PStreamOfFloat32(value []*float32) *Float32PStream {
 	return &Float32PStream{value:value,defaultReturn:nil}
 }
-
 func(s *Float32PStream) OrElse(defaultReturn *float32)  *Float32PStream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-
 func(s *Float32PStream) Concate(given []*float32)  *Float32PStream {
 	value := make([]*float32, len(s.value)+len(given))
 	copy(value,s.value)
@@ -248,7 +213,6 @@ func(s *Float32PStream) Concate(given []*float32)  *Float32PStream {
 	s.value = value
 	return s
 }
-
 func(s *Float32PStream) Drop(n int)  *Float32PStream {
 	l := len(s.value) - n
 	if l < 0 {
@@ -257,7 +221,6 @@ func(s *Float32PStream) Drop(n int)  *Float32PStream {
 	s.value = s.value[len(s.value)-l:]
 	return s
 }
-
 func(s *Float32PStream) Filter(fn func(int, *float32)bool)  *Float32PStream {
 	value := make([]*float32, 0, len(s.value))
 	for i, each := range s.value {
@@ -268,28 +231,24 @@ func(s *Float32PStream) Filter(fn func(int, *float32)bool)  *Float32PStream {
 	s.value = value
 	return s
 }
-
 func(s *Float32PStream) First() *float32 {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[0]
 }
-
 func(s *Float32PStream) Last() *float32 {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[len(s.value)-1]
 }
-
 func(s *Float32PStream) Map(fn func(int, *float32)) *Float32PStream {
 	for i, each := range s.value {
 		fn(i,each)
 	}
 	return s
 }
-
 func(s *Float32PStream) Reduce(fn func(*float32, *float32, int) *float32,initial *float32) *float32   {
 	final := initial
 	for i, each := range s.value {
@@ -297,7 +256,6 @@ func(s *Float32PStream) Reduce(fn func(*float32, *float32, int) *float32,initial
 	}
 	return final
 }
-
 func(s *Float32PStream) Reverse()  *Float32PStream {
 	value := make([]*float32, len(s.value))
 	for i, each := range s.value {
@@ -306,7 +264,6 @@ func(s *Float32PStream) Reverse()  *Float32PStream {
 	s.value = value
 	return s
 }
-
 func(s *Float32PStream) Unique()  *Float32PStream{
 	value := make([]*float32, 0, len(s.value))
 	seen:=make(map[*float32]struct{})
@@ -320,31 +277,25 @@ func(s *Float32PStream) Unique()  *Float32PStream{
 	s.value = value
 	return s
 }
-
 func(s *Float32PStream) Append(given *float32) *Float32PStream {
 	s.value=append(s.value,given)
 	return s
 }
-
 func(s *Float32PStream) Len() int {
 	return len(s.value)
 }
-
 func(s *Float32PStream) IsEmpty() bool {
 	return len(s.value) == 0
 }
-
 func(s *Float32PStream) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-
 func(s *Float32PStream)  Sort(less func(*float32,*float32) bool )  *Float32PStream {
 	sort.Slice(s.value, func(i,j int)bool{
 		return less(s.value[i],s.value[j])
 	})
 	return s 
 }
-
 func(s *Float32PStream) All(fn func(int, *float32)bool)  bool {
 	for i, each := range s.value {
 		if !fn(i,each){
@@ -354,6 +305,8 @@ func(s *Float32PStream) All(fn func(int, *float32)bool)  bool {
 	return true
 }
 
+
+
 func(s *Float32PStream) Any(fn func(int, *float32)bool)  bool {
 	for i, each := range s.value {
 		if fn(i,each){
@@ -362,6 +315,8 @@ func(s *Float32PStream) Any(fn func(int, *float32)bool)  bool {
 	}
 	return false
 }
+
+
 
 func(s *Float32PStream) Paginate(size int)  [][]*float32 {
 	var pages  [][]*float32
@@ -375,7 +330,6 @@ func(s *Float32PStream) Paginate(size int)  [][]*float32 {
 	}
 	return pages
 }
-
 func(s *Float32PStream) Pop() *float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -385,12 +339,10 @@ func(s *Float32PStream) Pop() *float32{
 	s.value=s.value[:lastIdx]
 	return val
 }
-
 func(s *Float32PStream) Prepend(given *float32) *Float32PStream {
 	s.value = append([]*float32{given},s.value...)
 	return s
 }
-
 func(s *Float32PStream) Max() *float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -407,8 +359,6 @@ func(s *Float32PStream) Max() *float32{
 	}
 	return max
 }
-
-
 func(s *Float32PStream) Min() *float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -425,7 +375,6 @@ func(s *Float32PStream) Min() *float32{
 	}
 	return min
 }
-
 func(s *Float32PStream) Random() *float32{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -433,7 +382,6 @@ func(s *Float32PStream) Random() *float32{
 	n := rand.Intn(len(s.value))
 	return s.value[n]
 }
-
 func(s *Float32PStream) Shuffle() *Float32PStream {
 	if len(s.value) <= 0 {
 		return s
@@ -449,7 +397,6 @@ func(s *Float32PStream) Shuffle() *Float32PStream {
 	
 	return s
 }
-
 func(s *Float32PStream) Collect() []*float32{
 	return s.value
 }

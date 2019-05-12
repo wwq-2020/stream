@@ -1,26 +1,20 @@
 
 package commons
-
 import (
 	"sort"
 	"math/rand"
 )
-
 type UintStream struct{
 	value	[]uint
 	defaultReturn uint
 }
-
 func StreamOfUint(value []uint) *UintStream {
 	return &UintStream{value:value,defaultReturn:0}
 }
-
 func(s *UintStream) OrElase(defaultReturn uint)  *UintStream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-
-
 func(s *UintStream) Concate(given []uint)  *UintStream {
 	value := make([]uint, len(s.value)+len(given))
 	copy(value,s.value)
@@ -28,7 +22,6 @@ func(s *UintStream) Concate(given []uint)  *UintStream {
 	s.value = value
 	return s
 }
-
 func(s *UintStream) Drop(n int)  *UintStream {
 	l := len(s.value) - n
 	if l < 0 {
@@ -37,7 +30,6 @@ func(s *UintStream) Drop(n int)  *UintStream {
 	s.value = s.value[len(s.value)-l:]
 	return s
 }
-
 func(s *UintStream) Filter(fn func(int, uint)bool)  *UintStream {
 	value := make([]uint, 0, len(s.value))
 	for i, each := range s.value {
@@ -48,28 +40,24 @@ func(s *UintStream) Filter(fn func(int, uint)bool)  *UintStream {
 	s.value = value
 	return s
 }
-
 func(s *UintStream) First() uint {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[0]
 }
-
 func(s *UintStream) Last() uint {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[len(s.value)-1]
 }
-
 func(s *UintStream) Map(fn func(int, uint)) *UintStream {
 	for i, each := range s.value {
 		fn(i,each)
 	}
 	return s
 }
-
 func(s *UintStream) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
 	final := initial
 	for i, each := range s.value {
@@ -77,7 +65,6 @@ func(s *UintStream) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
 	}
 	return final
 }
-
 func(s *UintStream) Reverse()  *UintStream {
 	value := make([]uint, len(s.value))
 	for i, each := range s.value {
@@ -86,7 +73,6 @@ func(s *UintStream) Reverse()  *UintStream {
 	s.value = value
 	return s
 }
-
 func(s *UintStream) Unique()  *UintStream{
 	value := make([]uint, 0, len(s.value))
 	seen:=make(map[uint]struct{})
@@ -100,31 +86,25 @@ func(s *UintStream) Unique()  *UintStream{
 	s.value = value
 	return s
 }
-
 func(s *UintStream) Append(given uint) *UintStream {
 	s.value=append(s.value,given)
 	return s
 }
-
 func(s *UintStream) Len() int {
 	return len(s.value)
 }
-
 func(s *UintStream) IsEmpty() bool {
 	return len(s.value) == 0
 }
-
 func(s *UintStream) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-
 func(s *UintStream)  Sort()  *UintStream {
 	sort.Slice(s.value, func(i,j int)bool{
 		return s.value[i] < s.value[j]
 	})
 	return s 
 }
-
 func(s *UintStream) All(fn func(int, uint)bool)  bool {
 	for i, each := range s.value {
 		if !fn(i,each){
@@ -133,7 +113,6 @@ func(s *UintStream) All(fn func(int, uint)bool)  bool {
 	}
 	return true
 }
-
 func(s *UintStream) Any(fn func(int, uint)bool)  bool {
 	for i, each := range s.value {
 		if fn(i,each){
@@ -142,7 +121,6 @@ func(s *UintStream) Any(fn func(int, uint)bool)  bool {
 	}
 	return false
 }
-
 func(s *UintStream) Paginate(size int)  [][]uint {
 	var pages  [][]uint
 	prev := -1
@@ -155,7 +133,6 @@ func(s *UintStream) Paginate(size int)  [][]uint {
 	}
 	return pages
 }
-
 func(s *UintStream) Pop() uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -165,12 +142,10 @@ func(s *UintStream) Pop() uint{
 	s.value=s.value[:lastIdx]
 	return val
 }
-
 func(s *UintStream) Prepend(given uint) *UintStream {
 	s.value = append([]uint{given},s.value...)
 	return s
 }
-
 func(s *UintStream) Max() uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -183,8 +158,6 @@ func(s *UintStream) Max() uint{
 	}
 	return max
 }
-
-
 func(s *UintStream) Min() uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -197,7 +170,6 @@ func(s *UintStream) Min() uint{
 	}
 	return min
 }
-
 func(s *UintStream) Random() uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -205,7 +177,6 @@ func(s *UintStream) Random() uint{
 	n := rand.Intn(len(s.value))
 	return s.value[n]
 }
-
 func(s *UintStream) Shuffle() *UintStream {
 	if len(s.value) <= 0 {
 		return s
@@ -221,26 +192,20 @@ func(s *UintStream) Shuffle() *UintStream {
 	
 	return s
 }
-
 func(s *UintStream) Collect() []uint{
 	return s.value
 }
-
-
 type UintPStream struct{
 	value	[]*uint
 	defaultReturn *uint
 }
-
 func PStreamOfUint(value []*uint) *UintPStream {
 	return &UintPStream{value:value,defaultReturn:nil}
 }
-
 func(s *UintPStream) OrElse(defaultReturn *uint)  *UintPStream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-
 func(s *UintPStream) Concate(given []*uint)  *UintPStream {
 	value := make([]*uint, len(s.value)+len(given))
 	copy(value,s.value)
@@ -248,7 +213,6 @@ func(s *UintPStream) Concate(given []*uint)  *UintPStream {
 	s.value = value
 	return s
 }
-
 func(s *UintPStream) Drop(n int)  *UintPStream {
 	l := len(s.value) - n
 	if l < 0 {
@@ -257,7 +221,6 @@ func(s *UintPStream) Drop(n int)  *UintPStream {
 	s.value = s.value[len(s.value)-l:]
 	return s
 }
-
 func(s *UintPStream) Filter(fn func(int, *uint)bool)  *UintPStream {
 	value := make([]*uint, 0, len(s.value))
 	for i, each := range s.value {
@@ -268,28 +231,24 @@ func(s *UintPStream) Filter(fn func(int, *uint)bool)  *UintPStream {
 	s.value = value
 	return s
 }
-
 func(s *UintPStream) First() *uint {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[0]
 }
-
 func(s *UintPStream) Last() *uint {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	} 
 	return s.value[len(s.value)-1]
 }
-
 func(s *UintPStream) Map(fn func(int, *uint)) *UintPStream {
 	for i, each := range s.value {
 		fn(i,each)
 	}
 	return s
 }
-
 func(s *UintPStream) Reduce(fn func(*uint, *uint, int) *uint,initial *uint) *uint   {
 	final := initial
 	for i, each := range s.value {
@@ -297,7 +256,6 @@ func(s *UintPStream) Reduce(fn func(*uint, *uint, int) *uint,initial *uint) *uin
 	}
 	return final
 }
-
 func(s *UintPStream) Reverse()  *UintPStream {
 	value := make([]*uint, len(s.value))
 	for i, each := range s.value {
@@ -306,7 +264,6 @@ func(s *UintPStream) Reverse()  *UintPStream {
 	s.value = value
 	return s
 }
-
 func(s *UintPStream) Unique()  *UintPStream{
 	value := make([]*uint, 0, len(s.value))
 	seen:=make(map[*uint]struct{})
@@ -320,31 +277,25 @@ func(s *UintPStream) Unique()  *UintPStream{
 	s.value = value
 	return s
 }
-
 func(s *UintPStream) Append(given *uint) *UintPStream {
 	s.value=append(s.value,given)
 	return s
 }
-
 func(s *UintPStream) Len() int {
 	return len(s.value)
 }
-
 func(s *UintPStream) IsEmpty() bool {
 	return len(s.value) == 0
 }
-
 func(s *UintPStream) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-
 func(s *UintPStream)  Sort(less func(*uint,*uint) bool )  *UintPStream {
 	sort.Slice(s.value, func(i,j int)bool{
 		return less(s.value[i],s.value[j])
 	})
 	return s 
 }
-
 func(s *UintPStream) All(fn func(int, *uint)bool)  bool {
 	for i, each := range s.value {
 		if !fn(i,each){
@@ -354,6 +305,8 @@ func(s *UintPStream) All(fn func(int, *uint)bool)  bool {
 	return true
 }
 
+
+
 func(s *UintPStream) Any(fn func(int, *uint)bool)  bool {
 	for i, each := range s.value {
 		if fn(i,each){
@@ -362,6 +315,8 @@ func(s *UintPStream) Any(fn func(int, *uint)bool)  bool {
 	}
 	return false
 }
+
+
 
 func(s *UintPStream) Paginate(size int)  [][]*uint {
 	var pages  [][]*uint
@@ -375,7 +330,6 @@ func(s *UintPStream) Paginate(size int)  [][]*uint {
 	}
 	return pages
 }
-
 func(s *UintPStream) Pop() *uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -385,12 +339,10 @@ func(s *UintPStream) Pop() *uint{
 	s.value=s.value[:lastIdx]
 	return val
 }
-
 func(s *UintPStream) Prepend(given *uint) *UintPStream {
 	s.value = append([]*uint{given},s.value...)
 	return s
 }
-
 func(s *UintPStream) Max() *uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -407,8 +359,6 @@ func(s *UintPStream) Max() *uint{
 	}
 	return max
 }
-
-
 func(s *UintPStream) Min() *uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -425,7 +375,6 @@ func(s *UintPStream) Min() *uint{
 	}
 	return min
 }
-
 func(s *UintPStream) Random() *uint{
 	if len(s.value) <= 0 {
 		return s.defaultReturn
@@ -433,7 +382,6 @@ func(s *UintPStream) Random() *uint{
 	n := rand.Intn(len(s.value))
 	return s.value[n]
 }
-
 func(s *UintPStream) Shuffle() *UintPStream {
 	if len(s.value) <= 0 {
 		return s
@@ -449,7 +397,6 @@ func(s *UintPStream) Shuffle() *UintPStream {
 	
 	return s
 }
-
 func(s *UintPStream) Collect() []*uint{
 	return s.value
 }

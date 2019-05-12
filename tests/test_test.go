@@ -240,9 +240,7 @@ func TestShuffle(t *testing.T) {
 func TestSortByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
 	c := PStreamOfSome(data)
-	r := c.SortByA(func(one, another string) bool {
-		return one < another
-	}).Collect()
+	r := c.SortByA().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "hello"}}) {
 		t.Fatal("mistach")
 	}
@@ -251,9 +249,7 @@ func TestSortByA(t *testing.T) {
 func TestSortByB(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
 	c := PStreamOfSome(data)
-	r := c.SortByB(func(one, another string) bool {
-		return one < another
-	}).Collect()
+	r := c.SortByB().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}) {
 		t.Fatal("mistach")
 	}
@@ -273,9 +269,7 @@ func TestSortByC(t *testing.T) {
 func TestUniqueByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "world", B: "world"}}
 	c := PStreamOfSome(data)
-	r := c.UniqueByA(func(one, another string) bool {
-		return one == another
-	}).Collect()
+	r := c.UniqueByA().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "world", B: "hello"}}) {
 		t.Fatal("mistach")
 	}
@@ -284,9 +278,7 @@ func TestUniqueByA(t *testing.T) {
 func TestUniqueByB(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "world"}}
 	c := PStreamOfSome(data)
-	r := c.UniqueByB(func(one, another string) bool {
-		return one == another
-	}).Collect()
+	r := c.UniqueByB().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}}) {
 		t.Fatal("mistach")
 	}
