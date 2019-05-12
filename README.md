@@ -1,4 +1,4 @@
-# collections
+# stream
 
 ##  quick start
 ```
