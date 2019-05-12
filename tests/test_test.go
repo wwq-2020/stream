@@ -38,6 +38,18 @@ func TestFilter(t *testing.T) {
 	}
 }
 
+func TestFilterByA(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
+	c := PStreamOfSome(data)
+	filter := func(idx int, val string) bool {
+		return val == "hello"
+	}
+	r := c.FilterByA(filter).Collect()
+	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}}) {
+		t.Fatal("mistach")
+	}
+}
+
 func TestFirst(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := PStreamOfSome(data)
