@@ -481,6 +481,17 @@ func(s *{{.Name}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
 	return true
 }
 
+{{range $idx,$each := .Fields}}
+func(s *{{$.Name}}PStream) AllBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
+	for i, each := range s.value {
+		if !fn(i,each.{{$each.Name}}){
+			return false
+		}
+	}
+	return true
+}
+{{end}}
+
 
 {{range $idx,$each := .Fields}}
 func(s *{{$.Name}}Stream) AllBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
@@ -501,6 +512,18 @@ func(s *{{.Name}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
 	}
 	return false
 }
+
+
+{{range $idx,$each := .Fields}}
+func(s *{{$.Name}}PStream) AnyBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
+	for i, each := range s.value {
+		if fn(i,each.{{$each.Name}}){
+			return true
+		}
+	}
+	return false
+}
+{{end}}
 
 {{range $idx,$each := .Fields}}
 func(s *{{$.Name}}Stream) AnyBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
@@ -1029,16 +1052,7 @@ func(s *{{.TitleName}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
 	return true
 }
 
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}PStream) AllBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.{{$each.Name}}){
-			return false
-		}
-	}
-	return true
-}
-{{end}}
+
 
 func(s *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
 	for i, each := range s.value {
@@ -1049,16 +1063,6 @@ func(s *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
 	return false
 }
 
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}Stream) AnyBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.{{$each.Name}}){
-			return true
-		}
-	}
-	return false
-}
-{{end}}
 
 func(s *{{.TitleName}}PStream) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}

@@ -165,6 +165,26 @@ func TestAll(t *testing.T) {
 	}
 }
 
+func TestAllByA(t *testing.T) {
+	data := []*Some{&Some{A: "world"}, &Some{A: "world"}}
+	c := PStreamOfSome(data)
+	if !c.AllByA(func(i int, val string) bool {
+		return val == "world"
+	}) {
+		t.Fatal("mistach")
+	}
+}
+
+func TestAnyByA(t *testing.T) {
+	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
+	c := PStreamOfSome(data)
+	if !c.AnyByA(func(i int, val string) bool {
+		return val == "hello"
+	}) {
+		t.Fatal("mistach")
+	}
+}
+
 func TestAny(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
 	c := PStreamOfSome(data)

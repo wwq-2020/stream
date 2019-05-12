@@ -480,6 +480,26 @@ func(s *SomePStream) All(fn func(int, *Some)bool)  bool {
 }
 
 
+func(s *SomePStream) AllByA(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if !fn(i,each.A){
+			return false
+		}
+	}
+	return true
+}
+
+func(s *SomePStream) AllByB(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if !fn(i,each.B){
+			return false
+		}
+	}
+	return true
+}
+
+
+
 
 func(s *SomeStream) AllByA(fn func(int,string)bool)  bool {
 	for i, each := range s.value {
@@ -508,6 +528,27 @@ func(s *SomePStream) Any(fn func(int, *Some)bool)  bool {
 	}
 	return false
 }
+
+
+
+func(s *SomePStream) AnyByA(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if fn(i,each.A){
+			return true
+		}
+	}
+	return false
+}
+
+func(s *SomePStream) AnyByB(fn func(int,string)bool)  bool {
+	for i, each := range s.value {
+		if fn(i,each.B){
+			return true
+		}
+	}
+	return false
+}
+
 
 
 func(s *SomeStream) AnyByA(fn func(int,string)bool)  bool {

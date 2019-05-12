@@ -317,7 +317,6 @@ func(s *Float32PStream) Any(fn func(int, *float32)bool)  bool {
 }
 
 
-
 func(s *Float32PStream) Paginate(size int)  [][]*float32 {
 	var pages  [][]*float32
 	prev := -1

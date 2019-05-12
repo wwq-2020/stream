@@ -317,7 +317,6 @@ func(s *IntPStream) Any(fn func(int, *int)bool)  bool {
 }
 
 
-
 func(s *IntPStream) Paginate(size int)  [][]*int {
 	var pages  [][]*int
 	prev := -1
