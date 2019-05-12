@@ -15,118 +15,118 @@ func StreamOfString(value []string) *StringStream {
 	return &StringStream{value:value,defaultReturn:""}
 }
 
-func(c *StringStream) OrElase(defaultReturn string)  *StringStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *StringStream) OrElase(defaultReturn string)  *StringStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
 
-func(c *StringStream) Concate(given []string)  *StringStream {
-	value := make([]string, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *StringStream) Concate(given []string)  *StringStream {
+	value := make([]string, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *StringStream) Drop(n int)  *StringStream {
-	l := len(c.value) - n
+func(s *StringStream) Drop(n int)  *StringStream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *StringStream) Filter(fn func(int, string)bool)  *StringStream {
-	value := make([]string, 0, len(c.value))
-	for i, each := range c.value {
+func(s *StringStream) Filter(fn func(int, string)bool)  *StringStream {
+	value := make([]string, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *StringStream) First() string {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringStream) First() string {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *StringStream) Last() string {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringStream) Last() string {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *StringStream) Map(fn func(int, string)) *StringStream {
-	for i, each := range c.value {
+func(s *StringStream) Map(fn func(int, string)) *StringStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *StringStream) Reduce(fn func(string, string, int) string,initial string) string   {
+func(s *StringStream) Reduce(fn func(string, string, int) string,initial string) string   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *StringStream) Reverse()  *StringStream {
-	value := make([]string, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *StringStream) Reverse()  *StringStream {
+	value := make([]string, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *StringStream) Unique()  *StringStream{
-	value := make([]string, 0, len(c.value))
+func(s *StringStream) Unique()  *StringStream{
+	value := make([]string, 0, len(s.value))
 	seen:=make(map[string]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *StringStream) Append(given string) *StringStream {
-	c.value=append(c.value,given)
-	return c
+func(s *StringStream) Append(given string) *StringStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *StringStream) Len() int {
-	return len(c.value)
+func(s *StringStream) Len() int {
+	return len(s.value)
 }
 
-func(c *StringStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *StringStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *StringStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *StringStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *StringStream)  Sort()  *StringStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] < c.value[j]
+func(s *StringStream)  Sort()  *StringStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i] < s.value[j]
 	})
-	return c 
+	return s 
 }
 
-func(c *StringStream) All(fn func(int, string)bool)  bool {
-	for i, each := range c.value {
+func(s *StringStream) All(fn func(int, string)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -134,8 +134,8 @@ func(c *StringStream) All(fn func(int, string)bool)  bool {
 	return true
 }
 
-func(c *StringStream) Any(fn func(int, string)bool)  bool {
-	for i, each := range c.value {
+func(s *StringStream) Any(fn func(int, string)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -143,40 +143,40 @@ func(c *StringStream) Any(fn func(int, string)bool)  bool {
 	return false
 }
 
-func(c *StringStream) Paginate(size int)  [][]string {
+func(s *StringStream) Paginate(size int)  [][]string {
 	var pages  [][]string
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *StringStream) Pop() string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringStream) Pop() string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *StringStream) Prepend(given string) *StringStream {
-	c.value = append([]string{given},c.value...)
-	return c
+func(s *StringStream) Prepend(given string) *StringStream {
+	s.value = append([]string{given},s.value...)
+	return s
 }
 
-func(c *StringStream) Max() string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringStream) Max() string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max string = c.value[0]
-	for _,each := range c.value {
+	var max string = s.value[0]
+	for _,each := range s.value {
 		if max < each {
 			max = each
 		}
@@ -185,12 +185,12 @@ func(c *StringStream) Max() string{
 }
 
 
-func(c *StringStream) Min() string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringStream) Min() string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min string = c.value[0]
-	for _,each := range c.value {
+	var min string = s.value[0]
+	for _,each := range s.value {
 		if each  < min {
 			min = each
 		}
@@ -198,32 +198,32 @@ func(c *StringStream) Min() string{
 	return min
 }
 
-func(c *StringStream) Random() string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringStream) Random() string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *StringStream) Shuffle() *StringStream {
-	if len(c.value) <= 0 {
-		return c
+func(s *StringStream) Shuffle() *StringStream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *StringStream) Collect() []string{
-	return c.value
+func(s *StringStream) Collect() []string{
+	return s.value
 }
 
 
@@ -236,117 +236,117 @@ func PStreamOfString(value []*string) *StringPStream {
 	return &StringPStream{value:value,defaultReturn:nil}
 }
 
-func(c *StringPStream) OrElse(defaultReturn *string)  *StringPStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *StringPStream) OrElse(defaultReturn *string)  *StringPStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
-func(c *StringPStream) Concate(given []*string)  *StringPStream {
-	value := make([]*string, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *StringPStream) Concate(given []*string)  *StringPStream {
+	value := make([]*string, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *StringPStream) Drop(n int)  *StringPStream {
-	l := len(c.value) - n
+func(s *StringPStream) Drop(n int)  *StringPStream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *StringPStream) Filter(fn func(int, *string)bool)  *StringPStream {
-	value := make([]*string, 0, len(c.value))
-	for i, each := range c.value {
+func(s *StringPStream) Filter(fn func(int, *string)bool)  *StringPStream {
+	value := make([]*string, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *StringPStream) First() *string {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringPStream) First() *string {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *StringPStream) Last() *string {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringPStream) Last() *string {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *StringPStream) Map(fn func(int, *string)) *StringPStream {
-	for i, each := range c.value {
+func(s *StringPStream) Map(fn func(int, *string)) *StringPStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *StringPStream) Reduce(fn func(*string, *string, int) *string,initial *string) *string   {
+func(s *StringPStream) Reduce(fn func(*string, *string, int) *string,initial *string) *string   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *StringPStream) Reverse()  *StringPStream {
-	value := make([]*string, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *StringPStream) Reverse()  *StringPStream {
+	value := make([]*string, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *StringPStream) Unique()  *StringPStream{
-	value := make([]*string, 0, len(c.value))
+func(s *StringPStream) Unique()  *StringPStream{
+	value := make([]*string, 0, len(s.value))
 	seen:=make(map[*string]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *StringPStream) Append(given *string) *StringPStream {
-	c.value=append(c.value,given)
-	return c
+func(s *StringPStream) Append(given *string) *StringPStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *StringPStream) Len() int {
-	return len(c.value)
+func(s *StringPStream) Len() int {
+	return len(s.value)
 }
 
-func(c *StringPStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *StringPStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *StringPStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *StringPStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *StringPStream)  Sort(less func(*string,*string) bool )  *StringPStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i],c.value[j])
+func(s *StringPStream)  Sort(less func(*string,*string) bool )  *StringPStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i],s.value[j])
 	})
-	return c 
+	return s 
 }
 
-func(c *StringPStream) All(fn func(int, *string)bool)  bool {
-	for i, each := range c.value {
+func(s *StringPStream) All(fn func(int, *string)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -354,8 +354,8 @@ func(c *StringPStream) All(fn func(int, *string)bool)  bool {
 	return true
 }
 
-func(c *StringPStream) Any(fn func(int, *string)bool)  bool {
-	for i, each := range c.value {
+func(s *StringPStream) Any(fn func(int, *string)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -363,40 +363,40 @@ func(c *StringPStream) Any(fn func(int, *string)bool)  bool {
 	return false
 }
 
-func(c *StringPStream) Paginate(size int)  [][]*string {
+func(s *StringPStream) Paginate(size int)  [][]*string {
 	var pages  [][]*string
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *StringPStream) Pop() *string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringPStream) Pop() *string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *StringPStream) Prepend(given *string) *StringPStream {
-	c.value = append([]*string{given},c.value...)
-	return c
+func(s *StringPStream) Prepend(given *string) *StringPStream {
+	s.value = append([]*string{given},s.value...)
+	return s
 }
 
-func(c *StringPStream) Max() *string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringPStream) Max() *string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max *string = c.value[0]
-	for _,each := range c.value {
+	var max *string = s.value[0]
+	for _,each := range s.value {
 		if max == nil{
 			max = each
 			continue
@@ -409,12 +409,12 @@ func(c *StringPStream) Max() *string{
 }
 
 
-func(c *StringPStream) Min() *string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringPStream) Min() *string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min *string = c.value[0]
-	for _,each := range c.value {
+	var min *string = s.value[0]
+	for _,each := range s.value {
 		if min == nil{
 			min = each
 			continue
@@ -426,30 +426,30 @@ func(c *StringPStream) Min() *string{
 	return min
 }
 
-func(c *StringPStream) Random() *string{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *StringPStream) Random() *string{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *StringPStream) Shuffle() *StringPStream {
-	if len(c.value) <= 0 {
-		return c
+func(s *StringPStream) Shuffle() *StringPStream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *StringPStream) Collect() []*string{
-	return c.value
+func(s *StringPStream) Collect() []*string{
+	return s.value
 }

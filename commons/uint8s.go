@@ -15,118 +15,118 @@ func StreamOfUint8(value []uint8) *Uint8Stream {
 	return &Uint8Stream{value:value,defaultReturn:0}
 }
 
-func(c *Uint8Stream) OrElase(defaultReturn uint8)  *Uint8Stream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *Uint8Stream) OrElase(defaultReturn uint8)  *Uint8Stream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
 
-func(c *Uint8Stream) Concate(given []uint8)  *Uint8Stream {
-	value := make([]uint8, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *Uint8Stream) Concate(given []uint8)  *Uint8Stream {
+	value := make([]uint8, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *Uint8Stream) Drop(n int)  *Uint8Stream {
-	l := len(c.value) - n
+func(s *Uint8Stream) Drop(n int)  *Uint8Stream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *Uint8Stream) Filter(fn func(int, uint8)bool)  *Uint8Stream {
-	value := make([]uint8, 0, len(c.value))
-	for i, each := range c.value {
+func(s *Uint8Stream) Filter(fn func(int, uint8)bool)  *Uint8Stream {
+	value := make([]uint8, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint8Stream) First() uint8 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8Stream) First() uint8 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *Uint8Stream) Last() uint8 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8Stream) Last() uint8 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *Uint8Stream) Map(fn func(int, uint8)) *Uint8Stream {
-	for i, each := range c.value {
+func(s *Uint8Stream) Map(fn func(int, uint8)) *Uint8Stream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *Uint8Stream) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8   {
+func(s *Uint8Stream) Reduce(fn func(uint8, uint8, int) uint8,initial uint8) uint8   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *Uint8Stream) Reverse()  *Uint8Stream {
-	value := make([]uint8, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *Uint8Stream) Reverse()  *Uint8Stream {
+	value := make([]uint8, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint8Stream) Unique()  *Uint8Stream{
-	value := make([]uint8, 0, len(c.value))
+func(s *Uint8Stream) Unique()  *Uint8Stream{
+	value := make([]uint8, 0, len(s.value))
 	seen:=make(map[uint8]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint8Stream) Append(given uint8) *Uint8Stream {
-	c.value=append(c.value,given)
-	return c
+func(s *Uint8Stream) Append(given uint8) *Uint8Stream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *Uint8Stream) Len() int {
-	return len(c.value)
+func(s *Uint8Stream) Len() int {
+	return len(s.value)
 }
 
-func(c *Uint8Stream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *Uint8Stream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *Uint8Stream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *Uint8Stream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *Uint8Stream)  Sort()  *Uint8Stream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] < c.value[j]
+func(s *Uint8Stream)  Sort()  *Uint8Stream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i] < s.value[j]
 	})
-	return c 
+	return s 
 }
 
-func(c *Uint8Stream) All(fn func(int, uint8)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint8Stream) All(fn func(int, uint8)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -134,8 +134,8 @@ func(c *Uint8Stream) All(fn func(int, uint8)bool)  bool {
 	return true
 }
 
-func(c *Uint8Stream) Any(fn func(int, uint8)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint8Stream) Any(fn func(int, uint8)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -143,40 +143,40 @@ func(c *Uint8Stream) Any(fn func(int, uint8)bool)  bool {
 	return false
 }
 
-func(c *Uint8Stream) Paginate(size int)  [][]uint8 {
+func(s *Uint8Stream) Paginate(size int)  [][]uint8 {
 	var pages  [][]uint8
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *Uint8Stream) Pop() uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8Stream) Pop() uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *Uint8Stream) Prepend(given uint8) *Uint8Stream {
-	c.value = append([]uint8{given},c.value...)
-	return c
+func(s *Uint8Stream) Prepend(given uint8) *Uint8Stream {
+	s.value = append([]uint8{given},s.value...)
+	return s
 }
 
-func(c *Uint8Stream) Max() uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8Stream) Max() uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max uint8 = c.value[0]
-	for _,each := range c.value {
+	var max uint8 = s.value[0]
+	for _,each := range s.value {
 		if max < each {
 			max = each
 		}
@@ -185,12 +185,12 @@ func(c *Uint8Stream) Max() uint8{
 }
 
 
-func(c *Uint8Stream) Min() uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8Stream) Min() uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min uint8 = c.value[0]
-	for _,each := range c.value {
+	var min uint8 = s.value[0]
+	for _,each := range s.value {
 		if each  < min {
 			min = each
 		}
@@ -198,32 +198,32 @@ func(c *Uint8Stream) Min() uint8{
 	return min
 }
 
-func(c *Uint8Stream) Random() uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8Stream) Random() uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *Uint8Stream) Shuffle() *Uint8Stream {
-	if len(c.value) <= 0 {
-		return c
+func(s *Uint8Stream) Shuffle() *Uint8Stream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *Uint8Stream) Collect() []uint8{
-	return c.value
+func(s *Uint8Stream) Collect() []uint8{
+	return s.value
 }
 
 
@@ -236,117 +236,117 @@ func PStreamOfUint8(value []*uint8) *Uint8PStream {
 	return &Uint8PStream{value:value,defaultReturn:nil}
 }
 
-func(c *Uint8PStream) OrElse(defaultReturn *uint8)  *Uint8PStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *Uint8PStream) OrElse(defaultReturn *uint8)  *Uint8PStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
-func(c *Uint8PStream) Concate(given []*uint8)  *Uint8PStream {
-	value := make([]*uint8, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *Uint8PStream) Concate(given []*uint8)  *Uint8PStream {
+	value := make([]*uint8, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *Uint8PStream) Drop(n int)  *Uint8PStream {
-	l := len(c.value) - n
+func(s *Uint8PStream) Drop(n int)  *Uint8PStream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *Uint8PStream) Filter(fn func(int, *uint8)bool)  *Uint8PStream {
-	value := make([]*uint8, 0, len(c.value))
-	for i, each := range c.value {
+func(s *Uint8PStream) Filter(fn func(int, *uint8)bool)  *Uint8PStream {
+	value := make([]*uint8, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint8PStream) First() *uint8 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8PStream) First() *uint8 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *Uint8PStream) Last() *uint8 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8PStream) Last() *uint8 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *Uint8PStream) Map(fn func(int, *uint8)) *Uint8PStream {
-	for i, each := range c.value {
+func(s *Uint8PStream) Map(fn func(int, *uint8)) *Uint8PStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *Uint8PStream) Reduce(fn func(*uint8, *uint8, int) *uint8,initial *uint8) *uint8   {
+func(s *Uint8PStream) Reduce(fn func(*uint8, *uint8, int) *uint8,initial *uint8) *uint8   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *Uint8PStream) Reverse()  *Uint8PStream {
-	value := make([]*uint8, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *Uint8PStream) Reverse()  *Uint8PStream {
+	value := make([]*uint8, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint8PStream) Unique()  *Uint8PStream{
-	value := make([]*uint8, 0, len(c.value))
+func(s *Uint8PStream) Unique()  *Uint8PStream{
+	value := make([]*uint8, 0, len(s.value))
 	seen:=make(map[*uint8]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint8PStream) Append(given *uint8) *Uint8PStream {
-	c.value=append(c.value,given)
-	return c
+func(s *Uint8PStream) Append(given *uint8) *Uint8PStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *Uint8PStream) Len() int {
-	return len(c.value)
+func(s *Uint8PStream) Len() int {
+	return len(s.value)
 }
 
-func(c *Uint8PStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *Uint8PStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *Uint8PStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *Uint8PStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *Uint8PStream)  Sort(less func(*uint8,*uint8) bool )  *Uint8PStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i],c.value[j])
+func(s *Uint8PStream)  Sort(less func(*uint8,*uint8) bool )  *Uint8PStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i],s.value[j])
 	})
-	return c 
+	return s 
 }
 
-func(c *Uint8PStream) All(fn func(int, *uint8)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint8PStream) All(fn func(int, *uint8)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -354,8 +354,8 @@ func(c *Uint8PStream) All(fn func(int, *uint8)bool)  bool {
 	return true
 }
 
-func(c *Uint8PStream) Any(fn func(int, *uint8)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint8PStream) Any(fn func(int, *uint8)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -363,40 +363,40 @@ func(c *Uint8PStream) Any(fn func(int, *uint8)bool)  bool {
 	return false
 }
 
-func(c *Uint8PStream) Paginate(size int)  [][]*uint8 {
+func(s *Uint8PStream) Paginate(size int)  [][]*uint8 {
 	var pages  [][]*uint8
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *Uint8PStream) Pop() *uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8PStream) Pop() *uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *Uint8PStream) Prepend(given *uint8) *Uint8PStream {
-	c.value = append([]*uint8{given},c.value...)
-	return c
+func(s *Uint8PStream) Prepend(given *uint8) *Uint8PStream {
+	s.value = append([]*uint8{given},s.value...)
+	return s
 }
 
-func(c *Uint8PStream) Max() *uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8PStream) Max() *uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max *uint8 = c.value[0]
-	for _,each := range c.value {
+	var max *uint8 = s.value[0]
+	for _,each := range s.value {
 		if max == nil{
 			max = each
 			continue
@@ -409,12 +409,12 @@ func(c *Uint8PStream) Max() *uint8{
 }
 
 
-func(c *Uint8PStream) Min() *uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8PStream) Min() *uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min *uint8 = c.value[0]
-	for _,each := range c.value {
+	var min *uint8 = s.value[0]
+	for _,each := range s.value {
 		if min == nil{
 			min = each
 			continue
@@ -426,30 +426,30 @@ func(c *Uint8PStream) Min() *uint8{
 	return min
 }
 
-func(c *Uint8PStream) Random() *uint8{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint8PStream) Random() *uint8{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *Uint8PStream) Shuffle() *Uint8PStream {
-	if len(c.value) <= 0 {
-		return c
+func(s *Uint8PStream) Shuffle() *Uint8PStream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *Uint8PStream) Collect() []*uint8{
-	return c.value
+func(s *Uint8PStream) Collect() []*uint8{
+	return s.value
 }

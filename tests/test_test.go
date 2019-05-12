@@ -303,6 +303,15 @@ func TestUniqueByC(t *testing.T) {
 	}
 }
 
+func TestFields(t *testing.T) {
+	data := []*Some{&Some{A: "hello", B: "world", D: &outter.Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", D: &outter.Some{A: "hello", B: "world"}}}
+	c := PStreamOfSome(data)
+	r := c.As()
+	if !reflect.DeepEqual(r, []string{"hello", "hello"}) {
+		t.Fatal("mistach")
+	}
+}
+
 func TestFieldStream(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world", D: &outter.Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", D: &outter.Some{A: "hello", B: "world"}}}
 	c := PStreamOfSome(data)

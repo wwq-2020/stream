@@ -15,118 +15,118 @@ func StreamOfUint64(value []uint64) *Uint64Stream {
 	return &Uint64Stream{value:value,defaultReturn:0}
 }
 
-func(c *Uint64Stream) OrElase(defaultReturn uint64)  *Uint64Stream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *Uint64Stream) OrElase(defaultReturn uint64)  *Uint64Stream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
 
-func(c *Uint64Stream) Concate(given []uint64)  *Uint64Stream {
-	value := make([]uint64, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *Uint64Stream) Concate(given []uint64)  *Uint64Stream {
+	value := make([]uint64, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *Uint64Stream) Drop(n int)  *Uint64Stream {
-	l := len(c.value) - n
+func(s *Uint64Stream) Drop(n int)  *Uint64Stream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *Uint64Stream) Filter(fn func(int, uint64)bool)  *Uint64Stream {
-	value := make([]uint64, 0, len(c.value))
-	for i, each := range c.value {
+func(s *Uint64Stream) Filter(fn func(int, uint64)bool)  *Uint64Stream {
+	value := make([]uint64, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint64Stream) First() uint64 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64Stream) First() uint64 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *Uint64Stream) Last() uint64 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64Stream) Last() uint64 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *Uint64Stream) Map(fn func(int, uint64)) *Uint64Stream {
-	for i, each := range c.value {
+func(s *Uint64Stream) Map(fn func(int, uint64)) *Uint64Stream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *Uint64Stream) Reduce(fn func(uint64, uint64, int) uint64,initial uint64) uint64   {
+func(s *Uint64Stream) Reduce(fn func(uint64, uint64, int) uint64,initial uint64) uint64   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *Uint64Stream) Reverse()  *Uint64Stream {
-	value := make([]uint64, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *Uint64Stream) Reverse()  *Uint64Stream {
+	value := make([]uint64, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint64Stream) Unique()  *Uint64Stream{
-	value := make([]uint64, 0, len(c.value))
+func(s *Uint64Stream) Unique()  *Uint64Stream{
+	value := make([]uint64, 0, len(s.value))
 	seen:=make(map[uint64]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint64Stream) Append(given uint64) *Uint64Stream {
-	c.value=append(c.value,given)
-	return c
+func(s *Uint64Stream) Append(given uint64) *Uint64Stream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *Uint64Stream) Len() int {
-	return len(c.value)
+func(s *Uint64Stream) Len() int {
+	return len(s.value)
 }
 
-func(c *Uint64Stream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *Uint64Stream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *Uint64Stream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *Uint64Stream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *Uint64Stream)  Sort()  *Uint64Stream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] < c.value[j]
+func(s *Uint64Stream)  Sort()  *Uint64Stream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i] < s.value[j]
 	})
-	return c 
+	return s 
 }
 
-func(c *Uint64Stream) All(fn func(int, uint64)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint64Stream) All(fn func(int, uint64)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -134,8 +134,8 @@ func(c *Uint64Stream) All(fn func(int, uint64)bool)  bool {
 	return true
 }
 
-func(c *Uint64Stream) Any(fn func(int, uint64)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint64Stream) Any(fn func(int, uint64)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -143,40 +143,40 @@ func(c *Uint64Stream) Any(fn func(int, uint64)bool)  bool {
 	return false
 }
 
-func(c *Uint64Stream) Paginate(size int)  [][]uint64 {
+func(s *Uint64Stream) Paginate(size int)  [][]uint64 {
 	var pages  [][]uint64
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *Uint64Stream) Pop() uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64Stream) Pop() uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *Uint64Stream) Prepend(given uint64) *Uint64Stream {
-	c.value = append([]uint64{given},c.value...)
-	return c
+func(s *Uint64Stream) Prepend(given uint64) *Uint64Stream {
+	s.value = append([]uint64{given},s.value...)
+	return s
 }
 
-func(c *Uint64Stream) Max() uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64Stream) Max() uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max uint64 = c.value[0]
-	for _,each := range c.value {
+	var max uint64 = s.value[0]
+	for _,each := range s.value {
 		if max < each {
 			max = each
 		}
@@ -185,12 +185,12 @@ func(c *Uint64Stream) Max() uint64{
 }
 
 
-func(c *Uint64Stream) Min() uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64Stream) Min() uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min uint64 = c.value[0]
-	for _,each := range c.value {
+	var min uint64 = s.value[0]
+	for _,each := range s.value {
 		if each  < min {
 			min = each
 		}
@@ -198,32 +198,32 @@ func(c *Uint64Stream) Min() uint64{
 	return min
 }
 
-func(c *Uint64Stream) Random() uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64Stream) Random() uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *Uint64Stream) Shuffle() *Uint64Stream {
-	if len(c.value) <= 0 {
-		return c
+func(s *Uint64Stream) Shuffle() *Uint64Stream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *Uint64Stream) Collect() []uint64{
-	return c.value
+func(s *Uint64Stream) Collect() []uint64{
+	return s.value
 }
 
 
@@ -236,117 +236,117 @@ func PStreamOfUint64(value []*uint64) *Uint64PStream {
 	return &Uint64PStream{value:value,defaultReturn:nil}
 }
 
-func(c *Uint64PStream) OrElse(defaultReturn *uint64)  *Uint64PStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *Uint64PStream) OrElse(defaultReturn *uint64)  *Uint64PStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
-func(c *Uint64PStream) Concate(given []*uint64)  *Uint64PStream {
-	value := make([]*uint64, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *Uint64PStream) Concate(given []*uint64)  *Uint64PStream {
+	value := make([]*uint64, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *Uint64PStream) Drop(n int)  *Uint64PStream {
-	l := len(c.value) - n
+func(s *Uint64PStream) Drop(n int)  *Uint64PStream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *Uint64PStream) Filter(fn func(int, *uint64)bool)  *Uint64PStream {
-	value := make([]*uint64, 0, len(c.value))
-	for i, each := range c.value {
+func(s *Uint64PStream) Filter(fn func(int, *uint64)bool)  *Uint64PStream {
+	value := make([]*uint64, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint64PStream) First() *uint64 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64PStream) First() *uint64 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *Uint64PStream) Last() *uint64 {
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64PStream) Last() *uint64 {
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *Uint64PStream) Map(fn func(int, *uint64)) *Uint64PStream {
-	for i, each := range c.value {
+func(s *Uint64PStream) Map(fn func(int, *uint64)) *Uint64PStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *Uint64PStream) Reduce(fn func(*uint64, *uint64, int) *uint64,initial *uint64) *uint64   {
+func(s *Uint64PStream) Reduce(fn func(*uint64, *uint64, int) *uint64,initial *uint64) *uint64   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *Uint64PStream) Reverse()  *Uint64PStream {
-	value := make([]*uint64, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *Uint64PStream) Reverse()  *Uint64PStream {
+	value := make([]*uint64, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint64PStream) Unique()  *Uint64PStream{
-	value := make([]*uint64, 0, len(c.value))
+func(s *Uint64PStream) Unique()  *Uint64PStream{
+	value := make([]*uint64, 0, len(s.value))
 	seen:=make(map[*uint64]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *Uint64PStream) Append(given *uint64) *Uint64PStream {
-	c.value=append(c.value,given)
-	return c
+func(s *Uint64PStream) Append(given *uint64) *Uint64PStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *Uint64PStream) Len() int {
-	return len(c.value)
+func(s *Uint64PStream) Len() int {
+	return len(s.value)
 }
 
-func(c *Uint64PStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *Uint64PStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *Uint64PStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *Uint64PStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *Uint64PStream)  Sort(less func(*uint64,*uint64) bool )  *Uint64PStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i],c.value[j])
+func(s *Uint64PStream)  Sort(less func(*uint64,*uint64) bool )  *Uint64PStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i],s.value[j])
 	})
-	return c 
+	return s 
 }
 
-func(c *Uint64PStream) All(fn func(int, *uint64)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint64PStream) All(fn func(int, *uint64)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -354,8 +354,8 @@ func(c *Uint64PStream) All(fn func(int, *uint64)bool)  bool {
 	return true
 }
 
-func(c *Uint64PStream) Any(fn func(int, *uint64)bool)  bool {
-	for i, each := range c.value {
+func(s *Uint64PStream) Any(fn func(int, *uint64)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -363,40 +363,40 @@ func(c *Uint64PStream) Any(fn func(int, *uint64)bool)  bool {
 	return false
 }
 
-func(c *Uint64PStream) Paginate(size int)  [][]*uint64 {
+func(s *Uint64PStream) Paginate(size int)  [][]*uint64 {
 	var pages  [][]*uint64
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *Uint64PStream) Pop() *uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64PStream) Pop() *uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *Uint64PStream) Prepend(given *uint64) *Uint64PStream {
-	c.value = append([]*uint64{given},c.value...)
-	return c
+func(s *Uint64PStream) Prepend(given *uint64) *Uint64PStream {
+	s.value = append([]*uint64{given},s.value...)
+	return s
 }
 
-func(c *Uint64PStream) Max() *uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64PStream) Max() *uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max *uint64 = c.value[0]
-	for _,each := range c.value {
+	var max *uint64 = s.value[0]
+	for _,each := range s.value {
 		if max == nil{
 			max = each
 			continue
@@ -409,12 +409,12 @@ func(c *Uint64PStream) Max() *uint64{
 }
 
 
-func(c *Uint64PStream) Min() *uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64PStream) Min() *uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min *uint64 = c.value[0]
-	for _,each := range c.value {
+	var min *uint64 = s.value[0]
+	for _,each := range s.value {
 		if min == nil{
 			min = each
 			continue
@@ -426,30 +426,30 @@ func(c *Uint64PStream) Min() *uint64{
 	return min
 }
 
-func(c *Uint64PStream) Random() *uint64{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *Uint64PStream) Random() *uint64{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *Uint64PStream) Shuffle() *Uint64PStream {
-	if len(c.value) <= 0 {
-		return c
+func(s *Uint64PStream) Shuffle() *Uint64PStream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *Uint64PStream) Collect() []*uint64{
-	return c.value
+func(s *Uint64PStream) Collect() []*uint64{
+	return s.value
 }

@@ -14,86 +14,86 @@ package outter
 		return &SomeStream{value:value, defaultReturn:Some{}}
 	}
 
-	func(c *SomeStream) OrElse(defaultReturn Some)  *SomeStream {
-		c.defaultReturn = defaultReturn
-		return c
+	func(s *SomeStream) OrElse(defaultReturn Some)  *SomeStream {
+		s.defaultReturn = defaultReturn
+		return s
 	}	
 
-	func(c *SomeStream) Concate(given []Some)  *SomeStream {
-		value := make([]Some, len(c.value)+len(given))
-		copy(value,c.value)
-		copy(value[len(c.value):],given)
-		c.value = value
-		return c
+	func(s *SomeStream) Concate(given []Some)  *SomeStream {
+		value := make([]Some, len(s.value)+len(given))
+		copy(value,s.value)
+		copy(value[len(s.value):],given)
+		s.value = value
+		return s
 	}
 	
-	func(c *SomeStream) Drop(n int)  *SomeStream {
-		l := len(c.value) - n
+	func(s *SomeStream) Drop(n int)  *SomeStream {
+		l := len(s.value) - n
 		if l < 0 {
 			l = 0
 		}
-		c.value = c.value[len(c.value)-l:]
-		return c
+		s.value = s.value[len(s.value)-l:]
+		return s
 	}
 	
-	func(c *SomeStream) Filter(fn func(int, Some)bool)  *SomeStream {
-		value := make([]Some, 0, len(c.value))
-		for i, each := range c.value {
+	func(s *SomeStream) Filter(fn func(int, Some)bool)  *SomeStream {
+		value := make([]Some, 0, len(s.value))
+		for i, each := range s.value {
 			if fn(i,each){
 				value = append(value,each)
 			}
 		}
-		c.value = value
-		return c
+		s.value = value
+		return s
 	}
 	
-	func(c *SomeStream) First() Some {
-		if len(c.value) <= 0 {
-			return c.defaultReturn
+	func(s *SomeStream) First() Some {
+		if len(s.value) <= 0 {
+			return s.defaultReturn
 		} 
-		return c.value[0]
+		return s.value[0]
 	}
 	
-	func(c *SomeStream) Last() Some {
-		if len(c.value) <= 0 {
-			return c.defaultReturn
+	func(s *SomeStream) Last() Some {
+		if len(s.value) <= 0 {
+			return s.defaultReturn
 		} 
-		return c.value[len(c.value)-1]
+		return s.value[len(s.value)-1]
 	}
 	
-	func(c *SomeStream) Map(fn func(int, Some)) *SomeStream {
-		for i, each := range c.value {
+	func(s *SomeStream) Map(fn func(int, Some)) *SomeStream {
+		for i, each := range s.value {
 			fn(i,each)
 		}
-		return c
+		return s
 	}
 	
-	func(c *SomeStream) Reduce(fn func(Some, Some, int) Some,initial Some) Some   {
+	func(s *SomeStream) Reduce(fn func(Some, Some, int) Some,initial Some) Some   {
 		final := initial
-		for i, each := range c.value {
+		for i, each := range s.value {
 			final = fn(final,each,i)
 		}
 		return final
 	}
 	
-	func(c *SomeStream) Reverse()  *SomeStream {
-		value := make([]Some, len(c.value))
-		for i, each := range c.value {
-			value[len(c.value)-1-i] = each
+	func(s *SomeStream) Reverse()  *SomeStream {
+		value := make([]Some, len(s.value))
+		for i, each := range s.value {
+			value[len(s.value)-1-i] = each
 		}
-		c.value = value
-		return c
+		s.value = value
+		return s
 	}
 	
-	func(c *SomeStream) UniqueBy(compare func(Some,Some)bool)  *SomeStream{
-		value := make([]Some, 0, len(c.value))
+	func(s *SomeStream) UniqueBy(compare func(Some,Some)bool)  *SomeStream{
+		value := make([]Some, 0, len(s.value))
 		seen:=make(map[int]struct{})
-		for i, outter := range c.value {
+		for i, outter := range s.value {
 			dup:=false
 			if _,exist:=seen[i];exist{
 				continue
 			}		
-			for j,inner :=range c.value {
+			for j,inner :=range s.value {
 				if i==j {
 					continue
 				}
@@ -107,36 +107,36 @@ package outter
 			}
 			value=append(value,outter)			
 		}
-		c.value = value
-		return c
+		s.value = value
+		return s
 	}
 	
-	func(c *SomeStream) Append(given Some) *SomeStream {
-		c.value=append(c.value,given)
-		return c
+	func(s *SomeStream) Append(given Some) *SomeStream {
+		s.value=append(s.value,given)
+		return s
 	}
 	
-	func(c *SomeStream) Len() int {
-		return len(c.value)
+	func(s *SomeStream) Len() int {
+		return len(s.value)
 	}
 	
-	func(c *SomeStream) IsEmpty() bool {
-		return len(c.value) == 0
+	func(s *SomeStream) IsEmpty() bool {
+		return len(s.value) == 0
 	}
 	
-	func(c *SomeStream) IsNotEmpty() bool {
-		return len(c.value) != 0
+	func(s *SomeStream) IsNotEmpty() bool {
+		return len(s.value) != 0
 	}
 	
-	func(c *SomeStream)  SortBy(less func(Some,Some)bool)  *SomeStream {
-		sort.Slice(c.value, func(i,j int)bool{
-			return less(c.value[i],c.value[j])
+	func(s *SomeStream)  SortBy(less func(Some,Some)bool)  *SomeStream {
+		sort.Slice(s.value, func(i,j int)bool{
+			return less(s.value[i],s.value[j])
 		})
-		return c 
+		return s 
 	}
 	
-	func(c *SomeStream) All(fn func(int, Some)bool)  bool {
-		for i, each := range c.value {
+	func(s *SomeStream) All(fn func(int, Some)bool)  bool {
+		for i, each := range s.value {
 			if !fn(i,each){
 				return false
 			}
@@ -144,8 +144,8 @@ package outter
 		return true
 	}
 	
-	func(c *SomeStream) Any(fn func(int, Some)bool)  bool {
-		for i, each := range c.value {
+	func(s *SomeStream) Any(fn func(int, Some)bool)  bool {
+		for i, each := range s.value {
 			if fn(i,each){
 				return true
 			}
@@ -153,41 +153,41 @@ package outter
 		return false
 	}
 	
-	func(c *SomeStream) Paginate(size int)  [][]Some {
+	func(s *SomeStream) Paginate(size int)  [][]Some {
 		var pages  [][]Some
 		prev := -1
-		for i := range c.value {
-			if (i-prev) < size-1 && i != (len(c.value)-1) {
+		for i := range s.value {
+			if (i-prev) < size-1 && i != (len(s.value)-1) {
 				continue
 			}
-			pages=append(pages,c.value[prev+1:i+1])
+			pages=append(pages,s.value[prev+1:i+1])
 			prev=i
 		}
 		return pages
 	}
 	
-	func(c *SomeStream) Pop() Some{
-		if len(c.value) <= 0 {
-			return c.defaultReturn
+	func(s *SomeStream) Pop() Some{
+		if len(s.value) <= 0 {
+			return s.defaultReturn
 		}
-		lastIdx := len(c.value)-1
-		val:=c.value[lastIdx]
-		c.value[lastIdx]=c.defaultReturn
-		c.value=c.value[:lastIdx]
+		lastIdx := len(s.value)-1
+		val:=s.value[lastIdx]
+		s.value[lastIdx]=s.defaultReturn
+		s.value=s.value[:lastIdx]
 		return val
 	}
 	
-	func(c *SomeStream) Prepend(given Some) *SomeStream {
-		c.value = append([]Some{given},c.value...)
-		return c
+	func(s *SomeStream) Prepend(given Some) *SomeStream {
+		s.value = append([]Some{given},s.value...)
+		return s
 	}
 	
-	func(c *SomeStream) Max(bigger func(Some,Some)bool) Some{
-		if len(c.value) <= 0 {
-			return c.defaultReturn
+	func(s *SomeStream) Max(bigger func(Some,Some)bool) Some{
+		if len(s.value) <= 0 {
+			return s.defaultReturn
 		}
-		var max Some = c.value[0]
-		for _,each := range c.value {
+		var max Some = s.value[0]
+		for _,each := range s.value {
 			if bigger(each, max) {
 				max = each
 			}
@@ -196,12 +196,12 @@ package outter
 	}
 	
 	
-	func(c *SomeStream) Min(less func(Some,Some)bool) Some{
-		if len(c.value) <= 0 {
-			return c.defaultReturn
+	func(s *SomeStream) Min(less func(Some,Some)bool) Some{
+		if len(s.value) <= 0 {
+			return s.defaultReturn
 		}
-		var min Some = c.value[0]
-		for _,each := range c.value {
+		var min Some = s.value[0]
+		for _,each := range s.value {
 			if less(each, min) {
 				min = each
 			}
@@ -209,28 +209,28 @@ package outter
 		return min
 	}
 	
-	func(c *SomeStream) Random() Some{
-		if len(c.value) <= 0 {
-			return c.defaultReturn
+	func(s *SomeStream) Random() Some{
+		if len(s.value) <= 0 {
+			return s.defaultReturn
 		}
-		n := rand.Intn(len(c.value))
-		return c.value[n]
+		n := rand.Intn(len(s.value))
+		return s.value[n]
 	}
 	
-	func(c *SomeStream) Shuffle() *SomeStream {
-		if len(c.value) <= 0 {
-			return c
+	func(s *SomeStream) Shuffle() *SomeStream {
+		if len(s.value) <= 0 {
+			return s
 		}
-		indexes := make([]int, len(c.value))
-		for i := range c.value {
+		indexes := make([]int, len(s.value))
+		for i := range s.value {
 			indexes[i] = i
 		}
 		
-		rand.Shuffle(len(c.value), func(i, j int) {
-			c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+		rand.Shuffle(len(s.value), func(i, j int) {
+			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 		})
 		
-		return c
+		return s
 	}
 	
 	
@@ -240,9 +240,9 @@ package outter
 	
 	
 	
-	func(c *SomeStream)  AStream()  *commons.StringStream {	
-		value := make([]string, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *SomeStream)  AStream()  *commons.StringStream {	
+		value := make([]string, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.A)
 		}
 		newStream := commons.StreamOfString(value)
@@ -253,9 +253,9 @@ package outter
 	
 	
 	
-	func(c *SomeStream)  BStream()  *commons.StringStream {	
-		value := make([]string, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *SomeStream)  BStream()  *commons.StringStream {	
+		value := make([]string, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.B)
 		}
 		newStream := commons.StreamOfString(value)
@@ -266,25 +266,25 @@ package outter
 	
 	
 	
-	func(c *SomeStream)  As()  []string {	
-		value := make([]string, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *SomeStream)  As()  []string {	
+		value := make([]string, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.A)
 		}
 		return value
 	}
 	
-	func(c *SomeStream)  Bs()  []string {	
-		value := make([]string, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *SomeStream)  Bs()  []string {	
+		value := make([]string, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.B)
 		}
 		return value
 	}
 	
 	
-	func(c *SomeStream) Collect() []Some{
-		return c.value
+	func(s *SomeStream) Collect() []Some{
+		return s.value
 	}
 
 type SomePStream struct{
@@ -295,86 +295,86 @@ type SomePStream struct{
 func PStreamOfSome(value []*Some) *SomePStream {
 	return &SomePStream{value:value,defaultReturn:nil}
 }
-func(c *SomePStream) OrElse(defaultReturn *Some)  *SomePStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *SomePStream) OrElse(defaultReturn *Some)  *SomePStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
-func(c *SomePStream) Concate(given []*Some)  *SomePStream {
-	value := make([]*Some, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *SomePStream) Concate(given []*Some)  *SomePStream {
+	value := make([]*Some, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *SomePStream) Drop(n int)  *SomePStream {
-	l := len(c.value) - n
+func(s *SomePStream) Drop(n int)  *SomePStream {
+	l := len(s.value) - n
 	if l < 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
-	value := make([]*Some, 0, len(c.value))
-	for i, each := range c.value {
+func(s *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *SomePStream) First() *Some {
-	if len(c.value) <= 0 {
-		return c.defaultReturn 
+func(s *SomePStream) First() *Some {
+	if len(s.value) <= 0 {
+		return s.defaultReturn 
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *SomePStream) Last() *Some {
-	if len(c.value) <= 0 {
-		return c.defaultReturn 
+func(s *SomePStream) Last() *Some {
+	if len(s.value) <= 0 {
+		return s.defaultReturn 
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *SomePStream) Map(fn func(int, *Some)) *SomePStream {
-	for i, each := range c.value {
+func(s *SomePStream) Map(fn func(int, *Some)) *SomePStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *SomePStream) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some   {
+func(s *SomePStream) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *SomePStream) Reverse()  *SomePStream {
-	value := make([]*Some, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *SomePStream) Reverse()  *SomePStream {
+	value := make([]*Some, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *SomePStream) UniqueBy(compare func(*Some,*Some)bool)  *SomePStream{
-	value := make([]*Some, 0, len(c.value))
+func(s *SomePStream) UniqueBy(compare func(*Some,*Some)bool)  *SomePStream{
+	value := make([]*Some, 0, len(s.value))
 	seen:=make(map[int]struct{})
-	for i, outter := range c.value {
+	for i, outter := range s.value {
 		dup:=false
 		if _,exist:=seen[i];exist{
 			continue
 		}		
-		for j,inner :=range c.value {
+		for j,inner :=range s.value {
 			if i==j {
 				continue
 			}
@@ -388,36 +388,36 @@ func(c *SomePStream) UniqueBy(compare func(*Some,*Some)bool)  *SomePStream{
 		}
 		value=append(value,outter)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *SomePStream) Append(given *Some) *SomePStream {
-	c.value=append(c.value,given)
-	return c
+func(s *SomePStream) Append(given *Some) *SomePStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *SomePStream) Len() int {
-	return len(c.value)
+func(s *SomePStream) Len() int {
+	return len(s.value)
 }
 
-func(c *SomePStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *SomePStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *SomePStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *SomePStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *SomePStream)  SortBy(less func(*Some,*Some)bool)  *SomePStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i],c.value[j])
+func(s *SomePStream)  SortBy(less func(*Some,*Some)bool)  *SomePStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i],s.value[j])
 	})
-	return c 
+	return s 
 }
 
-func(c *SomePStream) All(fn func(int, *Some)bool)  bool {
-	for i, each := range c.value {
+func(s *SomePStream) All(fn func(int, *Some)bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -425,8 +425,8 @@ func(c *SomePStream) All(fn func(int, *Some)bool)  bool {
 	return true
 }
 
-func(c *SomePStream) Any(fn func(int, *Some)bool)  bool {
-	for i, each := range c.value {
+func(s *SomePStream) Any(fn func(int, *Some)bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -434,41 +434,41 @@ func(c *SomePStream) Any(fn func(int, *Some)bool)  bool {
 	return false
 }
 
-func(c *SomePStream) Paginate(size int)  [][]*Some {
+func(s *SomePStream) Paginate(size int)  [][]*Some {
 	var pages  [][]*Some
 	prev := -1
-	for i := range c.value {
-		if (i-prev) < size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) < size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *SomePStream) Pop() *Some{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *SomePStream) Pop() *Some{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value[lastIdx]=c.defaultReturn
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value[lastIdx]=s.defaultReturn
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *SomePStream) Prepend(given *Some) *SomePStream {
-	c.value = append([]*Some{given},c.value...)
-	return c
+func(s *SomePStream) Prepend(given *Some) *SomePStream {
+	s.value = append([]*Some{given},s.value...)
+	return s
 }
 
-func(c *SomePStream) Max(bigger func(*Some,*Some)bool) *Some{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *SomePStream) Max(bigger func(*Some,*Some)bool) *Some{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var max *Some  = c.value[0]
-	for _,each := range c.value {
+	var max *Some  = s.value[0]
+	for _,each := range s.value {
 		if bigger(each, max) {
 			max = each
 		}
@@ -477,12 +477,12 @@ func(c *SomePStream) Max(bigger func(*Some,*Some)bool) *Some{
 }
 
 
-func(c *SomePStream) Min(less func(*Some,*Some)bool) *Some{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *SomePStream) Min(less func(*Some,*Some)bool) *Some{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	var min *Some = c.value[0]
-	for _,each := range c.value {
+	var min *Some = s.value[0]
+	for _,each := range s.value {
 		if less(each, min) {
 			min = each
 		}
@@ -490,28 +490,28 @@ func(c *SomePStream) Min(less func(*Some,*Some)bool) *Some{
 	return min
 }
 
-func(c *SomePStream) Random() *Some{
-	if len(c.value) <= 0 {
-		return c.defaultReturn
+func(s *SomePStream) Random() *Some{
+	if len(s.value) <= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *SomePStream) Shuffle() *SomePStream {
-	if len(c.value) <= 0 {
-		return c
+func(s *SomePStream) Shuffle() *SomePStream {
+	if len(s.value) <= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
 
@@ -521,9 +521,9 @@ func(c *SomePStream) Shuffle() *SomePStream {
 
 
 
-func(c *SomePStream)  AStream()  *commons.StringStream {	
-	value := make([]string, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *SomePStream)  AStream()  *commons.StringStream {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.A)
 	}
 	newStream := commons.StreamOfString(value)
@@ -534,9 +534,9 @@ func(c *SomePStream)  AStream()  *commons.StringStream {
 
 
 
-func(c *SomePStream)  BStream()  *commons.StringStream {	
-	value := make([]string, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *SomePStream)  BStream()  *commons.StringStream {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.B)
 	}
 	newStream := commons.StreamOfString(value)
@@ -547,23 +547,23 @@ func(c *SomePStream)  BStream()  *commons.StringStream {
 
 
 
-func(c *SomePStream)  As()  []string {	
-	value := make([]string, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *SomePStream)  As()  []string {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.A)
 	}
 	return value
 }
 
-func(c *SomePStream)  Bs()  []string {	
-	value := make([]string, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *SomePStream)  Bs()  []string {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.B)
 	}
 	return value
 }
 
 
-func(c *SomePStream) Collect() []*Some{
-	return c.value
+func(s *SomePStream) Collect() []*Some{
+	return s.value
 }

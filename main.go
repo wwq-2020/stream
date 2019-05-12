@@ -30,86 +30,86 @@ const (
 		return &{{.Name}}Stream{value:value, defaultReturn:{{.Name}}{}}
 	}
 
-	func(c *{{.Name}}Stream) OrElse(defaultReturn {{.Name}})  *{{.Name}}Stream {
-		c.defaultReturn = defaultReturn
-		return c
+	func(s *{{.Name}}Stream) OrElse(defaultReturn {{.Name}})  *{{.Name}}Stream {
+		s.defaultReturn = defaultReturn
+		return s
 	}	
 
-	func(c *{{.Name}}Stream) Concate(given []{{.Name}})  *{{.Name}}Stream {
-		value := make([]{{.Name}}, len(c.value)+len(given))
-		copy(value,c.value)
-		copy(value[len(c.value):],given)
-		c.value = value
-		return c
+	func(s *{{.Name}}Stream) Concate(given []{{.Name}})  *{{.Name}}Stream {
+		value := make([]{{.Name}}, len(s.value)+len(given))
+		copy(value,s.value)
+		copy(value[len(s.value):],given)
+		s.value = value
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) Drop(n int)  *{{.Name}}Stream {
-		l := len(c.value) - n
+	func(s *{{.Name}}Stream) Drop(n int)  *{{.Name}}Stream {
+		l := len(s.value) - n
 		if l {{.Lt}} 0 {
 			l = 0
 		}
-		c.value = c.value[len(c.value)-l:]
-		return c
+		s.value = s.value[len(s.value)-l:]
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.Name}}Stream {
-		value := make([]{{.Name}}, 0, len(c.value))
-		for i, each := range c.value {
+	func(s *{{.Name}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.Name}}Stream {
+		value := make([]{{.Name}}, 0, len(s.value))
+		for i, each := range s.value {
 			if fn(i,each){
 				value = append(value,each)
 			}
 		}
-		c.value = value
-		return c
+		s.value = value
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) First() {{.Name}} {
-		if len(c.value) {{.Lt}}= 0 {
-			return c.defaultReturn
+	func(s *{{.Name}}Stream) First() {{.Name}} {
+		if len(s.value) {{.Lt}}= 0 {
+			return s.defaultReturn
 		} 
-		return c.value[0]
+		return s.value[0]
 	}
 	
-	func(c *{{.Name}}Stream) Last() {{.Name}} {
-		if len(c.value) {{.Lt}}= 0 {
-			return c.defaultReturn
+	func(s *{{.Name}}Stream) Last() {{.Name}} {
+		if len(s.value) {{.Lt}}= 0 {
+			return s.defaultReturn
 		} 
-		return c.value[len(c.value)-1]
+		return s.value[len(s.value)-1]
 	}
 	
-	func(c *{{.Name}}Stream) Map(fn func(int, {{.Name}})) *{{.Name}}Stream {
-		for i, each := range c.value {
+	func(s *{{.Name}}Stream) Map(fn func(int, {{.Name}})) *{{.Name}}Stream {
+		for i, each := range s.value {
 			fn(i,each)
 		}
-		return c
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
+	func(s *{{.Name}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
 		final := initial
-		for i, each := range c.value {
+		for i, each := range s.value {
 			final = fn(final,each,i)
 		}
 		return final
 	}
 	
-	func(c *{{.Name}}Stream) Reverse()  *{{.Name}}Stream {
-		value := make([]{{.Name}}, len(c.value))
-		for i, each := range c.value {
-			value[len(c.value)-1-i] = each
+	func(s *{{.Name}}Stream) Reverse()  *{{.Name}}Stream {
+		value := make([]{{.Name}}, len(s.value))
+		for i, each := range s.value {
+			value[len(s.value)-1-i] = each
 		}
-		c.value = value
-		return c
+		s.value = value
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) UniqueBy(compare func({{.Name}},{{.Name}})bool)  *{{.Name}}Stream{
-		value := make([]{{.Name}}, 0, len(c.value))
+	func(s *{{.Name}}Stream) UniqueBy(compare func({{.Name}},{{.Name}})bool)  *{{.Name}}Stream{
+		value := make([]{{.Name}}, 0, len(s.value))
 		seen:=make(map[int]struct{})
-		for i, outter := range c.value {
+		for i, outter := range s.value {
 			dup:=false
 			if _,exist:=seen[i];exist{
 				continue
 			}		
-			for j,inner :=range c.value {
+			for j,inner :=range s.value {
 				if i==j {
 					continue
 				}
@@ -123,36 +123,36 @@ const (
 			}
 			value=append(value,outter)			
 		}
-		c.value = value
-		return c
+		s.value = value
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) Append(given {{.Name}}) *{{.Name}}Stream {
-		c.value=append(c.value,given)
-		return c
+	func(s *{{.Name}}Stream) Append(given {{.Name}}) *{{.Name}}Stream {
+		s.value=append(s.value,given)
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) Len() int {
-		return len(c.value)
+	func(s *{{.Name}}Stream) Len() int {
+		return len(s.value)
 	}
 	
-	func(c *{{.Name}}Stream) IsEmpty() bool {
-		return len(c.value) == 0
+	func(s *{{.Name}}Stream) IsEmpty() bool {
+		return len(s.value) == 0
 	}
 	
-	func(c *{{.Name}}Stream) IsNotEmpty() bool {
-		return len(c.value) != 0
+	func(s *{{.Name}}Stream) IsNotEmpty() bool {
+		return len(s.value) != 0
 	}
 	
-	func(c *{{.Name}}Stream)  SortBy(less func({{.Name}},{{.Name}})bool)  *{{.Name}}Stream {
-		sort.Slice(c.value, func(i,j int)bool{
-			return less(c.value[i],c.value[j])
+	func(s *{{.Name}}Stream)  SortBy(less func({{.Name}},{{.Name}})bool)  *{{.Name}}Stream {
+		sort.Slice(s.value, func(i,j int)bool{
+			return less(s.value[i],s.value[j])
 		})
-		return c 
+		return s 
 	}
 	
-	func(c *{{.Name}}Stream) All(fn func(int, {{.Name}})bool)  bool {
-		for i, each := range c.value {
+	func(s *{{.Name}}Stream) All(fn func(int, {{.Name}})bool)  bool {
+		for i, each := range s.value {
 			if !fn(i,each){
 				return false
 			}
@@ -160,8 +160,8 @@ const (
 		return true
 	}
 	
-	func(c *{{.Name}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
-		for i, each := range c.value {
+	func(s *{{.Name}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
+		for i, each := range s.value {
 			if fn(i,each){
 				return true
 			}
@@ -169,41 +169,41 @@ const (
 		return false
 	}
 	
-	func(c *{{.Name}}Stream) Paginate(size int)  [][]{{.Name}} {
+	func(s *{{.Name}}Stream) Paginate(size int)  [][]{{.Name}} {
 		var pages  [][]{{.Name}}
 		prev := -1
-		for i := range c.value {
-			if (i-prev) {{.Lt}} size-1 && i != (len(c.value)-1) {
+		for i := range s.value {
+			if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
 				continue
 			}
-			pages=append(pages,c.value[prev+1:i+1])
+			pages=append(pages,s.value[prev+1:i+1])
 			prev=i
 		}
 		return pages
 	}
 	
-	func(c *{{.Name}}Stream) Pop() {{.Name}}{
-		if len(c.value) {{.Lt}}= 0 {
-			return c.defaultReturn
+	func(s *{{.Name}}Stream) Pop() {{.Name}}{
+		if len(s.value) {{.Lt}}= 0 {
+			return s.defaultReturn
 		}
-		lastIdx := len(c.value)-1
-		val:=c.value[lastIdx]
-		c.value[lastIdx]=c.defaultReturn
-		c.value=c.value[:lastIdx]
+		lastIdx := len(s.value)-1
+		val:=s.value[lastIdx]
+		s.value[lastIdx]=s.defaultReturn
+		s.value=s.value[:lastIdx]
 		return val
 	}
 	
-	func(c *{{.Name}}Stream) Prepend(given {{.Name}}) *{{.Name}}Stream {
-		c.value = append([]{{.Name}}{given},c.value...)
-		return c
+	func(s *{{.Name}}Stream) Prepend(given {{.Name}}) *{{.Name}}Stream {
+		s.value = append([]{{.Name}}{given},s.value...)
+		return s
 	}
 	
-	func(c *{{.Name}}Stream) Max(bigger func({{.Name}},{{.Name}})bool) {{.Name}}{
-		if len(c.value) {{.Lt}}= 0 {
-			return c.defaultReturn
+	func(s *{{.Name}}Stream) Max(bigger func({{.Name}},{{.Name}})bool) {{.Name}}{
+		if len(s.value) {{.Lt}}= 0 {
+			return s.defaultReturn
 		}
-		var max {{.Name}} = c.value[0]
-		for _,each := range c.value {
+		var max {{.Name}} = s.value[0]
+		for _,each := range s.value {
 			if bigger(each, max) {
 				max = each
 			}
@@ -212,12 +212,12 @@ const (
 	}
 	
 	
-	func(c *{{.Name}}Stream) Min(less func({{.Name}},{{.Name}})bool) {{.Name}}{
-		if len(c.value) {{.Lt}}= 0 {
-			return c.defaultReturn
+	func(s *{{.Name}}Stream) Min(less func({{.Name}},{{.Name}})bool) {{.Name}}{
+		if len(s.value) {{.Lt}}= 0 {
+			return s.defaultReturn
 		}
-		var min {{.Name}} = c.value[0]
-		for _,each := range c.value {
+		var min {{.Name}} = s.value[0]
+		for _,each := range s.value {
 			if less(each, min) {
 				min = each
 			}
@@ -225,49 +225,49 @@ const (
 		return min
 	}
 	
-	func(c *{{.Name}}Stream) Random() {{.Name}}{
-		if len(c.value) {{.Lt}}= 0 {
-			return c.defaultReturn
+	func(s *{{.Name}}Stream) Random() {{.Name}}{
+		if len(s.value) {{.Lt}}= 0 {
+			return s.defaultReturn
 		}
-		n := rand.Intn(len(c.value))
-		return c.value[n]
+		n := rand.Intn(len(s.value))
+		return s.value[n]
 	}
 	
-	func(c *{{.Name}}Stream) Shuffle() *{{.Name}}Stream {
-		if len(c.value) {{.Lt}}= 0 {
-			return c
+	func(s *{{.Name}}Stream) Shuffle() *{{.Name}}Stream {
+		if len(s.value) {{.Lt}}= 0 {
+			return s
 		}
-		indexes := make([]int, len(c.value))
-		for i := range c.value {
+		indexes := make([]int, len(s.value))
+		for i := range s.value {
 			indexes[i] = i
 		}
 		
-		rand.Shuffle(len(c.value), func(i, j int) {
-			c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+		rand.Shuffle(len(s.value), func(i, j int) {
+			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 		})
 		
-		return c
+		return s
 	}
 	
 	{{range $idx,$each := .Sorts}}
-	func(c *{{$.Name}}Stream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
-		sort.Slice(c.value, func(i,j int)bool{
-			return less(c.value[i].{{$each.Name}},c.value[j].{{$each.Name}})
+	func(s *{{$.Name}}Stream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
+		sort.Slice(s.value, func(i,j int)bool{
+			return less(s.value[i].{{$each.Name}},s.value[j].{{$each.Name}})
 		})
-		return c 
+		return s 
 	}
 	{{end}}
 	
 	{{range $idx,$each := .Uniques}}
-	func(c *{{$.Name}}Stream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
-		value := make([]{{$.Name}}, 0, len(c.value))
+	func(s *{{$.Name}}Stream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
+		value := make([]{{$.Name}}, 0, len(s.value))
 		seen:=make(map[int]struct{})
-		for i, outter := range c.value {
+		for i, outter := range s.value {
 			dup:=false
 			if _,exist:=seen[i];exist{
 				continue
 			}		
-			for j,inner :=range c.value {
+			for j,inner :=range s.value {
 				if i==j {
 					continue
 				}
@@ -281,9 +281,9 @@ const (
 			}
 			value=append(value,outter)			
 		}
-		c.value = value
+		s.value = value
 		
-		return c
+		return s
 	}
 	{{end}}
 	
@@ -291,18 +291,18 @@ const (
 	{{if $each.SkipFieldStream}}
 	{{else}}
 	{{if $each.IsPointer}}
-	func(c *{{$.Name}}Stream)  {{$each.Name}}PStream()  *{{$each.Pkg}}{{$each.TitleType}}PStream {	
-		value := make([]{{$each.Type}}, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *{{$.Name}}Stream)  {{$each.Name}}PStream()  *{{$each.Pkg}}{{$each.TitleType}}PStream {	
+		value := make([]{{$each.Type}}, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.{{$each.Name}})
 		}
 		newStream := {{$each.Pkg}}PStreamOf{{$each.TitleType}}(value)
 		return newStream
 	}
 	{{else}}
-	func(c *{{$.Name}}Stream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleType}}Stream {	
-		value := make([]{{$each.Type}}, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *{{$.Name}}Stream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleType}}Stream {	
+		value := make([]{{$each.Type}}, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.{{$each.Name}})
 		}
 		newStream := {{$each.Pkg}}StreamOf{{$each.TitleType}}(value)
@@ -313,17 +313,17 @@ const (
 	{{end}}
 	
 	{{range $idx,$each := .Fields}}
-	func(c *{{$.Name}}Stream)  {{$each.Name}}s()  []{{$each.Type}} {	
-		value := make([]{{$each.Type}}, 0, len(c.value))	
-		for _, each := range c.value {
+	func(s *{{$.Name}}Stream)  {{$each.Name}}s()  []{{$each.Type}} {	
+		value := make([]{{$each.Type}}, 0, len(s.value))	
+		for _, each := range s.value {
 			value = append(value, each.{{$each.Name}})
 		}
 		return value
 	}
 	{{end}}
 	
-	func(c *{{.Name}}Stream) Collect() []{{.Name}}{
-		return c.value
+	func(s *{{.Name}}Stream) Collect() []{{.Name}}{
+		return s.value
 	}
 
 type {{.Name}}PStream struct{
@@ -334,86 +334,86 @@ type {{.Name}}PStream struct{
 func PStreamOf{{.Name}}(value []*{{.Name}}) *{{.Name}}PStream {
 	return &{{.Name}}PStream{value:value,defaultReturn:nil}
 }
-func(c *{{.Name}}PStream) OrElse(defaultReturn *{{.Name}})  *{{.Name}}PStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *{{.Name}}PStream) OrElse(defaultReturn *{{.Name}})  *{{.Name}}PStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
-func(c *{{.Name}}PStream) Concate(given []*{{.Name}})  *{{.Name}}PStream {
-	value := make([]*{{.Name}}, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *{{.Name}}PStream) Concate(given []*{{.Name}})  *{{.Name}}PStream {
+	value := make([]*{{.Name}}, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *{{.Name}}PStream) Drop(n int)  *{{.Name}}PStream {
-	l := len(c.value) - n
+func(s *{{.Name}}PStream) Drop(n int)  *{{.Name}}PStream {
+	l := len(s.value) - n
 	if l {{.Lt}} 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *{{.Name}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}PStream {
-	value := make([]*{{.Name}}, 0, len(c.value))
-	for i, each := range c.value {
+func(s *{{.Name}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}PStream {
+	value := make([]*{{.Name}}, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.Name}}PStream) First() *{{.Name}} {
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn 
+func(s *{{.Name}}PStream) First() *{{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn 
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *{{.Name}}PStream) Last() *{{.Name}} {
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn 
+func(s *{{.Name}}PStream) Last() *{{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn 
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *{{.Name}}PStream) Map(fn func(int, *{{.Name}})) *{{.Name}}PStream {
-	for i, each := range c.value {
+func(s *{{.Name}}PStream) Map(fn func(int, *{{.Name}})) *{{.Name}}PStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *{{.Name}}PStream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
+func(s *{{.Name}}PStream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *{{.Name}}PStream) Reverse()  *{{.Name}}PStream {
-	value := make([]*{{.Name}}, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *{{.Name}}PStream) Reverse()  *{{.Name}}PStream {
+	value := make([]*{{.Name}}, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.Name}}PStream) UniqueBy(compare func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}PStream{
-	value := make([]*{{.Name}}, 0, len(c.value))
+func(s *{{.Name}}PStream) UniqueBy(compare func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}PStream{
+	value := make([]*{{.Name}}, 0, len(s.value))
 	seen:=make(map[int]struct{})
-	for i, outter := range c.value {
+	for i, outter := range s.value {
 		dup:=false
 		if _,exist:=seen[i];exist{
 			continue
 		}		
-		for j,inner :=range c.value {
+		for j,inner :=range s.value {
 			if i==j {
 				continue
 			}
@@ -427,36 +427,36 @@ func(c *{{.Name}}PStream) UniqueBy(compare func(*{{.Name}},*{{.Name}})bool)  *{{
 		}
 		value=append(value,outter)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.Name}}PStream) Append(given *{{.Name}}) *{{.Name}}PStream {
-	c.value=append(c.value,given)
-	return c
+func(s *{{.Name}}PStream) Append(given *{{.Name}}) *{{.Name}}PStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *{{.Name}}PStream) Len() int {
-	return len(c.value)
+func(s *{{.Name}}PStream) Len() int {
+	return len(s.value)
 }
 
-func(c *{{.Name}}PStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *{{.Name}}PStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *{{.Name}}PStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *{{.Name}}PStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *{{.Name}}PStream)  SortBy(less func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}PStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i],c.value[j])
+func(s *{{.Name}}PStream)  SortBy(less func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}PStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i],s.value[j])
 	})
-	return c 
+	return s 
 }
 
-func(c *{{.Name}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
-	for i, each := range c.value {
+func(s *{{.Name}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -464,8 +464,8 @@ func(c *{{.Name}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.Name}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
-	for i, each := range c.value {
+func(s *{{.Name}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -473,41 +473,41 @@ func(c *{{.Name}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.Name}}PStream) Paginate(size int)  [][]*{{.Name}} {
+func(s *{{.Name}}PStream) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}
 	prev := -1
-	for i := range c.value {
-		if (i-prev) {{.Lt}} size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *{{.Name}}PStream) Pop() *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.Name}}PStream) Pop() *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value[lastIdx]=c.defaultReturn
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value[lastIdx]=s.defaultReturn
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *{{.Name}}PStream) Prepend(given *{{.Name}}) *{{.Name}}PStream {
-	c.value = append([]*{{.Name}}{given},c.value...)
-	return c
+func(s *{{.Name}}PStream) Prepend(given *{{.Name}}) *{{.Name}}PStream {
+	s.value = append([]*{{.Name}}{given},s.value...)
+	return s
 }
 
-func(c *{{.Name}}PStream) Max(bigger func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.Name}}PStream) Max(bigger func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	var max *{{.Name}}  = c.value[0]
-	for _,each := range c.value {
+	var max *{{.Name}}  = s.value[0]
+	for _,each := range s.value {
 		if bigger(each, max) {
 			max = each
 		}
@@ -516,12 +516,12 @@ func(c *{{.Name}}PStream) Max(bigger func(*{{.Name}},*{{.Name}})bool) *{{.Name}}
 }
 
 
-func(c *{{.Name}}PStream) Min(less func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.Name}}PStream) Min(less func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	var min *{{.Name}} = c.value[0]
-	for _,each := range c.value {
+	var min *{{.Name}} = s.value[0]
+	for _,each := range s.value {
 		if less(each, min) {
 			min = each
 		}
@@ -529,49 +529,49 @@ func(c *{{.Name}}PStream) Min(less func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
 	return min
 }
 
-func(c *{{.Name}}PStream) Random() *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.Name}}PStream) Random() *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *{{.Name}}PStream) Shuffle() *{{.Name}}PStream {
-	if len(c.value) {{.Lt}}= 0 {
-		return c
+func(s *{{.Name}}PStream) Shuffle() *{{.Name}}PStream {
+	if len(s.value) {{.Lt}}= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
 {{range $idx,$each := .Sorts}}
-func(c *{{$.Name}}PStream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i].{{$each.Name}},c.value[j].{{$each.Name}})
+func(s *{{$.Name}}PStream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i].{{$each.Name}},s.value[j].{{$each.Name}})
 	})
-	return c 
+	return s 
 }
 {{end}}
 
 {{range $idx,$each := .Uniques}}
-func(c *{{$.Name}}PStream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
-	value := make([]*{{$.Name}}, 0, len(c.value))
+func(s *{{$.Name}}PStream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
+	value := make([]*{{$.Name}}, 0, len(s.value))
 	seen:=make(map[int]struct{})
-	for i, outter := range c.value {
+	for i, outter := range s.value {
 		dup:=false
 		if _,exist:=seen[i];exist{
 			continue
 		}		
-		for j,inner :=range c.value {
+		for j,inner :=range s.value {
 			if i==j {
 				continue
 			}
@@ -585,9 +585,9 @@ func(c *{{$.Name}}PStream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{
 		}
 		value=append(value,outter)			
 	}
-	c.value = value
+	s.value = value
 	
-	return c
+	return s
 }
 {{end}}
 
@@ -595,18 +595,18 @@ func(c *{{$.Name}}PStream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{
 {{if $each.SkipFieldStream}}
 {{else}}
 {{if $each.IsPointer}}
-func(c *{{$.Name}}PStream)  {{$each.Name}}PStream()  *{{$each.Pkg}}{{$each.TitleType}}PStream {	
-	value := make([]{{$each.Type}}, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *{{$.Name}}PStream)  {{$each.Name}}PStream()  *{{$each.Pkg}}{{$each.TitleType}}PStream {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.{{$each.Name}})
 	}
 	newStream := {{$each.Pkg}}PStreamOf{{$each.TitleType}}(value)
 	return newStream
 }
 {{else}}
-func(c *{{$.Name}}PStream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleType}}Stream {	
-	value := make([]{{$each.Type}}, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *{{$.Name}}PStream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleType}}Stream {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.{{$each.Name}})
 	}
 	newStream := {{$each.Pkg}}StreamOf{{$each.TitleType}}(value)
@@ -617,17 +617,17 @@ func(c *{{$.Name}}PStream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleT
 {{end}}
 
 {{range $idx,$each := .Fields}}
-func(c *{{$.Name}}PStream)  {{$each.Name}}s()  []{{$each.Type}} {	
-	value := make([]{{$each.Type}}, 0, len(c.value))	
-	for _, each := range c.value {
+func(s *{{$.Name}}PStream)  {{$each.Name}}s()  []{{$each.Type}} {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
 		value = append(value, each.{{$each.Name}})
 	}
 	return value
 }
 {{end}}
 
-func(c *{{.Name}}PStream) Collect() []*{{.Name}}{
-	return c.value
+func(s *{{.Name}}PStream) Collect() []*{{.Name}}{
+	return s.value
 }
 `
 
@@ -648,118 +648,118 @@ func StreamOf{{.TitleName}}(value []{{.Name}}) *{{.TitleName}}Stream {
 	return &{{.TitleName}}Stream{value:value,defaultReturn:{{.Empty}}}
 }
 
-func(c *{{.TitleName}}Stream) OrElase(defaultReturn {{.Name}})  *{{.TitleName}}Stream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *{{.TitleName}}Stream) OrElase(defaultReturn {{.Name}})  *{{.TitleName}}Stream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
 
-func(c *{{.TitleName}}Stream) Concate(given []{{.Name}})  *{{.TitleName}}Stream {
-	value := make([]{{.Name}}, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *{{.TitleName}}Stream) Concate(given []{{.Name}})  *{{.TitleName}}Stream {
+	value := make([]{{.Name}}, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Drop(n int)  *{{.TitleName}}Stream {
-	l := len(c.value) - n
+func(s *{{.TitleName}}Stream) Drop(n int)  *{{.TitleName}}Stream {
+	l := len(s.value) - n
 	if l {{.Lt}} 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Stream {
-	value := make([]{{.Name}}, 0, len(c.value))
-	for i, each := range c.value {
+func(s *{{.TitleName}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Stream {
+	value := make([]{{.Name}}, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}Stream) First() {{.Name}} {
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}Stream) First() {{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *{{.TitleName}}Stream) Last() {{.Name}} {
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}Stream) Last() {{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *{{.TitleName}}Stream) Map(fn func(int, {{.Name}})) *{{.TitleName}}Stream {
-	for i, each := range c.value {
+func(s *{{.TitleName}}Stream) Map(fn func(int, {{.Name}})) *{{.TitleName}}Stream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
+func(s *{{.TitleName}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *{{.TitleName}}Stream) Reverse()  *{{.TitleName}}Stream {
-	value := make([]{{.Name}}, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *{{.TitleName}}Stream) Reverse()  *{{.TitleName}}Stream {
+	value := make([]{{.Name}}, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Unique()  *{{.TitleName}}Stream{
-	value := make([]{{.Name}}, 0, len(c.value))
+func(s *{{.TitleName}}Stream) Unique()  *{{.TitleName}}Stream{
+	value := make([]{{.Name}}, 0, len(s.value))
 	seen:=make(map[{{.Name}}]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Append(given {{.Name}}) *{{.TitleName}}Stream {
-	c.value=append(c.value,given)
-	return c
+func(s *{{.TitleName}}Stream) Append(given {{.Name}}) *{{.TitleName}}Stream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Len() int {
-	return len(c.value)
+func(s *{{.TitleName}}Stream) Len() int {
+	return len(s.value)
 }
 
-func(c *{{.TitleName}}Stream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *{{.TitleName}}Stream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *{{.TitleName}}Stream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *{{.TitleName}}Stream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *{{.TitleName}}Stream)  Sort()  *{{.TitleName}}Stream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return c.value[i] {{.Lt}} c.value[j]
+func(s *{{.TitleName}}Stream)  Sort()  *{{.TitleName}}Stream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i] {{.Lt}} s.value[j]
 	})
-	return c 
+	return s 
 }
 
-func(c *{{.TitleName}}Stream) All(fn func(int, {{.Name}})bool)  bool {
-	for i, each := range c.value {
+func(s *{{.TitleName}}Stream) All(fn func(int, {{.Name}})bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -767,8 +767,8 @@ func(c *{{.TitleName}}Stream) All(fn func(int, {{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.TitleName}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
-	for i, each := range c.value {
+func(s *{{.TitleName}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -776,40 +776,40 @@ func(c *{{.TitleName}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.TitleName}}Stream) Paginate(size int)  [][]{{.Name}} {
+func(s *{{.TitleName}}Stream) Paginate(size int)  [][]{{.Name}} {
 	var pages  [][]{{.Name}}
 	prev := -1
-	for i := range c.value {
-		if (i-prev) {{.Lt}} size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *{{.TitleName}}Stream) Pop() {{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}Stream) Pop() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *{{.TitleName}}Stream) Prepend(given {{.Name}}) *{{.TitleName}}Stream {
-	c.value = append([]{{.Name}}{given},c.value...)
-	return c
+func(s *{{.TitleName}}Stream) Prepend(given {{.Name}}) *{{.TitleName}}Stream {
+	s.value = append([]{{.Name}}{given},s.value...)
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Max() {{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}Stream) Max() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	var max {{.Name}} = c.value[0]
-	for _,each := range c.value {
+	var max {{.Name}} = s.value[0]
+	for _,each := range s.value {
 		if max {{.Lt}} each {
 			max = each
 		}
@@ -818,12 +818,12 @@ func(c *{{.TitleName}}Stream) Max() {{.Name}}{
 }
 
 
-func(c *{{.TitleName}}Stream) Min() {{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}Stream) Min() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	var min {{.Name}} = c.value[0]
-	for _,each := range c.value {
+	var min {{.Name}} = s.value[0]
+	for _,each := range s.value {
 		if each  {{.Lt}} min {
 			min = each
 		}
@@ -831,32 +831,32 @@ func(c *{{.TitleName}}Stream) Min() {{.Name}}{
 	return min
 }
 
-func(c *{{.TitleName}}Stream) Random() {{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}Stream) Random() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *{{.TitleName}}Stream) Shuffle() *{{.TitleName}}Stream {
-	if len(c.value) {{.Lt}}= 0 {
-		return c
+func(s *{{.TitleName}}Stream) Shuffle() *{{.TitleName}}Stream {
+	if len(s.value) {{.Lt}}= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *{{.TitleName}}Stream) Collect() []{{.Name}}{
-	return c.value
+func(s *{{.TitleName}}Stream) Collect() []{{.Name}}{
+	return s.value
 }
 
 
@@ -869,117 +869,117 @@ func PStreamOf{{.TitleName}}(value []*{{.Name}}) *{{.TitleName}}PStream {
 	return &{{.TitleName}}PStream{value:value,defaultReturn:nil}
 }
 
-func(c *{{.TitleName}}PStream) OrElse(defaultReturn *{{.Name}})  *{{.TitleName}}PStream {
-	c.defaultReturn = defaultReturn
-	return c
+func(s *{{.TitleName}}PStream) OrElse(defaultReturn *{{.Name}})  *{{.TitleName}}PStream {
+	s.defaultReturn = defaultReturn
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Concate(given []*{{.Name}})  *{{.TitleName}}PStream {
-	value := make([]*{{.Name}}, len(c.value)+len(given))
-	copy(value,c.value)
-	copy(value[len(c.value):],given)
-	c.value = value
-	return c
+func(s *{{.TitleName}}PStream) Concate(given []*{{.Name}})  *{{.TitleName}}PStream {
+	value := make([]*{{.Name}}, len(s.value)+len(given))
+	copy(value,s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Drop(n int)  *{{.TitleName}}PStream {
-	l := len(c.value) - n
+func(s *{{.TitleName}}PStream) Drop(n int)  *{{.TitleName}}PStream {
+	l := len(s.value) - n
 	if l {{.Lt}} 0 {
 		l = 0
 	}
-	c.value = c.value[len(c.value)-l:]
-	return c
+	s.value = s.value[len(s.value)-l:]
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.TitleName}}PStream {
-	value := make([]*{{.Name}}, 0, len(c.value))
-	for i, each := range c.value {
+func(s *{{.TitleName}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.TitleName}}PStream {
+	value := make([]*{{.Name}}, 0, len(s.value))
+	for i, each := range s.value {
 		if fn(i,each){
 			value = append(value,each)
 		}
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}PStream) First() *{{.Name}} {
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}PStream) First() *{{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[0]
+	return s.value[0]
 }
 
-func(c *{{.TitleName}}PStream) Last() *{{.Name}} {
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}PStream) Last() *{{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	} 
-	return c.value[len(c.value)-1]
+	return s.value[len(s.value)-1]
 }
 
-func(c *{{.TitleName}}PStream) Map(fn func(int, *{{.Name}})) *{{.TitleName}}PStream {
-	for i, each := range c.value {
+func(s *{{.TitleName}}PStream) Map(fn func(int, *{{.Name}})) *{{.TitleName}}PStream {
+	for i, each := range s.value {
 		fn(i,each)
 	}
-	return c
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
+func(s *{{.TitleName}}PStream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
 	final := initial
-	for i, each := range c.value {
+	for i, each := range s.value {
 		final = fn(final,each,i)
 	}
 	return final
 }
 
-func(c *{{.TitleName}}PStream) Reverse()  *{{.TitleName}}PStream {
-	value := make([]*{{.Name}}, len(c.value))
-	for i, each := range c.value {
-		value[len(c.value)-1-i] = each
+func(s *{{.TitleName}}PStream) Reverse()  *{{.TitleName}}PStream {
+	value := make([]*{{.Name}}, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Unique()  *{{.TitleName}}PStream{
-	value := make([]*{{.Name}}, 0, len(c.value))
+func(s *{{.TitleName}}PStream) Unique()  *{{.TitleName}}PStream{
+	value := make([]*{{.Name}}, 0, len(s.value))
 	seen:=make(map[*{{.Name}}]struct{})
-	for _, each := range c.value {
+	for _, each := range s.value {
 		if _,exist:=seen[each];exist{
 			continue
 		}		
 		seen[each]=struct{}{}
 		value=append(value,each)			
 	}
-	c.value = value
-	return c
+	s.value = value
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Append(given *{{.Name}}) *{{.TitleName}}PStream {
-	c.value=append(c.value,given)
-	return c
+func(s *{{.TitleName}}PStream) Append(given *{{.Name}}) *{{.TitleName}}PStream {
+	s.value=append(s.value,given)
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Len() int {
-	return len(c.value)
+func(s *{{.TitleName}}PStream) Len() int {
+	return len(s.value)
 }
 
-func(c *{{.TitleName}}PStream) IsEmpty() bool {
-	return len(c.value) == 0
+func(s *{{.TitleName}}PStream) IsEmpty() bool {
+	return len(s.value) == 0
 }
 
-func(c *{{.TitleName}}PStream) IsNotEmpty() bool {
-	return len(c.value) != 0
+func(s *{{.TitleName}}PStream) IsNotEmpty() bool {
+	return len(s.value) != 0
 }
 
-func(c *{{.TitleName}}PStream)  Sort(less func(*{{.Name}},*{{.Name}}) bool )  *{{.TitleName}}PStream {
-	sort.Slice(c.value, func(i,j int)bool{
-		return less(c.value[i],c.value[j])
+func(s *{{.TitleName}}PStream)  Sort(less func(*{{.Name}},*{{.Name}}) bool )  *{{.TitleName}}PStream {
+	sort.Slice(s.value, func(i,j int)bool{
+		return less(s.value[i],s.value[j])
 	})
-	return c 
+	return s 
 }
 
-func(c *{{.TitleName}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
-	for i, each := range c.value {
+func(s *{{.TitleName}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
+	for i, each := range s.value {
 		if !fn(i,each){
 			return false
 		}
@@ -987,8 +987,8 @@ func(c *{{.TitleName}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
 	return true
 }
 
-func(c *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
-	for i, each := range c.value {
+func(s *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
+	for i, each := range s.value {
 		if fn(i,each){
 			return true
 		}
@@ -996,40 +996,40 @@ func(c *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
 	return false
 }
 
-func(c *{{.TitleName}}PStream) Paginate(size int)  [][]*{{.Name}} {
+func(s *{{.TitleName}}PStream) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}
 	prev := -1
-	for i := range c.value {
-		if (i-prev) {{.Lt}} size-1 && i != (len(c.value)-1) {
+	for i := range s.value {
+		if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,c.value[prev+1:i+1])
+		pages=append(pages,s.value[prev+1:i+1])
 		prev=i
 	}
 	return pages
 }
 
-func(c *{{.TitleName}}PStream) Pop() *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}PStream) Pop() *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	lastIdx := len(c.value)-1
-	val:=c.value[lastIdx]
-	c.value=c.value[:lastIdx]
+	lastIdx := len(s.value)-1
+	val:=s.value[lastIdx]
+	s.value=s.value[:lastIdx]
 	return val
 }
 
-func(c *{{.TitleName}}PStream) Prepend(given *{{.Name}}) *{{.TitleName}}PStream {
-	c.value = append([]*{{.Name}}{given},c.value...)
-	return c
+func(s *{{.TitleName}}PStream) Prepend(given *{{.Name}}) *{{.TitleName}}PStream {
+	s.value = append([]*{{.Name}}{given},s.value...)
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Max() *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}PStream) Max() *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	var max *{{.Name}} = c.value[0]
-	for _,each := range c.value {
+	var max *{{.Name}} = s.value[0]
+	for _,each := range s.value {
 		if max == nil{
 			max = each
 			continue
@@ -1042,12 +1042,12 @@ func(c *{{.TitleName}}PStream) Max() *{{.Name}}{
 }
 
 
-func(c *{{.TitleName}}PStream) Min() *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}PStream) Min() *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	var min *{{.Name}} = c.value[0]
-	for _,each := range c.value {
+	var min *{{.Name}} = s.value[0]
+	for _,each := range s.value {
 		if min == nil{
 			min = each
 			continue
@@ -1059,32 +1059,32 @@ func(c *{{.TitleName}}PStream) Min() *{{.Name}}{
 	return min
 }
 
-func(c *{{.TitleName}}PStream) Random() *{{.Name}}{
-	if len(c.value) {{.Lt}}= 0 {
-		return c.defaultReturn
+func(s *{{.TitleName}}PStream) Random() *{{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		return s.defaultReturn
 	}
-	n := rand.Intn(len(c.value))
-	return c.value[n]
+	n := rand.Intn(len(s.value))
+	return s.value[n]
 }
 
-func(c *{{.TitleName}}PStream) Shuffle() *{{.TitleName}}PStream {
-	if len(c.value) {{.Lt}}= 0 {
-		return c
+func(s *{{.TitleName}}PStream) Shuffle() *{{.TitleName}}PStream {
+	if len(s.value) {{.Lt}}= 0 {
+		return s
 	}
-	indexes := make([]int, len(c.value))
-	for i := range c.value {
+	indexes := make([]int, len(s.value))
+	for i := range s.value {
 		indexes[i] = i
 	}
 	
-	rand.Shuffle(len(c.value), func(i, j int) {
-		c.value[i], c.value[j] = 	c.value[j], c.value[i] 
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
 	
-	return c
+	return s
 }
 
-func(c *{{.TitleName}}PStream) Collect() []*{{.Name}}{
-	return c.value
+func(s *{{.TitleName}}PStream) Collect() []*{{.Name}}{
+	return s.value
 }
 `
 )
