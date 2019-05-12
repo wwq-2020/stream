@@ -8,7 +8,7 @@ import (
 func TestConcate(t *testing.T) {
 	data1 := []*Some{&Some{A: "hello"}}
 	data2 := []*Some{&Some{A: "world"}}
-	c := StreamOfSome(data1)
+	c := PStreamOfSome(data1)
 	r := c.Concate(data2).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -17,7 +17,7 @@ func TestConcate(t *testing.T) {
 
 func TestDrop(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Drop(1).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -26,7 +26,7 @@ func TestDrop(t *testing.T) {
 
 func TestFilter(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	filter := func(idx int, some *Some) bool {
 		return idx == 0
 	}
@@ -38,7 +38,7 @@ func TestFilter(t *testing.T) {
 
 func TestFirst(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.First()
 	if !reflect.DeepEqual(r, &Some{A: "hello"}) {
 		t.Fatal("mistach")
@@ -47,7 +47,7 @@ func TestFirst(t *testing.T) {
 
 func TestLast(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Last()
 	if !reflect.DeepEqual(r, &Some{A: "world"}) {
 		t.Fatal("mistach")
@@ -56,7 +56,7 @@ func TestLast(t *testing.T) {
 
 func TestMap(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	mapFn := func(idx int, some *Some) {
 		some.A += "_test"
 	}
@@ -68,7 +68,7 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	reduceFn := func(initial *Some, cur *Some, idx int) *Some {
 		return &Some{A: initial.A + " " + cur.A}
 	}
@@ -79,7 +79,7 @@ func TestReduce(t *testing.T) {
 }
 func TestReverse(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Reverse().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -88,7 +88,7 @@ func TestReverse(t *testing.T) {
 
 func TestUnique(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.UniqueBy(func(one, another *Some) bool {
 		return one.A == another.A && one.B == another.B
 	}).Collect()
@@ -99,7 +99,7 @@ func TestUnique(t *testing.T) {
 
 func TestAppend(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Append(&Some{A: "world"}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -108,7 +108,7 @@ func TestAppend(t *testing.T) {
 
 func TestLen(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	if r := c.Len(); r != len(data) {
 		t.Fatal("mistach")
 	}
@@ -116,7 +116,7 @@ func TestLen(t *testing.T) {
 
 func TestIsEmpty(t *testing.T) {
 	var data []*Some
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	if !c.IsEmpty() {
 		t.Fatal("mistach")
 	}
@@ -124,7 +124,7 @@ func TestIsEmpty(t *testing.T) {
 
 func TestIsNotEmpty(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	if !c.IsNotEmpty() {
 		t.Fatal("mistach")
 	}
@@ -132,7 +132,7 @@ func TestIsNotEmpty(t *testing.T) {
 
 func TestSortBy(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.SortBy(func(one, another *Some) bool {
 		return one.A < another.A
 	}).Collect()
@@ -143,7 +143,7 @@ func TestSortBy(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	if !c.All(func(i int, some *Some) bool {
 		return some.A == "world"
 	}) {
@@ -153,7 +153,7 @@ func TestAll(t *testing.T) {
 
 func TestAny(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	if !c.Any(func(i int, some *Some) bool {
 		return some.A == "world"
 	}) {
@@ -163,7 +163,7 @@ func TestAny(t *testing.T) {
 
 func TestPaginate(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	pages := c.Paginate(1)
 	if len(pages) != 2 {
 		t.Fatal("mistach")
@@ -178,7 +178,7 @@ func TestPaginate(t *testing.T) {
 
 func TestPop(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Pop()
 	if !reflect.DeepEqual(r, &Some{A: "world"}) {
 		t.Fatal("mistach")
@@ -187,7 +187,7 @@ func TestPop(t *testing.T) {
 
 func TestPrepend(t *testing.T) {
 	data := []*Some{&Some{A: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Prepend(&Some{A: "hello"}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -196,7 +196,7 @@ func TestPrepend(t *testing.T) {
 
 func TestMax(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Max(func(one, another *Some) bool {
 		return one.A > another.A
 	})
@@ -206,7 +206,7 @@ func TestMax(t *testing.T) {
 }
 func TestMin(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Min(func(one, another *Some) bool {
 		return one.A < another.A
 	})
@@ -217,7 +217,7 @@ func TestMin(t *testing.T) {
 
 func TestRandom(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	if r := c.Random(); r == nil {
 		t.Fatal("mistach")
 	}
@@ -225,7 +225,7 @@ func TestRandom(t *testing.T) {
 
 func TestShuffle(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.Shuffle().Collect()
 	if len(r) != 2 {
 		t.Fatal("mistach")
@@ -237,7 +237,7 @@ func TestShuffle(t *testing.T) {
 
 func TestSortByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.SortByA(func(one, another string) bool {
 		return one < another
 	}).Collect()
@@ -248,7 +248,7 @@ func TestSortByA(t *testing.T) {
 
 func TestSortByB(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.SortByB(func(one, another string) bool {
 		return one < another
 	}).Collect()
@@ -259,7 +259,7 @@ func TestSortByB(t *testing.T) {
 
 func TestSortByC(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello", C: &Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", C: &Some{A: "hello", B: "world"}}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.SortByC(func(one, another *Some) bool {
 		return one.A < another.A
 	}).Collect()
@@ -270,7 +270,7 @@ func TestSortByC(t *testing.T) {
 
 func TestUniqueByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "world", B: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.UniqueByA(func(one, another string) bool {
 		return one == another
 	}).Collect()
@@ -281,7 +281,7 @@ func TestUniqueByA(t *testing.T) {
 
 func TestUniqueByB(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "world"}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.UniqueByB(func(one, another string) bool {
 		return one == another
 	}).Collect()
@@ -292,7 +292,7 @@ func TestUniqueByB(t *testing.T) {
 
 func TestUniqueByC(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}}
-	c := StreamOfSome(data)
+	c := PStreamOfSome(data)
 	r := c.UniqueByC(func(one, another *Some) bool {
 		return one.A == another.A && one.B == another.B
 	}).Collect()

@@ -1,9 +1,12 @@
 package tests
 
+import "github.com/wwq1988/stream/outter"
+
 type Some struct {
-	A string `collections:"sort,unique"`
-	B string `collections:"sort,unique"`
-	C *Some  `collections:"sort,unique"`
+	A string `stream:"sort,unique"`
+	B string `stream:"sort,unique"`
+	C *Some  `stream:"sort,unique"`
+	D *outter.Some
 }
 
 type B struct {
