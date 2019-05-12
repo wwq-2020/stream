@@ -34,7 +34,7 @@ support:
 ```
   Shuffle shuffle slice
 ```
-      data := []*tests.Some{&tests.Some{A: "world"}, &tests.Some{A: "hello"}}
+      	    data := []*tests.Some{&tests.Some{A: "world"}, &tests.Some{A: "hello"}}
 	    s := PStreamOfSome(data)
 	    r := c.Shuffle().Collect()
 ```
@@ -47,7 +47,7 @@ support:
 ```
   Max pick the max element from slice
 ```
-      data := []*tests.Some{&tests.Some{A: "world"}, &tests.Some{A: "hello"}}
+            data := []*tests.Some{&tests.Some{A: "world"}, &tests.Some{A: "hello"}}
 	    s := PStreamOfSome(data)
 	    r := c.Max()
 ```
@@ -55,7 +55,7 @@ support:
 ```
 	    data := []*tests.Some{&tests.Some{A: "world"}}
 	    c := PStreamOfSome(data)
-    	r := c.Prepend(&tests.Some{A: "hello"}).Collect()
+    	    r := c.Prepend(&tests.Some{A: "hello"}).Collect()
 ```
   Pop pick a element from the end of the slice 
 ```
