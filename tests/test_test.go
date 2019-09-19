@@ -196,16 +196,16 @@ func TestAny(t *testing.T) {
 }
 
 func TestPaginate(t *testing.T) {
-	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
+	data := []*Some{&Some{A: "hello1"}, &Some{A: "world1"}, &Some{A: "hello2"}}
 	c := PStreamOfSome(data)
-	pages := c.Paginate(1)
+	pages := c.Paginate(2)
 	if len(pages) != 2 {
 		t.Fatal("mistach")
 	}
-	if !reflect.DeepEqual(pages[0], []*Some{&Some{A: "hello"}}) {
+	if !reflect.DeepEqual(pages[0], []*Some{&Some{A: "hello1"}, &Some{A: "world1"}}) {
 		t.Fatal("mistach")
 	}
-	if !reflect.DeepEqual(pages[1], []*Some{&Some{A: "world"}}) {
+	if !reflect.DeepEqual(pages[1], []*Some{&Some{A: "hello2"}}) {
 		t.Fatal("mistach")
 	}
 }

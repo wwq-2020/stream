@@ -23,11 +23,14 @@ const (
 	}
 	
 	func(s *{{.Name}}Stream) Drop(n int)  *{{.Name}}Stream {
+		if n {{.Lt}} 0 {
+			n = 0
+		}
 		l := len(s.value) - n
 		if l {{.Lt}} 0 {
-			l = 0
+			n = len(s.value)
 		}
-		s.value = s.value[len(s.value)-l:]
+		s.value = s.value[n:]
 		return s
 	}
 	
@@ -208,7 +211,7 @@ const (
 		var pages  [][]{{.Name}}
 		prev := -1
 		for i := range s.value {
-			if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
+			if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
 				continue
 			}
 			pages=append(pages,s.value[prev+1:i+1])
@@ -272,10 +275,7 @@ const (
 		if len(s.value) {{.Lt}}= 0 {
 			return s
 		}
-		indexes := make([]int, len(s.value))
-		for i := range s.value {
-			indexes[i] = i
-		}
+		
 		
 		rand.Shuffle(len(s.value), func(i, j int) {
 			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
@@ -361,11 +361,14 @@ func(s *{{.Name}}PStream) Concate(given []*{{.Name}})  *{{.Name}}PStream {
 	return s
 }
 func(s *{{.Name}}PStream) Drop(n int)  *{{.Name}}PStream {
+	if n {{.Lt}} 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l {{.Lt}} 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
 func(s *{{.Name}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}PStream {
@@ -540,7 +543,7 @@ func(s *{{.Name}}PStream) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}
 	prev := -1
 	for i := range s.value {
-		if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
+		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
 			continue
 		}
 		pages=append(pages,s.value[prev+1:i+1])
@@ -602,10 +605,6 @@ func(s *{{.Name}}PStream) Random() *{{.Name}}{
 func(s *{{.Name}}PStream) Shuffle() *{{.Name}}PStream {
 	if len(s.value) {{.Lt}}= 0 {
 		return s
-	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
 	}
 	
 	rand.Shuffle(len(s.value), func(i, j int) {
@@ -770,11 +769,14 @@ func(s *{{.TitleName}}Stream) Concate(given []{{.Name}})  *{{.TitleName}}Stream 
 	return s
 }
 func(s *{{.TitleName}}Stream) Drop(n int)  *{{.TitleName}}Stream {
+	if n {{.Lt}} 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l {{.Lt}} 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
 func(s *{{.TitleName}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Stream {
@@ -872,7 +874,7 @@ func(s *{{.TitleName}}Stream) Paginate(size int)  [][]{{.Name}} {
 	var pages  [][]{{.Name}}
 	prev := -1
 	for i := range s.value {
-		if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
+		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
 			continue
 		}
 		pages=append(pages,s.value[prev+1:i+1])
@@ -928,11 +930,7 @@ func(s *{{.TitleName}}Stream) Shuffle() *{{.TitleName}}Stream {
 	if len(s.value) {{.Lt}}= 0 {
 		return s
 	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
-	}
-	
+
 	rand.Shuffle(len(s.value), func(i, j int) {
 		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
 	})
@@ -961,11 +959,14 @@ func(s *{{.TitleName}}PStream) Concate(given []*{{.Name}})  *{{.TitleName}}PStre
 	return s
 }
 func(s *{{.TitleName}}PStream) Drop(n int)  *{{.TitleName}}PStream {
+	if n {{.Lt}} 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l {{.Lt}} 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
 func(s *{{.TitleName}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.TitleName}}PStream {
@@ -1068,7 +1069,7 @@ func(s *{{.TitleName}}PStream) Paginate(size int)  [][]*{{.Name}} {
 	var pages  [][]*{{.Name}}
 	prev := -1
 	for i := range s.value {
-		if (i-prev) {{.Lt}} size-1 && i != (len(s.value)-1) {
+		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
 			continue
 		}
 		pages=append(pages,s.value[prev+1:i+1])
@@ -1132,10 +1133,7 @@ func(s *{{.TitleName}}PStream) Shuffle() *{{.TitleName}}PStream {
 	if len(s.value) {{.Lt}}= 0 {
 		return s
 	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
-	}
+	
 	
 	rand.Shuffle(len(s.value), func(i, j int) {
 		s.value[i], s.value[j] = 	s.value[j], s.value[i] 

@@ -28,11 +28,14 @@ package tests
 	}
 	
 	func(s *SomeStream) Drop(n int)  *SomeStream {
+		if n < 0 {
+			n = 0
+		}
 		l := len(s.value) - n
 		if l < 0 {
-			l = 0
+			n = len(s.value)
 		}
-		s.value = s.value[len(s.value)-l:]
+		s.value = s.value[n:]
 		return s
 	}
 	
@@ -352,7 +355,7 @@ package tests
 		var pages  [][]Some
 		prev := -1
 		for i := range s.value {
-			if (i-prev) < size-1 && i != (len(s.value)-1) {
+			if (i-prev) < size && i != (len(s.value)-1) {
 				continue
 			}
 			pages=append(pages,s.value[prev+1:i+1])
@@ -416,10 +419,7 @@ package tests
 		if len(s.value) <= 0 {
 			return s
 		}
-		indexes := make([]int, len(s.value))
-		for i := range s.value {
-			indexes[i] = i
-		}
+		
 		
 		rand.Shuffle(len(s.value), func(i, j int) {
 			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
@@ -638,11 +638,14 @@ func(s *SomePStream) Concate(given []*Some)  *SomePStream {
 	return s
 }
 func(s *SomePStream) Drop(n int)  *SomePStream {
+	if n < 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l < 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
 func(s *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
@@ -1052,7 +1055,7 @@ func(s *SomePStream) Paginate(size int)  [][]*Some {
 	var pages  [][]*Some
 	prev := -1
 	for i := range s.value {
-		if (i-prev) < size-1 && i != (len(s.value)-1) {
+		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
 		pages=append(pages,s.value[prev+1:i+1])
@@ -1114,10 +1117,6 @@ func(s *SomePStream) Random() *Some{
 func(s *SomePStream) Shuffle() *SomePStream {
 	if len(s.value) <= 0 {
 		return s
-	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
 	}
 	
 	rand.Shuffle(len(s.value), func(i, j int) {
@@ -1494,11 +1493,14 @@ func(s *SomePStream) Collect() []*Some{
 	}
 	
 	func(s *BStream) Drop(n int)  *BStream {
+		if n < 0 {
+			n = 0
+		}
 		l := len(s.value) - n
 		if l < 0 {
-			l = 0
+			n = len(s.value)
 		}
-		s.value = s.value[len(s.value)-l:]
+		s.value = s.value[n:]
 		return s
 	}
 	
@@ -1596,7 +1598,7 @@ func(s *SomePStream) Collect() []*Some{
 		var pages  [][]B
 		prev := -1
 		for i := range s.value {
-			if (i-prev) < size-1 && i != (len(s.value)-1) {
+			if (i-prev) < size && i != (len(s.value)-1) {
 				continue
 			}
 			pages=append(pages,s.value[prev+1:i+1])
@@ -1660,10 +1662,7 @@ func(s *SomePStream) Collect() []*Some{
 		if len(s.value) <= 0 {
 			return s
 		}
-		indexes := make([]int, len(s.value))
-		for i := range s.value {
-			indexes[i] = i
-		}
+		
 		
 		rand.Shuffle(len(s.value), func(i, j int) {
 			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
@@ -1702,11 +1701,14 @@ func(s *BPStream) Concate(given []*B)  *BPStream {
 	return s
 }
 func(s *BPStream) Drop(n int)  *BPStream {
+	if n < 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l < 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
 func(s *BPStream) Filter(fn func(int, *B)bool)  *BPStream {
@@ -1834,7 +1836,7 @@ func(s *BPStream) Paginate(size int)  [][]*B {
 	var pages  [][]*B
 	prev := -1
 	for i := range s.value {
-		if (i-prev) < size-1 && i != (len(s.value)-1) {
+		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
 		pages=append(pages,s.value[prev+1:i+1])
@@ -1896,10 +1898,6 @@ func(s *BPStream) Random() *B{
 func(s *BPStream) Shuffle() *BPStream {
 	if len(s.value) <= 0 {
 		return s
-	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
 	}
 	
 	rand.Shuffle(len(s.value), func(i, j int) {

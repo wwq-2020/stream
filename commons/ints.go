@@ -1,71 +1,76 @@
-
 package commons
+
 import (
-	"sort"
 	"math/rand"
+	"sort"
 )
-type IntStream struct{
-	value	[]int
+
+type IntStream struct {
+	value         []int
 	defaultReturn int
 }
+
 func StreamOfInt(value []int) *IntStream {
-	return &IntStream{value:value,defaultReturn:0}
+	return &IntStream{value: value, defaultReturn: 0}
 }
-func(s *IntStream) OrElase(defaultReturn int)  *IntStream {
+func (s *IntStream) OrElase(defaultReturn int) *IntStream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-func(s *IntStream) Concate(given []int)  *IntStream {
+func (s *IntStream) Concate(given []int) *IntStream {
 	value := make([]int, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *IntStream) Drop(n int)  *IntStream {
+func (s *IntStream) Drop(n int) *IntStream {
+	if n < 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l < 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
-func(s *IntStream) Filter(fn func(int, int)bool)  *IntStream {
+func (s *IntStream) Filter(fn func(int, int) bool) *IntStream {
 	value := make([]int, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
-func(s *IntStream) First() int {
+func (s *IntStream) First() int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
-	} 
+	}
 	return s.value[0]
 }
-func(s *IntStream) Last() int {
+func (s *IntStream) Last() int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
-	} 
+	}
 	return s.value[len(s.value)-1]
 }
-func(s *IntStream) Map(fn func(int, int)) *IntStream {
+func (s *IntStream) Map(fn func(int, int)) *IntStream {
 	for i, each := range s.value {
-		fn(i,each)
+		fn(i, each)
 	}
 	return s
 }
-func(s *IntStream) Reduce(fn func(int, int, int) int,initial int) int   {
+func (s *IntStream) Reduce(fn func(int, int, int) int, initial int) int {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *IntStream) Reverse()  *IntStream {
+func (s *IntStream) Reverse() *IntStream {
 	value := make([]int, len(s.value))
 	for i, each := range s.value {
 		value[len(s.value)-1-i] = each
@@ -73,190 +78,191 @@ func(s *IntStream) Reverse()  *IntStream {
 	s.value = value
 	return s
 }
-func(s *IntStream) Unique()  *IntStream{
+func (s *IntStream) Unique() *IntStream {
 	value := make([]int, 0, len(s.value))
-	seen:=make(map[int]struct{})
+	seen := make(map[int]struct{})
 	for _, each := range s.value {
-		if _,exist:=seen[each];exist{
+		if _, exist := seen[each]; exist {
 			continue
-		}		
-		seen[each]=struct{}{}
-		value=append(value,each)			
+		}
+		seen[each] = struct{}{}
+		value = append(value, each)
 	}
 	s.value = value
 	return s
 }
-func(s *IntStream) Append(given int) *IntStream {
-	s.value=append(s.value,given)
+func (s *IntStream) Append(given int) *IntStream {
+	s.value = append(s.value, given)
 	return s
 }
-func(s *IntStream) Len() int {
+func (s *IntStream) Len() int {
 	return len(s.value)
 }
-func(s *IntStream) IsEmpty() bool {
+func (s *IntStream) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func(s *IntStream) IsNotEmpty() bool {
+func (s *IntStream) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func(s *IntStream)  Sort()  *IntStream {
-	sort.Slice(s.value, func(i,j int)bool{
+func (s *IntStream) Sort() *IntStream {
+	sort.Slice(s.value, func(i, j int) bool {
 		return s.value[i] < s.value[j]
 	})
-	return s 
+	return s
 }
-func(s *IntStream) All(fn func(int, int)bool)  bool {
+func (s *IntStream) All(fn func(int, int) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
 	return true
 }
-func(s *IntStream) Any(fn func(int, int)bool)  bool {
+func (s *IntStream) Any(fn func(int, int) bool) bool {
 	for i, each := range s.value {
-		if fn(i,each){
+		if fn(i, each) {
 			return true
 		}
 	}
 	return false
 }
-func(s *IntStream) Paginate(size int)  [][]int {
-	var pages  [][]int
+func (s *IntStream) Paginate(size int) [][]int {
+	var pages [][]int
 	prev := -1
 	for i := range s.value {
-		if (i-prev) < size-1 && i != (len(s.value)-1) {
+		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
-func(s *IntStream) Pop() int{
+func (s *IntStream) Pop() int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value=s.value[:lastIdx]
+	lastIdx := len(s.value) - 1
+	val := s.value[lastIdx]
+	s.value = s.value[:lastIdx]
 	return val
 }
-func(s *IntStream) Prepend(given int) *IntStream {
-	s.value = append([]int{given},s.value...)
+func (s *IntStream) Prepend(given int) *IntStream {
+	s.value = append([]int{given}, s.value...)
 	return s
 }
-func(s *IntStream) Max() int{
+func (s *IntStream) Max() int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
 	var max int = s.value[0]
-	for _,each := range s.value {
+	for _, each := range s.value {
 		if max < each {
 			max = each
 		}
 	}
 	return max
 }
-func(s *IntStream) Min() int{
+func (s *IntStream) Min() int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
 	var min int = s.value[0]
-	for _,each := range s.value {
-		if each  < min {
+	for _, each := range s.value {
+		if each < min {
 			min = each
 		}
 	}
 	return min
 }
-func(s *IntStream) Random() int{
+func (s *IntStream) Random() int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
 	n := rand.Intn(len(s.value))
 	return s.value[n]
 }
-func(s *IntStream) Shuffle() *IntStream {
+func (s *IntStream) Shuffle() *IntStream {
 	if len(s.value) <= 0 {
 		return s
 	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
-	}
-	
+
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
+		s.value[i], s.value[j] = s.value[j], s.value[i]
 	})
-	
+
 	return s
 }
-func(s *IntStream) Collect() []int{
+func (s *IntStream) Collect() []int {
 	return s.value
 }
-type IntPStream struct{
-	value	[]*int
+
+type IntPStream struct {
+	value         []*int
 	defaultReturn *int
 }
+
 func PStreamOfInt(value []*int) *IntPStream {
-	return &IntPStream{value:value,defaultReturn:nil}
+	return &IntPStream{value: value, defaultReturn: nil}
 }
-func(s *IntPStream) OrElse(defaultReturn *int)  *IntPStream {
+func (s *IntPStream) OrElse(defaultReturn *int) *IntPStream {
 	s.defaultReturn = defaultReturn
 	return s
 }
-func(s *IntPStream) Concate(given []*int)  *IntPStream {
+func (s *IntPStream) Concate(given []*int) *IntPStream {
 	value := make([]*int, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *IntPStream) Drop(n int)  *IntPStream {
+func (s *IntPStream) Drop(n int) *IntPStream {
+	if n < 0 {
+		n = 0
+	}
 	l := len(s.value) - n
 	if l < 0 {
-		l = 0
+		n = len(s.value)
 	}
-	s.value = s.value[len(s.value)-l:]
+	s.value = s.value[n:]
 	return s
 }
-func(s *IntPStream) Filter(fn func(int, *int)bool)  *IntPStream {
+func (s *IntPStream) Filter(fn func(int, *int) bool) *IntPStream {
 	value := make([]*int, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
-func(s *IntPStream) First() *int {
+func (s *IntPStream) First() *int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
-	} 
+	}
 	return s.value[0]
 }
-func(s *IntPStream) Last() *int {
+func (s *IntPStream) Last() *int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
-	} 
+	}
 	return s.value[len(s.value)-1]
 }
-func(s *IntPStream) Map(fn func(int, *int)) *IntPStream {
+func (s *IntPStream) Map(fn func(int, *int)) *IntPStream {
 	for i, each := range s.value {
-		fn(i,each)
+		fn(i, each)
 	}
 	return s
 }
-func(s *IntPStream) Reduce(fn func(*int, *int, int) *int,initial *int) *int   {
+func (s *IntPStream) Reduce(fn func(*int, *int, int) *int, initial *int) *int {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *IntPStream) Reverse()  *IntPStream {
+func (s *IntPStream) Reverse() *IntPStream {
 	value := make([]*int, len(s.value))
 	for i, each := range s.value {
 		value[len(s.value)-1-i] = each
@@ -264,91 +270,88 @@ func(s *IntPStream) Reverse()  *IntPStream {
 	s.value = value
 	return s
 }
-func(s *IntPStream) Unique()  *IntPStream{
+func (s *IntPStream) Unique() *IntPStream {
 	value := make([]*int, 0, len(s.value))
-	seen:=make(map[*int]struct{})
+	seen := make(map[*int]struct{})
 	for _, each := range s.value {
-		if _,exist:=seen[each];exist{
+		if _, exist := seen[each]; exist {
 			continue
-		}		
-		seen[each]=struct{}{}
-		value=append(value,each)			
+		}
+		seen[each] = struct{}{}
+		value = append(value, each)
 	}
 	s.value = value
 	return s
 }
-func(s *IntPStream) Append(given *int) *IntPStream {
-	s.value=append(s.value,given)
+func (s *IntPStream) Append(given *int) *IntPStream {
+	s.value = append(s.value, given)
 	return s
 }
-func(s *IntPStream) Len() int {
+func (s *IntPStream) Len() int {
 	return len(s.value)
 }
-func(s *IntPStream) IsEmpty() bool {
+func (s *IntPStream) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func(s *IntPStream) IsNotEmpty() bool {
+func (s *IntPStream) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func(s *IntPStream)  Sort(less func(*int,*int) bool )  *IntPStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i],s.value[j])
+func (s *IntPStream) Sort(less func(*int, *int) bool) *IntPStream {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i], s.value[j])
 	})
-	return s 
+	return s
 }
-func(s *IntPStream) All(fn func(int, *int)bool)  bool {
+func (s *IntPStream) All(fn func(int, *int) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
 	return true
 }
 
-
-
-func(s *IntPStream) Any(fn func(int, *int)bool)  bool {
+func (s *IntPStream) Any(fn func(int, *int) bool) bool {
 	for i, each := range s.value {
-		if fn(i,each){
+		if fn(i, each) {
 			return true
 		}
 	}
 	return false
 }
 
-
-func(s *IntPStream) Paginate(size int)  [][]*int {
-	var pages  [][]*int
+func (s *IntPStream) Paginate(size int) [][]*int {
+	var pages [][]*int
 	prev := -1
 	for i := range s.value {
-		if (i-prev) < size-1 && i != (len(s.value)-1) {
+		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
-func(s *IntPStream) Pop() *int{
+func (s *IntPStream) Pop() *int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value=s.value[:lastIdx]
+	lastIdx := len(s.value) - 1
+	val := s.value[lastIdx]
+	s.value = s.value[:lastIdx]
 	return val
 }
-func(s *IntPStream) Prepend(given *int) *IntPStream {
-	s.value = append([]*int{given},s.value...)
+func (s *IntPStream) Prepend(given *int) *IntPStream {
+	s.value = append([]*int{given}, s.value...)
 	return s
 }
-func(s *IntPStream) Max() *int{
+func (s *IntPStream) Max() *int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
 	var max *int = s.value[0]
-	for _,each := range s.value {
-		if max == nil{
+	for _, each := range s.value {
+		if max == nil {
 			max = each
 			continue
 		}
@@ -358,44 +361,40 @@ func(s *IntPStream) Max() *int{
 	}
 	return max
 }
-func(s *IntPStream) Min() *int{
+func (s *IntPStream) Min() *int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
 	var min *int = s.value[0]
-	for _,each := range s.value {
-		if min == nil{
+	for _, each := range s.value {
+		if min == nil {
 			min = each
 			continue
 		}
-		if  each != nil && *each  <= *min {
+		if each != nil && *each <= *min {
 			min = each
 		}
 	}
 	return min
 }
-func(s *IntPStream) Random() *int{
+func (s *IntPStream) Random() *int {
 	if len(s.value) <= 0 {
 		return s.defaultReturn
 	}
 	n := rand.Intn(len(s.value))
 	return s.value[n]
 }
-func(s *IntPStream) Shuffle() *IntPStream {
+func (s *IntPStream) Shuffle() *IntPStream {
 	if len(s.value) <= 0 {
 		return s
 	}
-	indexes := make([]int, len(s.value))
-	for i := range s.value {
-		indexes[i] = i
-	}
-	
+
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
+		s.value[i], s.value[j] = s.value[j], s.value[i]
 	})
-	
+
 	return s
 }
-func(s *IntPStream) Collect() []*int{
+func (s *IntPStream) Collect() []*int {
 	return s.value
 }
