@@ -1,28 +1,32 @@
-
 package commons
+	
 import (
-	"sort"
+	"errors"
 	"math/rand"
+	"sort"
 )
-type UintStream struct{
-	value	[]uint
-	defaultReturn uint
+
+// UintSlice uint的Slice
+type UintSlice struct {
+	value []uint
 }
-func StreamOfUint(value []uint) *UintStream {
-	return &UintStream{value:value,defaultReturn:0}
+
+// ToUintSlice uint列表转为UintSlice
+func ToUintSlice(value []uint) *UintSlice {
+	return &UintSlice{value: value}
 }
-func(s *UintStream) OrElase(defaultReturn uint)  *UintStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *UintStream) Concate(given []uint)  *UintStream {
+
+// Concat 拼接
+func (s *UintSlice) Concat(given []uint) *UintSlice {
 	value := make([]uint, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *UintStream) Drop(n int)  *UintStream {
+
+// Drop 丢弃前n个
+func (s *UintSlice) Drop(n int) *UintSlice {
 	if n < 0 {
 		n = 0
 	}
@@ -33,368 +37,205 @@ func(s *UintStream) Drop(n int)  *UintStream {
 	s.value = s.value[n:]
 	return s
 }
-func(s *UintStream) Filter(fn func(int, uint)bool)  *UintStream {
+
+// Filter 过滤
+func (s *UintSlice) Filter(fn func(int, uint) bool) *UintSlice {
 	value := make([]uint, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
-func(s *UintStream) First() uint {
+
+// First 获取第一个元素
+func (s *UintSlice) First(value *uint) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	} 
-	return s.value[0]
+	*value = s.value[0]
+	return nil
 }
-func(s *UintStream) Last() uint {
+
+// Last 获取最后一个元素
+func (s *UintSlice) Last(value *uint) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[len(s.value)-1]
-}
-func(s *UintStream) Map(fn func(int, uint)) *UintStream {
-	for i, each := range s.value {
-		fn(i,each)
+		return errors.New("empty")
 	}
+	*value = s.value[len(s.value)-1]
+	return nil
+}
+
+// Map 对每个元素进行操作
+func (s *UintSlice) Map(fn func(int, uint) uint) *UintSlice {
+	value := make([]uint, len(s.value))
+	for i, each := range s.value {
+		value[i] = fn(i, each)
+	}
+	s.value = value
 	return s
 }
-func(s *UintStream) Reduce(fn func(uint, uint, int) uint,initial uint) uint   {
+
+// Reduce reduce
+func (s *UintSlice) Reduce(fn func(uint, uint, int) uint, initial uint) uint {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *UintStream) Reverse()  *UintStream {
-	value := make([]uint, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
+
+// Reverse 逆序
+func (s *UintSlice) Reverse() *UintSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i] > s.value[j]
+	})
+	return s 
 }
-func(s *UintStream) Unique()  *UintStream{
+
+// Unique 唯一
+func (s *UintSlice) Unique() *UintSlice {
 	value := make([]uint, 0, len(s.value))
-	seen:=make(map[uint]struct{})
+	seen := make(map[uint]struct{})
 	for _, each := range s.value {
-		if _,exist:=seen[each];exist{
+		if _, exist := seen[each]; exist {
 			continue
 		}		
-		seen[each]=struct{}{}
-		value=append(value,each)			
+		seen[each] = struct{}{}
+		value = append(value, each)			
 	}
 	s.value = value
 	return s
 }
-func(s *UintStream) Append(given uint) *UintStream {
-	s.value=append(s.value,given)
+
+// Append 在尾部添加
+func (s *UintSlice) Append(given uint) *UintSlice {
+	s.value = append(s.value, given)
 	return s
 }
-func(s *UintStream) Len() int {
+
+// Len 获取长度
+func (s *UintSlice) Len() int {
 	return len(s.value)
 }
-func(s *UintStream) IsEmpty() bool {
+
+// IsEmpty 判断是否为空
+func (s *UintSlice) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func(s *UintStream) IsNotEmpty() bool {
+
+// IsEmpty 判断是否非空
+func (s *UintSlice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func(s *UintStream)  Sort()  *UintStream {
-	sort.Slice(s.value, func(i,j int)bool{
+
+// Sort 排序
+func (s *UintSlice) Sort() *UintSlice {
+	sort.Slice(s.value, func(i, j int) bool {
 		return s.value[i] < s.value[j]
 	})
 	return s 
 }
-func(s *UintStream) All(fn func(int, uint)bool)  bool {
+
+// All 是否所有元素满足条件
+func (s *UintSlice) All(fn func(int, uint) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
 	return true
 }
-func(s *UintStream) Any(fn func(int, uint)bool)  bool {
+
+// Any 是否有元素满足条件
+func (s *UintSlice) Any(fn func(int, uint) bool) bool {
 	for i, each := range s.value {
-		if fn(i,each){
+		if fn(i, each) {
 			return true
 		}
 	}
 	return false
 }
-func(s *UintStream) Paginate(size int)  [][]uint {
-	var pages  [][]uint
+
+// Paginate 分页
+func (s *UintSlice) Paginate(size int) [][]uint {
+	if size <= 0 {
+		size = 1
+	}
+	var pages [][]uint
 	prev := -1
 	for i := range s.value {
 		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
-func(s *UintStream) Pop() uint{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value=s.value[:lastIdx]
-	return val
-}
-func(s *UintStream) Prepend(given uint) *UintStream {
-	s.value = append([]uint{given},s.value...)
-	return s
-}
-func(s *UintStream) Max() uint{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var max uint = s.value[0]
-	for _,each := range s.value {
-		if max < each {
-			max = each
-		}
-	}
-	return max
-}
-func(s *UintStream) Min() uint{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var min uint = s.value[0]
-	for _,each := range s.value {
-		if each  < min {
-			min = each
-		}
-	}
-	return min
-}
-func(s *UintStream) Random() uint{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	n := rand.Intn(len(s.value))
-	return s.value[n]
-}
-func(s *UintStream) Shuffle() *UintStream {
-	if len(s.value) <= 0 {
-		return s
-	}
 
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
-	})
-	
+// Preappend 在首部添加元素
+func (s *UintSlice) Preappend(given uint) *UintSlice {
+	value := make([]uint, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
-func(s *UintStream) Collect() []uint{
-	return s.value
-}
-type UintPStream struct{
-	value	[]*uint
-	defaultReturn *uint
-}
-func PStreamOfUint(value []*uint) *UintPStream {
-	return &UintPStream{value:value,defaultReturn:nil}
-}
-func(s *UintPStream) OrElse(defaultReturn *uint)  *UintPStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *UintPStream) Concate(given []*uint)  *UintPStream {
-	value := make([]*uint, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
-	s.value = value
-	return s
-}
-func(s *UintPStream) Drop(n int)  *UintPStream {
-	if n < 0 {
-		n = 0
-	}
-	l := len(s.value) - n
-	if l < 0 {
-		n = len(s.value)
-	}
-	s.value = s.value[n:]
-	return s
-}
-func(s *UintPStream) Filter(fn func(int, *uint)bool)  *UintPStream {
-	value := make([]*uint, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
-		}
-	}
-	s.value = value
-	return s
-}
-func(s *UintPStream) First() *uint {
+
+// Max 获取最大元素
+func (s *UintSlice) Max(value *uint) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[0]
-}
-func(s *UintPStream) Last() *uint {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[len(s.value)-1]
-}
-func(s *UintPStream) Map(fn func(int, *uint)) *UintPStream {
-	for i, each := range s.value {
-		fn(i,each)
+		return errors.New("empty")
 	}
-	return s
-}
-func(s *UintPStream) Reduce(fn func(*uint, *uint, int) *uint,initial *uint) *uint   {
-	final := initial
-	for i, each := range s.value {
-		final = fn(final,each,i)
-	}
-	return final
-}
-func(s *UintPStream) Reverse()  *UintPStream {
-	value := make([]*uint, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
-}
-func(s *UintPStream) Unique()  *UintPStream{
-	value := make([]*uint, 0, len(s.value))
-	seen:=make(map[*uint]struct{})
+	*value = s.value[0]
 	for _, each := range s.value {
-		if _,exist:=seen[each];exist{
-			continue
-		}		
-		seen[each]=struct{}{}
-		value=append(value,each)			
-	}
-	s.value = value
-	return s
-}
-func(s *UintPStream) Append(given *uint) *UintPStream {
-	s.value=append(s.value,given)
-	return s
-}
-func(s *UintPStream) Len() int {
-	return len(s.value)
-}
-func(s *UintPStream) IsEmpty() bool {
-	return len(s.value) == 0
-}
-func(s *UintPStream) IsNotEmpty() bool {
-	return len(s.value) != 0
-}
-func(s *UintPStream)  Sort(less func(*uint,*uint) bool )  *UintPStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i],s.value[j])
-	})
-	return s 
-}
-func(s *UintPStream) All(fn func(int, *uint)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each){
-			return false
+		if *value < each {
+			*value  = each
 		}
 	}
-	return true
+	return nil 
 }
 
-
-
-func(s *UintPStream) Any(fn func(int, *uint)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each){
-			return true
-		}
-	}
-	return false
-}
-
-
-func(s *UintPStream) Paginate(size int)  [][]*uint {
-	var pages  [][]*uint
-	prev := -1
-	for i := range s.value {
-		if (i-prev) < size && i != (len(s.value)-1) {
-			continue
-		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
-	}
-	return pages
-}
-func(s *UintPStream) Pop() *uint{
+// Min 获取最小元素
+func (s *UintSlice) Min(value *uint) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value=s.value[:lastIdx]
-	return val
+	*value = s.value[0]
+	for _, each := range s.value {
+		if each < *value {
+			*value = each
+		}
+	}
+	return nil
 }
-func(s *UintPStream) Prepend(given *uint) *UintPStream {
-	s.value = append([]*uint{given},s.value...)
-	return s
-}
-func(s *UintPStream) Max() *uint{
+
+// Random 随机获取一个元素
+func (s *UintSlice) Random(value *uint) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var max *uint = s.value[0]
-	for _,each := range s.value {
-		if max == nil{
-			max = each
-			continue
-		}
-		if each != nil && *max <= *each {
-			max = each
-		}
-	}
-	return max
-}
-func(s *UintPStream) Min() *uint{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var min *uint = s.value[0]
-	for _,each := range s.value {
-		if min == nil{
-			min = each
-			continue
-		}
-		if  each != nil && *each  <= *min {
-			min = each
-		}
-	}
-	return min
-}
-func(s *UintPStream) Random() *uint{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = s.value[n]
+	return nil
 }
-func(s *UintPStream) Shuffle() *UintPStream {
+
+// Shuffle 打乱列表
+func (s *UintSlice) Shuffle() *UintSlice {
 	if len(s.value) <= 0 {
 		return s
 	}
-	
-	
+
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
 	})
 	
 	return s
 }
-func(s *UintPStream) Collect() []*uint{
+
+// Collect 获取列表
+func (s *UintSlice) Collect() []uint {
 	return s.value
 }

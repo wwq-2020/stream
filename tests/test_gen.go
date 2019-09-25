@@ -1,643 +1,36 @@
 package tests
-			import (
-				"sort"
-				"math/rand"
-						commons "github.com/wwq1988/stream/commons"						
+
+import (
+	"errors"
+	"math/rand"
+	"sort"
+		
+	commons "github.com/wwq1988/stream/commons"						
 					
-					"github.com/wwq1988/stream/outter"						
-				
-				)
-	type SomeStream struct{
-		value	[]Some
-		defaultReturn Some
-	}
-	
-	func StreamOfSome(value []Some) *SomeStream {
-		return &SomeStream{value:value, defaultReturn:Some{}}
-	}
-	func(s *SomeStream) OrElse(defaultReturn Some)  *SomeStream {
-		s.defaultReturn = defaultReturn
-		return s
-	}	
-	func(s *SomeStream) Concate(given []Some)  *SomeStream {
-		value := make([]Some, len(s.value)+len(given))
-		copy(value,s.value)
-		copy(value[len(s.value):],given)
-		s.value = value
-		return s
-	}
-	
-	func(s *SomeStream) Drop(n int)  *SomeStream {
-		if n < 0 {
-			n = 0
-		}
-		l := len(s.value) - n
-		if l < 0 {
-			n = len(s.value)
-		}
-		s.value = s.value[n:]
-		return s
-	}
-	
-	func(s *SomeStream) Filter(fn func(int, Some)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
+	"github.com/wwq1988/stream/outter"
+)
 
-	
-	func(s *SomeStream) FilterByA(fn func(int,string)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.A){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	
-	func(s *SomeStream) FilterByB(fn func(int,string)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.B){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	
-	func(s *SomeStream) FilterByC(fn func(int,*Some)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.C){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	
-	func(s *SomeStream) FilterByD(fn func(int,*outter.Some)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.D){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	
-	func(s *SomeStream) FilterByE(fn func(int,*string)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.E){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	
-	func(s *SomeStream) FilterByF(fn func(int,*string)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.F){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	
-	
-	func(s *SomeStream) First() Some {
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		} 
-		return s.value[0]
-	}
-	
-	func(s *SomeStream) Last() Some {
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		} 
-		return s.value[len(s.value)-1]
-	}
-	
-	func(s *SomeStream) Map(fn func(int, Some)) *SomeStream {
-		for i, each := range s.value {
-			fn(i,each)
-		}
-		return s
-	}
-	
-	func(s *SomeStream) Reduce(fn func(Some, Some, int) Some,initial Some) Some   {
-		final := initial
-		for i, each := range s.value {
-			final = fn(final,each,i)
-		}
-		return final
-	}
-	
-	func(s *SomeStream) Reverse()  *SomeStream {
-		value := make([]Some, len(s.value))
-		for i, each := range s.value {
-			value[len(s.value)-1-i] = each
-		}
-		s.value = value
-		return s
-	}
-	
-	
-	
-	func(s *SomeStream)  UniqueByA()  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		seen:=make(map[string]struct{})
-		for _, each := range s.value {
-			if _,dup:=seen[each.A];dup{
-				continue
-			}
-			value = append(value, each)
-			seen[each.A]=struct{}{}	
-		}
-		s.value = value
-		return s
-	}
-	
-	
-	
-	func(s *SomeStream)  UniqueByB()  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		seen:=make(map[string]struct{})
-		for _, each := range s.value {
-			if _,dup:=seen[each.B];dup{
-				continue
-			}
-			value = append(value, each)
-			seen[each.B]=struct{}{}	
-		}
-		s.value = value
-		return s
-	}
-	
-	
-	
-	
-	func(s *SomeStream)  UniqueByC(compare func(*Some,*Some)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
-				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner.C,outter.C) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
-			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
-		}
-		s.value = value
-		
-		return s
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  UniqueByD(compare func(*outter.Some,*outter.Some)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
-				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner.D,outter.D) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
-			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
-		}
-		s.value = value
-		
-		return s
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  UniqueByE(compare func(*string,*string)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
-				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner.E,outter.E) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
-			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
-		}
-		s.value = value
-		
-		return s
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  UniqueByF(compare func(*string,*string)bool)  *SomeStream {
-		value := make([]Some, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
-				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner.F,outter.F) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
-			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
-		}
-		s.value = value
-		
-		return s
-	}
-	
-	
-	
-	
-	func(s *SomeStream) Append(given Some) *SomeStream {
-		s.value=append(s.value,given)
-		return s
-	}
-	
-	func(s *SomeStream) Len() int {
-		return len(s.value)
-	}
-	
-	func(s *SomeStream) IsEmpty() bool {
-		return len(s.value) == 0
-	}
-	
-	func(s *SomeStream) IsNotEmpty() bool {
-		return len(s.value) != 0
-	}
-
-
-	
-	func(s *SomeStream) All(fn func(int, Some)bool)  bool {
-		for i, each := range s.value {
-			if !fn(i,each){
-				return false
-			}
-		}
-		return true
-	}
-	
-	func(s *SomeStream) Any(fn func(int, Some)bool)  bool {
-		for i, each := range s.value {
-			if fn(i,each){
-				return true
-			}
-		}
-		return false
-	}
-	
-	func(s *SomeStream) Paginate(size int)  [][]Some {
-		var pages  [][]Some
-		prev := -1
-		for i := range s.value {
-			if (i-prev) < size && i != (len(s.value)-1) {
-				continue
-			}
-			pages=append(pages,s.value[prev+1:i+1])
-			prev=i
-		}
-		return pages
-	}
-	
-	func(s *SomeStream) Pop() Some{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		lastIdx := len(s.value)-1
-		val:=s.value[lastIdx]
-		s.value[lastIdx]=s.defaultReturn
-		s.value=s.value[:lastIdx]
-		return val
-	}
-	
-	func(s *SomeStream) Prepend(given Some) *SomeStream {
-		s.value = append([]Some{given},s.value...)
-		return s
-	}
-	
-	func(s *SomeStream) Max(bigger func(Some,Some)bool) Some{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		var max Some = s.value[0]
-		for _,each := range s.value {
-			if bigger(each, max) {
-				max = each
-			}
-		}
-		return max
-	}
-	
-	
-	func(s *SomeStream) Min(less func(Some,Some)bool) Some{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		var min Some = s.value[0]
-		for _,each := range s.value {
-			if less(each, min) {
-				min = each
-			}
-		}
-		return min
-	}
-	
-	func(s *SomeStream) Random() Some{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		n := rand.Intn(len(s.value))
-		return s.value[n]
-	}
-	
-	func(s *SomeStream) Shuffle() *SomeStream {
-		if len(s.value) <= 0 {
-			return s
-		}
-		
-		
-		rand.Shuffle(len(s.value), func(i, j int) {
-			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
-		})
-		
-		return s
-	}
-	
-	
-	
-	func(s *SomeStream)  SortByA()  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return s.value[i].A < s.value[j].A
-		})
-		return s 
-	}
-	
-	
-	
-	func(s *SomeStream)  SortByB()  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return s.value[i].B < s.value[j].B
-		})
-		return s 
-	}
-	
-	
-	
-	func(s *SomeStream)  SortByC(less func(*Some,*Some)bool)  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return less(s.value[i].C,s.value[j].C)
-		})
-		return s 
-	}
-	
-	
-	
-	func(s *SomeStream)  SortByD(less func(*outter.Some,*outter.Some)bool)  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return less(s.value[i].D,s.value[j].D)
-		})
-		return s 
-	}
-	
-	
-	
-	func(s *SomeStream)  SortByE(less func(*string,*string)bool)  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return less(s.value[i].E,s.value[j].E)
-		})
-		return s 
-	}
-	
-	
-	
-	func(s *SomeStream)  SortByF(less func(*string,*string)bool)  *SomeStream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return less(s.value[i].F,s.value[j].F)
-		})
-		return s 
-	}
-	
-	
-	
-
-	
-	
-	
-	
-	func(s *SomeStream)  AStream()  *commons.StringStream {	
-		value := make([]string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.A)
-		}
-		newStream := commons.StreamOfString(value)
-		return newStream
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  BStream()  *commons.StringStream {	
-		value := make([]string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.B)
-		}
-		newStream := commons.StreamOfString(value)
-		return newStream
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  CPStream()  *SomePStream {	
-		value := make([]*Some, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.C)
-		}
-		newStream := PStreamOfSome(value)
-		return newStream
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  DPStream()  *outter.SomePStream {	
-		value := make([]*outter.Some, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.D)
-		}
-		newStream := outter.PStreamOfSome(value)
-		return newStream
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  EPStream()  *commons.StringPStream {	
-		value := make([]*string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.E)
-		}
-		newStream := commons.PStreamOfString(value)
-		return newStream
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  FPStream()  *commons.StringPStream {	
-		value := make([]*string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.F)
-		}
-		newStream := commons.PStreamOfString(value)
-		return newStream
-	}
-	
-	
-	
-	
-	
-	func(s *SomeStream)  As()  []string {	
-		value := make([]string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.A)
-		}
-		return value
-	}
-	
-	func(s *SomeStream)  Bs()  []string {	
-		value := make([]string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.B)
-		}
-		return value
-	}
-	
-	func(s *SomeStream)  Cs()  []*Some {	
-		value := make([]*Some, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.C)
-		}
-		return value
-	}
-	
-	func(s *SomeStream)  Ds()  []*outter.Some {	
-		value := make([]*outter.Some, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.D)
-		}
-		return value
-	}
-	
-	func(s *SomeStream)  Es()  []*string {	
-		value := make([]*string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.E)
-		}
-		return value
-	}
-	
-	func(s *SomeStream)  Fs()  []*string {	
-		value := make([]*string, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.F)
-		}
-		return value
-	}
-	
-	
-	func(s *SomeStream) Collect() []Some{
-		return s.value
-	}
-type SomePStream struct{
-	value	[]*Some
-	defaultReturn *Some
+// SomeSlice Some的Slice
+type SomeSlice struct {
+	value []Some
 }
-func PStreamOfSome(value []*Some) *SomePStream {
-	return &SomePStream{value:value,defaultReturn:nil}
+
+// ToSomeSlice Some列表转成SomeSlice
+func ToSomeSlice(value []Some) *SomeSlice {
+	return &SomeSlice{value: value}
 }
-func(s *SomePStream) OrElse(defaultReturn *Some)  *SomePStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *SomePStream) Concate(given []*Some)  *SomePStream {
-	value := make([]*Some, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+
+// Concat 拼接
+func (s *SomeSlice) Concat(given []Some) *SomeSlice {
+	value := make([]Some, len(s.value)+len(given))
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *SomePStream) Drop(n int)  *SomePStream {
+
+// Drop 丢弃前n个
+func (s *SomeSlice) Drop(n int) *SomeSlice {
 	if n < 0 {
 		n = 0
 	}
@@ -648,11 +41,13 @@ func(s *SomePStream) Drop(n int)  *SomePStream {
 	s.value = s.value[n:]
 	return s
 }
-func(s *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
+
+// Filter 过滤
+func (s *SomeSlice) Filter(fn func(int, Some) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
@@ -660,66 +55,48 @@ func(s *SomePStream) Filter(fn func(int, *Some)bool)  *SomePStream {
 }
 
 
-func(s *SomePStream) FilterByA(fn func(int,string)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
+// FilterByA 通过过滤器过滤
+func (s *SomeSlice) FilterByA(fn func(int, string) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each.A){
-			value = append(value,each)
+		if fn(i, each.A) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
 
-func(s *SomePStream) FilterByB(fn func(int,string)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
+// FilterByB 通过过滤器过滤
+func (s *SomeSlice) FilterByB(fn func(int, string) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each.B){
-			value = append(value,each)
+		if fn(i, each.B) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
 
-func(s *SomePStream) FilterByC(fn func(int,*Some)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
+// FilterByC 通过过滤器过滤
+func (s *SomeSlice) FilterByC(fn func(int, *Some) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each.C){
-			value = append(value,each)
+		if fn(i, each.C) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
 
-func(s *SomePStream) FilterByD(fn func(int,*outter.Some)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
+// FilterByD 通过过滤器过滤
+func (s *SomeSlice) FilterByD(fn func(int, *outter.Some) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each.D){
-			value = append(value,each)
-		}
-	}
-	s.value = value
-	return s
-}
-
-func(s *SomePStream) FilterByE(fn func(int,*string)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i,each.E){
-			value = append(value,each)
-		}
-	}
-	s.value = value
-	return s
-}
-
-func(s *SomePStream) FilterByF(fn func(int,*string)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i,each.F){
-			value = append(value,each)
+		if fn(i, each.D) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
@@ -727,409 +104,274 @@ func(s *SomePStream) FilterByF(fn func(int,*string)bool)  *SomePStream {
 }
 
 
-func(s *SomePStream) First() *Some {
+// First 获取第一个元素
+func (s *SomeSlice) First(value *Some) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn 
+		return errors.New("empty")
 	} 
-	return s.value[0]
+	*value = s.value[0]
+	return nil
 }
-func(s *SomePStream) Last() *Some {
+
+// Last 获取最后一个元素
+func (s *SomeSlice) Last(value *Some) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn 
+		return errors.New("empty")
 	} 
-	return s.value[len(s.value)-1]
+	*value = s.value[len(s.value)-1]
+	return nil
 }
-func(s *SomePStream) Map(fn func(int, *Some)) *SomePStream {
+
+// Map 对每个元素进行操作
+func (s *SomeSlice) Map(fn func(int, Some) Some) *SomeSlice {
+	value := make([]Some, len(s.value))
 	for i, each := range s.value {
-		fn(i,each)
+		value[i] = fn(i, each)
 	}
+	s.value = value
 	return s
 }
-func(s *SomePStream) Reduce(fn func(*Some, *Some, int) *Some,initial *Some) *Some   {
+
+// Reduce reduce
+func (s *SomeSlice) Reduce(fn func(Some, Some, int) Some, initial Some) Some {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *SomePStream) Reverse()  *SomePStream {
-	value := make([]*Some, len(s.value))
+
+// Reverse 逆序
+func (s *SomeSlice) Reverse() *SomeSlice {
+	value := make([]Some, len(s.value))
 	for i, each := range s.value {
 		value[len(s.value)-1-i] = each
 	}
 	s.value = value
 	return s
 }
-func(s *SomePStream) UniqueBy(compare func(*Some,*Some)bool)  *SomePStream{
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
+
+
+
+// UniqueByA 通过A唯一
+func (s *SomeSlice) UniqueByA() *SomeSlice {
+	value := make([]Some, 0, len(s.value))
+	seen := make(map[string]struct{})
+	for _, each := range s.value {
+		if _, dup := seen[each.A]; dup {
 			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner,outter) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
 		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
+		value = append(value, each)
+		
+		seen[each.A] = struct{}{}	
 	}
 	s.value = value
 	return s
 }
-func(s *SomePStream) Append(given *Some) *SomePStream {
-	s.value=append(s.value,given)
+
+
+
+// UniqueByB 通过B唯一
+func (s *SomeSlice) UniqueByB() *SomeSlice {
+	value := make([]Some, 0, len(s.value))
+	seen := make(map[string]struct{})
+	for _, each := range s.value {
+		if _, dup := seen[each.B]; dup {
+			continue
+		}
+		value = append(value, each)
+		
+		seen[each.B] = struct{}{}	
+	}
+	s.value = value
 	return s
 }
-func(s *SomePStream) Len() int {
+
+
+
+
+// UniqueByC 通过C唯一
+func (s *SomeSlice) UniqueByC(compare func(*Some, *Some) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
+	seen := make(map[int]struct{})
+	for i, outter := range s.value {
+		dup := false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j, inner := range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.C, outter.C) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
+	return s
+}
+
+
+
+
+
+// UniqueByD 通过D唯一
+func (s *SomeSlice) UniqueByD(compare func(*outter.Some, *outter.Some) bool) *SomeSlice {
+	value := make([]Some, 0, len(s.value))
+	seen := make(map[int]struct{})
+	for i, outter := range s.value {
+		dup := false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j, inner := range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.D, outter.D) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
+	return s
+}
+
+
+
+
+// Append 在尾部添加元素
+func (s *SomeSlice) Append(given Some) *SomeSlice {
+	s.value = append(s.value, given)
+	return s
+}
+
+// Len 获取长度
+func (s *SomeSlice) Len() int {
 	return len(s.value)
 }
-func(s *SomePStream) IsEmpty() bool {
+
+// IsEmpty 判断是否为空
+func (s *SomeSlice) IsEmpty() bool {
 	return len(s.value) == 0
 }
 
-func(s *SomePStream) IsNotEmpty() bool {
+// IsNotEmpty 判断是否非空
+func (s *SomeSlice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
 
-func(s *SomePStream)  SortBy(less func(*Some,*Some)bool)  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i],s.value[j])
-	})
-	return s 
-}
-
-func(s *SomePStream) All(fn func(int, *Some)bool)  bool {
+// All 是否所有元素满足添加
+func (s *SomeSlice) All(fn func(int, Some) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
 	return true
 }
 
-
-func(s *SomePStream) AllByA(fn func(int,string)bool)  bool {
+// Any 是否有元素满足条件
+func (s *SomeSlice) Any(fn func(int, Some) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each.A){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomePStream) AllByB(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.B){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomePStream) AllByC(fn func(int,*Some)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.C){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomePStream) AllByD(fn func(int,*outter.Some)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.D){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomePStream) AllByE(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.E){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomePStream) AllByF(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.F){
-			return false
-		}
-	}
-	return true
-}
-
-
-
-
-func(s *SomeStream) AllByA(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.A){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomeStream) AllByB(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.B){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomeStream) AllByC(fn func(int,*Some)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.C){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomeStream) AllByD(fn func(int,*outter.Some)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.D){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomeStream) AllByE(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.E){
-			return false
-		}
-	}
-	return true
-}
-
-func(s *SomeStream) AllByF(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.F){
-			return false
-		}
-	}
-	return true
-}
-
-
-func(s *SomePStream) Any(fn func(int, *Some)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each){
+		if fn(i, each) {
 			return true
 		}
 	}
 	return false
 }
 
-
-
-func(s *SomePStream) AnyByA(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.A){
-			return true
-		}
+// Paginate 分页
+func (s *SomeSlice) Paginate(size int) [][]Some {
+	if size <= 0 {
+		size = 1
 	}
-	return false
-}
-
-func(s *SomePStream) AnyByB(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.B){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomePStream) AnyByC(fn func(int,*Some)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.C){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomePStream) AnyByD(fn func(int,*outter.Some)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.D){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomePStream) AnyByE(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.E){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomePStream) AnyByF(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.F){
-			return true
-		}
-	}
-	return false
-}
-
-
-
-func(s *SomeStream) AnyByA(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.A){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomeStream) AnyByB(fn func(int,string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.B){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomeStream) AnyByC(fn func(int,*Some)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.C){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomeStream) AnyByD(fn func(int,*outter.Some)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.D){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomeStream) AnyByE(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.E){
-			return true
-		}
-	}
-	return false
-}
-
-func(s *SomeStream) AnyByF(fn func(int,*string)bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.F){
-			return true
-		}
-	}
-	return false
-}
-
-
-func(s *SomePStream) Paginate(size int)  [][]*Some {
-	var pages  [][]*Some
+	var pages [][]Some
 	prev := -1
 	for i := range s.value {
 		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
 
-func(s *SomePStream) Pop() *Some{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value[lastIdx]=s.defaultReturn
-	s.value=s.value[:lastIdx]
-	return val
-}
-
-func(s *SomePStream) Prepend(given *Some) *SomePStream {
-	s.value = append([]*Some{given},s.value...)
+// Preappend 在首部添加元素
+func (s *SomeSlice) Preappend(given Some) *SomeSlice {
+	value := make([]Some, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
 
-func(s *SomePStream) Max(bigger func(*Some,*Some)bool) *Some{
+// Max 获取最后元素
+func (s *SomeSlice) Max(bigger func(Some, Some) bool, value *Some) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var max *Some  = s.value[0]
-	for _,each := range s.value {
-		if bigger(each, max) {
-			max = each
+	*value = s.value[0]
+	for _, each := range s.value {
+		if bigger(each, *value) {
+			*value = each
 		}
 	}
-	return max
+	return nil
 }
 
-func(s *SomePStream) Min(less func(*Some,*Some)bool) *Some{
+// Min 获取最小元素
+func (s *SomeSlice) Min(less func(Some, Some) bool, value *Some) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var min *Some = s.value[0]
-	for _,each := range s.value {
-		if less(each, min) {
-			min = each
+	*value = s.value[0]
+	for _, each := range s.value {
+		if less(each, *value) {
+			*value = each
 		}
 	}
-	return min
+	return nil
 }
 
-func(s *SomePStream) Random() *Some{
+// Random 随机获取一个元素
+func (s *SomeSlice) Random(value *Some) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = s.value[n]
+	return nil
 }
 
-func(s *SomePStream) Shuffle() *SomePStream {
+// Shuffle 打乱列表
+func (s *SomeSlice) Shuffle() *SomeSlice {
 	if len(s.value) <= 0 {
 		return s
 	}
 	
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
 	})
-	
 	return s
 }
 
 
 
-func(s *SomePStream)  SortByA()  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
+// SortByA 根据A排序
+func (s *SomeSlice) SortByA() *SomeSlice {
+	sort.Slice(s.value, func(i, j int) bool {
 		return s.value[i].A < s.value[j].A
 	})
 	return s 
@@ -1137,8 +379,9 @@ func(s *SomePStream)  SortByA()  *SomePStream {
 
 
 
-func(s *SomePStream)  SortByB()  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
+// SortByB 根据B排序
+func (s *SomeSlice) SortByB() *SomeSlice {
+	sort.Slice(s.value, func(i, j int) bool {
 		return s.value[i].B < s.value[j].B
 	})
 	return s 
@@ -1146,36 +389,20 @@ func(s *SomePStream)  SortByB()  *SomePStream {
 
 
 
-func(s *SomePStream)  SortByC(less func(*Some,*Some)bool)  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i].C,s.value[j].C)
+// SortByC 根据C排序
+func (s *SomeSlice) SortByC(less func(*Some, *Some) bool) *SomeSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i].C, s.value[j].C)
 	})
 	return s 
 }
 
 
 
-func(s *SomePStream)  SortByD(less func(*outter.Some,*outter.Some)bool)  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i].D,s.value[j].D)
-	})
-	return s 
-}
-
-
-
-func(s *SomePStream)  SortByE(less func(*string,*string)bool)  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i].E,s.value[j].E)
-	})
-	return s 
-}
-
-
-
-func(s *SomePStream)  SortByF(less func(*string,*string)bool)  *SomePStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i].F,s.value[j].F)
+// SortByD 根据D排序
+func (s *SomeSlice) SortByD(less func(*outter.Some, *outter.Some) bool) *SomeSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i].D, s.value[j].D)
 	})
 	return s 
 }
@@ -1184,243 +411,67 @@ func(s *SomePStream)  SortByF(less func(*string,*string)bool)  *SomePStream {
 
 
 
-func(s *SomePStream)  UniqueByA()  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[string]struct{})
-	for _, each := range s.value {
-		if _,dup:=seen[each.A];dup{
-			continue
-		}
-		value = append(value, each)
-		seen[each.A]=struct{}{}	
-	}
-	s.value = value
-	return s
-}
 
 
 
-func(s *SomePStream)  UniqueByB()  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[string]struct{})
-	for _, each := range s.value {
-		if _,dup:=seen[each.B];dup{
-			continue
-		}
-		value = append(value, each)
-		seen[each.B]=struct{}{}	
-	}
-	s.value = value
-	return s
-}
-
-
-
-
-func(s *SomePStream)  UniqueByC(compare func(*Some,*Some)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner.C,outter.C) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	
-	return s
-}
-
-
-
-
-
-func(s *SomePStream)  UniqueByD(compare func(*outter.Some,*outter.Some)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner.D,outter.D) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	
-	return s
-}
-
-
-
-
-
-func(s *SomePStream)  UniqueByE(compare func(*string,*string)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner.E,outter.E) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	
-	return s
-}
-
-
-
-
-
-func(s *SomePStream)  UniqueByF(compare func(*string,*string)bool)  *SomePStream {
-	value := make([]*Some, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner.F,outter.F) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	
-	return s
-}
-
-
-
-
-
-
-
-func(s *SomePStream)  AStream()  *commons.StringStream {	
+// APSlice 获取A的Slice
+func (s *SomeSlice) ASlice() *commons.StringSlice {	
 	value := make([]string, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.A)
 	}
-	newStream := commons.StreamOfString(value)
-	return newStream
+	newSlice := commons.ToStringSlice(value)
+	return newSlice
 }
 
 
 
 
 
-func(s *SomePStream)  BStream()  *commons.StringStream {	
+// BPSlice 获取B的Slice
+func (s *SomeSlice) BSlice() *commons.StringSlice {	
 	value := make([]string, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.B)
 	}
-	newStream := commons.StreamOfString(value)
-	return newStream
+	newSlice := commons.ToStringSlice(value)
+	return newSlice
 }
 
 
 
 
 
-func(s *SomePStream)  CPStream()  *SomePStream {	
+// CPSlice 获取C的PSlice
+func (s *SomeSlice) CPSlice() *SomePSlice {	
 	value := make([]*Some, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.C)
 	}
-	newStream := PStreamOfSome(value)
-	return newStream
+	newSlice := ToSomePSlice(value)
+	return newSlice
 }
 
 
 
 
 
-func(s *SomePStream)  DPStream()  *outter.SomePStream {	
+// DPSlice 获取D的PSlice
+func (s *SomeSlice) DPSlice() *outter.SomePSlice {	
 	value := make([]*outter.Some, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.D)
 	}
-	newStream := outter.PStreamOfSome(value)
-	return newStream
+	newSlice := outter.ToSomePSlice(value)
+	return newSlice
 }
 
 
 
 
 
-func(s *SomePStream)  EPStream()  *commons.StringPStream {	
-	value := make([]*string, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.E)
-	}
-	newStream := commons.PStreamOfString(value)
-	return newStream
-}
-
-
-
-
-
-func(s *SomePStream)  FPStream()  *commons.StringPStream {	
-	value := make([]*string, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.F)
-	}
-	newStream := commons.PStreamOfString(value)
-	return newStream
-}
-
-
-
-
-func(s *SomePStream)  As()  []string {	
+// As 获取A的列表
+func (s *SomeSlice) As() []string {	
 	value := make([]string, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.A)
@@ -1428,7 +479,8 @@ func(s *SomePStream)  As()  []string {
 	return value
 }
 
-func(s *SomePStream)  Bs()  []string {	
+// Bs 获取B的列表
+func (s *SomeSlice) Bs() []string {	
 	value := make([]string, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.B)
@@ -1436,7 +488,8 @@ func(s *SomePStream)  Bs()  []string {
 	return value
 }
 
-func(s *SomePStream)  Cs()  []*Some {	
+// Cs 获取C的列表
+func (s *SomeSlice) Cs() []*Some {	
 	value := make([]*Some, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.C)
@@ -1444,7 +497,8 @@ func(s *SomePStream)  Cs()  []*Some {
 	return value
 }
 
-func(s *SomePStream)  Ds()  []*outter.Some {	
+// Ds 获取D的列表
+func (s *SomeSlice) Ds() []*outter.Some {	
 	value := make([]*outter.Some, 0, len(s.value))	
 	for _, each := range s.value {
 		value = append(value, each.D)
@@ -1452,255 +506,33 @@ func(s *SomePStream)  Ds()  []*outter.Some {
 	return value
 }
 
-func(s *SomePStream)  Es()  []*string {	
-	value := make([]*string, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.E)
-	}
-	return value
-}
 
-func(s *SomePStream)  Fs()  []*string {	
-	value := make([]*string, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.F)
-	}
-	return value
-}
-
-func(s *SomePStream) Collect() []*Some{
+// Collect 获取最终的列表
+func (s *SomeSlice) Collect() []Some {
 	return s.value
 }
-
-	type BStream struct{
-		value	[]B
-		defaultReturn B
-	}
 	
-	func StreamOfB(value []B) *BStream {
-		return &BStream{value:value, defaultReturn:B{}}
-	}
-	func(s *BStream) OrElse(defaultReturn B)  *BStream {
-		s.defaultReturn = defaultReturn
-		return s
-	}	
-	func(s *BStream) Concate(given []B)  *BStream {
-		value := make([]B, len(s.value)+len(given))
-		copy(value,s.value)
-		copy(value[len(s.value):],given)
-		s.value = value
-		return s
-	}
-	
-	func(s *BStream) Drop(n int)  *BStream {
-		if n < 0 {
-			n = 0
-		}
-		l := len(s.value) - n
-		if l < 0 {
-			n = len(s.value)
-		}
-		s.value = s.value[n:]
-		return s
-	}
-	
-	func(s *BStream) Filter(fn func(int, B)bool)  *BStream {
-		value := make([]B, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-
-	
-	
-	func(s *BStream) First() B {
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		} 
-		return s.value[0]
-	}
-	
-	func(s *BStream) Last() B {
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		} 
-		return s.value[len(s.value)-1]
-	}
-	
-	func(s *BStream) Map(fn func(int, B)) *BStream {
-		for i, each := range s.value {
-			fn(i,each)
-		}
-		return s
-	}
-	
-	func(s *BStream) Reduce(fn func(B, B, int) B,initial B) B   {
-		final := initial
-		for i, each := range s.value {
-			final = fn(final,each,i)
-		}
-		return final
-	}
-	
-	func(s *BStream) Reverse()  *BStream {
-		value := make([]B, len(s.value))
-		for i, each := range s.value {
-			value[len(s.value)-1-i] = each
-		}
-		s.value = value
-		return s
-	}
-	
-	
-	
-	func(s *BStream) Append(given B) *BStream {
-		s.value=append(s.value,given)
-		return s
-	}
-	
-	func(s *BStream) Len() int {
-		return len(s.value)
-	}
-	
-	func(s *BStream) IsEmpty() bool {
-		return len(s.value) == 0
-	}
-	
-	func(s *BStream) IsNotEmpty() bool {
-		return len(s.value) != 0
-	}
-
-
-	
-	func(s *BStream) All(fn func(int, B)bool)  bool {
-		for i, each := range s.value {
-			if !fn(i,each){
-				return false
-			}
-		}
-		return true
-	}
-	
-	func(s *BStream) Any(fn func(int, B)bool)  bool {
-		for i, each := range s.value {
-			if fn(i,each){
-				return true
-			}
-		}
-		return false
-	}
-	
-	func(s *BStream) Paginate(size int)  [][]B {
-		var pages  [][]B
-		prev := -1
-		for i := range s.value {
-			if (i-prev) < size && i != (len(s.value)-1) {
-				continue
-			}
-			pages=append(pages,s.value[prev+1:i+1])
-			prev=i
-		}
-		return pages
-	}
-	
-	func(s *BStream) Pop() B{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		lastIdx := len(s.value)-1
-		val:=s.value[lastIdx]
-		s.value[lastIdx]=s.defaultReturn
-		s.value=s.value[:lastIdx]
-		return val
-	}
-	
-	func(s *BStream) Prepend(given B) *BStream {
-		s.value = append([]B{given},s.value...)
-		return s
-	}
-	
-	func(s *BStream) Max(bigger func(B,B)bool) B{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		var max B = s.value[0]
-		for _,each := range s.value {
-			if bigger(each, max) {
-				max = each
-			}
-		}
-		return max
-	}
-	
-	
-	func(s *BStream) Min(less func(B,B)bool) B{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		var min B = s.value[0]
-		for _,each := range s.value {
-			if less(each, min) {
-				min = each
-			}
-		}
-		return min
-	}
-	
-	func(s *BStream) Random() B{
-		if len(s.value) <= 0 {
-			return s.defaultReturn
-		}
-		n := rand.Intn(len(s.value))
-		return s.value[n]
-	}
-	
-	func(s *BStream) Shuffle() *BStream {
-		if len(s.value) <= 0 {
-			return s
-		}
-		
-		
-		rand.Shuffle(len(s.value), func(i, j int) {
-			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
-		})
-		
-		return s
-	}
-	
-	
-	
-
-	
-	
-	
-	
-	
-	func(s *BStream) Collect() []B{
-		return s.value
-	}
-type BPStream struct{
-	value	[]*B
-	defaultReturn *B
+// SomePSlice	Some的PSlice		
+type SomePSlice struct {
+	value []*Some
 }
-func PStreamOfB(value []*B) *BPStream {
-	return &BPStream{value:value,defaultReturn:nil}
+
+// ToSomePSlice Some的指针列表转成SomePSlice 
+func ToSomePSlice(value []*Some) *SomePSlice {
+	return &SomePSlice{value: value}
 }
-func(s *BPStream) OrElse(defaultReturn *B)  *BPStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *BPStream) Concate(given []*B)  *BPStream {
-	value := make([]*B, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+
+// Concat 拼接
+func (s *SomePSlice) Concat(given []*Some) *SomePSlice {
+	value := make([]*Some, len(s.value)+len(given))
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *BPStream) Drop(n int)  *BPStream {
+
+// Drop 丢弃前n个
+func (s *SomePSlice) Drop(n int) *SomePSlice {
 	if n < 0 {
 		n = 0
 	}
@@ -1711,11 +543,723 @@ func(s *BPStream) Drop(n int)  *BPStream {
 	s.value = s.value[n:]
 	return s
 }
-func(s *BPStream) Filter(fn func(int, *B)bool)  *BPStream {
-	value := make([]*B, 0, len(s.value))
+
+// Filter 过滤
+func (s *SomePSlice) Filter(fn func(int, *Some) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+
+// FilterByA 通过过滤器过滤
+func (s *SomePSlice) FilterByA(fn func(int, string) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i, each.A) {
+			value = append(value, each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+// FilterByB 通过过滤器过滤
+func (s *SomePSlice) FilterByB(fn func(int, string) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i, each.B) {
+			value = append(value, each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+// FilterByC 通过过滤器过滤
+func (s *SomePSlice) FilterByC(fn func(int, *Some) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i, each.C) {
+			value = append(value, each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+// FilterByD 通过过滤器过滤
+func (s *SomePSlice) FilterByD(fn func(int, *outter.Some) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i, each.D) {
+			value = append(value, each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+
+// First 获取第一个元素
+func (s *SomePSlice) First(value *Some) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	*value = *s.value[0]
+	return nil
+}
+
+// Last 获取最后一个元素
+func (s *SomePSlice) Last(value *Some) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	} 
+	*value = *s.value[len(s.value)-1]
+	return nil
+}
+
+// Map 对每个元素进行操作
+func (s *SomePSlice) Map(fn func(int, *Some) *Some) *SomePSlice {
+	value := make([]*Some, len(s.value))
+	for i, each := range s.value {
+		value[i] = fn(i, each)
+	}
+	s.value = value
+	return s
+}
+
+// Reduce reduce
+func (s *SomePSlice) Reduce(fn func(*Some, *Some, int) *Some, initial *Some) *Some {
+	final := initial
+	for i, each := range s.value {
+		final = fn(final, each, i)
+	}
+	return final
+}
+
+// Reverse 逆序
+func (s *SomePSlice) Reverse() *SomePSlice {
+	value := make([]*Some, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
+	}
+	s.value = value
+	return s
+}
+
+// UniqueBy 通过比较器唯一
+func (s *SomePSlice) UniqueBy(compare func(*Some, *Some)bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	seen := make(map[int]struct{})
+	for i, outter := range s.value {
+		dup := false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j, inner := range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner, outter) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
+	return s
+}
+
+// Append 在尾部添加
+func (s *SomePSlice) Append(given *Some) *SomePSlice {
+	s.value = append(s.value, given)
+	return s
+}
+
+// Len 获取长度
+func (s *SomePSlice) Len() int {
+	return len(s.value)
+}
+
+// IsEmpty 是否为空
+func (s *SomePSlice) IsEmpty() bool {
+	return len(s.value) == 0
+}
+
+// IsNotEmpty 是否非空
+func (s *SomePSlice) IsNotEmpty() bool {
+	return len(s.value) != 0
+}
+
+// SortBy 根据比较器排序
+func (s *SomePSlice) SortBy(less func(*Some, *Some) bool) *SomePSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i], s.value[j])
+	})
+	
+	return s 
+}
+
+// All 是否所有元素满足条件
+func (s *SomePSlice) All(fn func(int, *Some) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each) {
+			return false
+		}
+	}
+	return true
+}
+
+
+// AllByA 是否所有元素的A满足条件
+func (s *SomePSlice) AllByA(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.A){
+			return false
+		}
+	}
+	return true
+}
+
+// AllByB 是否所有元素的B满足条件
+func (s *SomePSlice) AllByB(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.B){
+			return false
+		}
+	}
+	return true
+}
+
+// AllByC 是否所有元素的C满足条件
+func (s *SomePSlice) AllByC(fn func(int, *Some) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.C){
+			return false
+		}
+	}
+	return true
+}
+
+// AllByD 是否所有元素的D满足条件
+func (s *SomePSlice) AllByD(fn func(int, *outter.Some) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.D){
+			return false
+		}
+	}
+	return true
+}
+
+
+
+
+// AllByA 是否所有元素的A满足条件
+func (s *SomeSlice) AllByA(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.A){
+			return false
+		}
+	}
+	return true
+}
+
+// AllByB 是否所有元素的B满足条件
+func (s *SomeSlice) AllByB(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.B){
+			return false
+		}
+	}
+	return true
+}
+
+// AllByC 是否所有元素的C满足条件
+func (s *SomeSlice) AllByC(fn func(int, *Some) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.C){
+			return false
+		}
+	}
+	return true
+}
+
+// AllByD 是否所有元素的D满足条件
+func (s *SomeSlice) AllByD(fn func(int, *outter.Some) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.D){
+			return false
+		}
+	}
+	return true
+}
+
+
+// Any 是否有元素满足条件
+func (s *SomePSlice) Any(fn func(int, *Some) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each) {
+			return true
+		}
+	}
+	return false
+}
+
+
+
+// AnyByA 是否有元素的A满足条件
+func (s *SomePSlice) AnyByA(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.A) {
+			return true
+		}
+	}
+	return false
+}
+
+// AnyByB 是否有元素的B满足条件
+func (s *SomePSlice) AnyByB(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.B) {
+			return true
+		}
+	}
+	return false
+}
+
+// AnyByC 是否有元素的C满足条件
+func (s *SomePSlice) AnyByC(fn func(int, *Some) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.C) {
+			return true
+		}
+	}
+	return false
+}
+
+// AnyByD 是否有元素的D满足条件
+func (s *SomePSlice) AnyByD(fn func(int, *outter.Some) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.D) {
+			return true
+		}
+	}
+	return false
+}
+
+
+
+// AnyByA 是否有元素的A满足条件
+func (s *SomeSlice) AnyByA(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.A) {
+			return true
+		}
+	}
+	return false
+}
+
+// AnyByB 是否有元素的B满足条件
+func (s *SomeSlice) AnyByB(fn func(int, string) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.B) {
+			return true
+		}
+	}
+	return false
+}
+
+// AnyByC 是否有元素的C满足条件
+func (s *SomeSlice) AnyByC(fn func(int, *Some) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.C) {
+			return true
+		}
+	}
+	return false
+}
+
+// AnyByD 是否有元素的D满足条件
+func (s *SomeSlice) AnyByD(fn func(int, *outter.Some) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.D) {
+			return true
+		}
+	}
+	return false
+}
+
+
+// Paginate 分页
+func (s *SomePSlice) Paginate(size int) [][]*Some {
+	if size <= 0 {
+		size = 1
+	}
+	var pages [][]*Some
+	prev := -1
+	for i := range s.value {
+		if (i-prev) < size && i != (len(s.value)-1) {
+			continue
+		}
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
+	}
+	return pages
+}
+
+// Preappend 在首部添加元素
+func (s *SomePSlice) Preappend(given *Some) *SomePSlice {
+	value := make([]*Some, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
+	return s
+}
+
+// Max 获取最大元素
+func (s *SomePSlice) Max(bigger func(*Some, *Some) bool, value *Some) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	*value = *s.value[0]
+	for _, each := range s.value {
+		if bigger(each, value) {
+			*value = *each
+		}
+	}
+	return nil
+}
+
+// Min 获取最小元素
+func (s *SomePSlice) Min(less func(*Some, *Some) bool, value *Some) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	*value = *s.value[0]
+	for _, each := range s.value {
+		if less(each, value) {
+			*value = *each
+		}
+	}
+	return nil
+}
+
+// Random 随机获取元素
+func (s *SomePSlice) Random(value *Some) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	n := rand.Intn(len(s.value))
+	*value = *s.value[n]
+	return nil
+}
+
+// Shuffle 打乱列表
+func (s *SomePSlice) Shuffle() *SomePSlice {
+	if len(s.value) <= 0 {
+		return s
+	}
+	
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	})
+	
+	return s
+}
+
+
+
+// SortByA 根据元素的A排序
+func (s *SomePSlice) SortByA() *SomePSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i].A < s.value[j].A
+	})
+	return s 
+}
+
+
+
+// SortByB 根据元素的B排序
+func (s *SomePSlice) SortByB() *SomePSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i].B < s.value[j].B
+	})
+	return s 
+}
+
+
+
+// SortByC 根据元素的C和比较器排序
+func (s *SomePSlice) SortByC(less func(*Some, *Some) bool) *SomePSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i].C, s.value[j].C)
+	})
+	return s 
+}
+
+
+
+// SortByD 根据元素的D和比较器排序
+func (s *SomePSlice) SortByD(less func(*outter.Some, *outter.Some) bool) *SomePSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i].D, s.value[j].D)
+	})
+	return s 
+}
+
+
+
+
+
+// UniqueByA 根据元素的A唯一
+func (s *SomePSlice) UniqueByA() *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	seen:=make(map[string]struct{})
+	for _, each := range s.value {
+		if _, dup := seen[each.A]; dup {
+			continue
+		}
+		value = append(value, each)
+		
+		seen[each.A] = struct{}{}	
+	}
+	s.value = value
+	return s
+}
+
+
+
+// UniqueByB 根据元素的B唯一
+func (s *SomePSlice) UniqueByB() *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	seen:=make(map[string]struct{})
+	for _, each := range s.value {
+		if _, dup := seen[each.B]; dup {
+			continue
+		}
+		value = append(value, each)
+		
+		seen[each.B] = struct{}{}	
+	}
+	s.value = value
+	return s
+}
+
+
+
+
+// UniqueByC 根据元素的C和比较器唯一
+func (s *SomePSlice) UniqueByC(compare func (*Some, *Some) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	seen:=make(map[int]struct{})
+	for i, outter := range s.value {
+		dup:=false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j,inner :=range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.C, outter.C) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
+	
+	return s
+}
+
+
+
+
+
+// UniqueByD 根据元素的D和比较器唯一
+func (s *SomePSlice) UniqueByD(compare func (*outter.Some, *outter.Some) bool) *SomePSlice {
+	value := make([]*Some, 0, len(s.value))
+	seen:=make(map[int]struct{})
+	for i, outter := range s.value {
+		dup:=false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j,inner :=range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.D, outter.D) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
+	
+	return s
+}
+
+
+
+
+
+
+
+// ASlice 获取A的Slice
+func (s *SomePSlice) ASlice() *commons.StringSlice {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.A)
+	}
+	newSlice := commons.ToStringSlice(value)
+	return newSlice
+}
+
+
+
+
+
+// BSlice 获取B的Slice
+func (s *SomePSlice) BSlice() *commons.StringSlice {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.B)
+	}
+	newSlice := commons.ToStringSlice(value)
+	return newSlice
+}
+
+
+
+
+
+// CPSlice 获取C的PSlice
+func (s *SomePSlice) CPSlice() *SomePSlice {	
+	value := make([]*Some, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.C)
+	}
+	newSlice := ToSomePSlice(value)
+	return newSlice
+}
+
+
+
+
+
+// DPSlice 获取D的PSlice
+func (s *SomePSlice) DPSlice() *outter.SomePSlice {	
+	value := make([]*outter.Some, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.D)
+	}
+	newSlice := outter.ToSomePSlice(value)
+	return newSlice
+}
+
+
+
+
+
+// As 获取A列表
+func (s *SomePSlice) As() []string {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.A)
+	}
+	return value
+}
+
+// Bs 获取B列表
+func (s *SomePSlice) Bs() []string {	
+	value := make([]string, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.B)
+	}
+	return value
+}
+
+// Cs 获取C列表
+func (s *SomePSlice) Cs() []*Some {	
+	value := make([]*Some, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.C)
+	}
+	return value
+}
+
+// Ds 获取D列表
+func (s *SomePSlice) Ds() []*outter.Some {	
+	value := make([]*outter.Some, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.D)
+	}
+	return value
+}
+
+
+// Collect 获取列表
+func (s *SomePSlice) Collect() []*Some {
+	return s.value
+}
+
+
+// BSlice B的Slice
+type BSlice struct {
+	value []B
+}
+
+// ToBSlice B列表转成BSlice
+func ToBSlice(value []B) *BSlice {
+	return &BSlice{value: value}
+}
+
+// Concat 拼接
+func (s *BSlice) Concat(given []B) *BSlice {
+	value := make([]B, len(s.value)+len(given))
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
+	s.value = value
+	return s
+}
+
+// Drop 丢弃前n个
+func (s *BSlice) Drop(n int) *BSlice {
+	if n < 0 {
+		n = 0
+	}
+	l := len(s.value) - n
+	if l < 0 {
+		n = len(s.value)
+	}
+	s.value = s.value[n:]
+	return s
+}
+
+// Filter 过滤
+func (s *BSlice) Filter(fn func(int, B) bool) *BSlice {
+	value := make([]B, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
@@ -1724,32 +1268,269 @@ func(s *BPStream) Filter(fn func(int, *B)bool)  *BPStream {
 
 
 
-func(s *BPStream) First() *B {
+// First 获取第一个元素
+func (s *BSlice) First(value *B) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn 
+		return errors.New("empty")
 	} 
-	return s.value[0]
+	*value = s.value[0]
+	return nil
 }
-func(s *BPStream) Last() *B {
+
+// Last 获取最后一个元素
+func (s *BSlice) Last(value *B) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn 
+		return errors.New("empty")
 	} 
-	return s.value[len(s.value)-1]
+	*value = s.value[len(s.value)-1]
+	return nil
 }
-func(s *BPStream) Map(fn func(int, *B)) *BPStream {
+
+// Map 对每个元素进行操作
+func (s *BSlice) Map(fn func(int, B) B) *BSlice {
+	value := make([]B, len(s.value))
 	for i, each := range s.value {
-		fn(i,each)
+		value[i] = fn(i, each)
 	}
+	s.value = value
 	return s
 }
-func(s *BPStream) Reduce(fn func(*B, *B, int) *B,initial *B) *B   {
+
+// Reduce reduce
+func (s *BSlice) Reduce(fn func(B, B, int) B, initial B) B {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *BPStream) Reverse()  *BPStream {
+
+// Reverse 逆序
+func (s *BSlice) Reverse() *BSlice {
+	value := make([]B, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
+	}
+	s.value = value
+	return s
+}
+
+
+
+// Append 在尾部添加元素
+func (s *BSlice) Append(given B) *BSlice {
+	s.value = append(s.value, given)
+	return s
+}
+
+// Len 获取长度
+func (s *BSlice) Len() int {
+	return len(s.value)
+}
+
+// IsEmpty 判断是否为空
+func (s *BSlice) IsEmpty() bool {
+	return len(s.value) == 0
+}
+
+// IsNotEmpty 判断是否非空
+func (s *BSlice) IsNotEmpty() bool {
+	return len(s.value) != 0
+}
+
+// All 是否所有元素满足添加
+func (s *BSlice) All(fn func(int, B) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each) {
+			return false
+		}
+	}
+	return true
+}
+
+// Any 是否有元素满足条件
+func (s *BSlice) Any(fn func(int, B) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each) {
+			return true
+		}
+	}
+	return false
+}
+
+// Paginate 分页
+func (s *BSlice) Paginate(size int) [][]B {
+	if size <= 0 {
+		size = 1
+	}
+	var pages [][]B
+	prev := -1
+	for i := range s.value {
+		if (i-prev) < size && i != (len(s.value)-1) {
+			continue
+		}
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
+	}
+	return pages
+}
+
+// Preappend 在首部添加元素
+func (s *BSlice) Preappend(given B) *BSlice {
+	value := make([]B, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
+	return s
+}
+
+// Max 获取最后元素
+func (s *BSlice) Max(bigger func(B, B) bool, value *B) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	*value = s.value[0]
+	for _, each := range s.value {
+		if bigger(each, *value) {
+			*value = each
+		}
+	}
+	return nil
+}
+
+// Min 获取最小元素
+func (s *BSlice) Min(less func(B, B) bool, value *B) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	*value = s.value[0]
+	for _, each := range s.value {
+		if less(each, *value) {
+			*value = each
+		}
+	}
+	return nil
+}
+
+// Random 随机获取一个元素
+func (s *BSlice) Random(value *B) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	n := rand.Intn(len(s.value))
+	*value = s.value[n]
+	return nil
+}
+
+// Shuffle 打乱列表
+func (s *BSlice) Shuffle() *BSlice {
+	if len(s.value) <= 0 {
+		return s
+	}
+	
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	})
+	return s
+}
+
+
+
+
+
+
+
+
+
+// Collect 获取最终的列表
+func (s *BSlice) Collect() []B {
+	return s.value
+}
+	
+// BPSlice	B的PSlice		
+type BPSlice struct {
+	value []*B
+}
+
+// ToBPSlice B的指针列表转成BPSlice 
+func ToBPSlice(value []*B) *BPSlice {
+	return &BPSlice{value: value}
+}
+
+// Concat 拼接
+func (s *BPSlice) Concat(given []*B) *BPSlice {
+	value := make([]*B, len(s.value)+len(given))
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
+	s.value = value
+	return s
+}
+
+// Drop 丢弃前n个
+func (s *BPSlice) Drop(n int) *BPSlice {
+	if n < 0 {
+		n = 0
+	}
+	l := len(s.value) - n
+	if l < 0 {
+		n = len(s.value)
+	}
+	s.value = s.value[n:]
+	return s
+}
+
+// Filter 过滤
+func (s *BPSlice) Filter(fn func(int, *B) bool) *BPSlice {
+	value := make([]*B, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i, each) {
+			value = append(value, each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+
+
+// First 获取第一个元素
+func (s *BPSlice) First(value *B) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	}
+	*value = *s.value[0]
+	return nil
+}
+
+// Last 获取最后一个元素
+func (s *BPSlice) Last(value *B) error {
+	if len(s.value) <= 0 {
+		return errors.New("empty")
+	} 
+	*value = *s.value[len(s.value)-1]
+	return nil
+}
+
+// Map 对每个元素进行操作
+func (s *BPSlice) Map(fn func(int, *B) *B) *BPSlice {
+	value := make([]*B, len(s.value))
+	for i, each := range s.value {
+		value[i] = fn(i, each)
+	}
+	s.value = value
+	return s
+}
+
+// Reduce reduce
+func (s *BPSlice) Reduce(fn func(*B, *B, int) *B, initial *B) *B {
+	final := initial
+	for i, each := range s.value {
+		final = fn(final, each, i)
+	}
+	return final
+}
+
+// Reverse 逆序
+func (s *BPSlice) Reverse() *BPSlice {
 	value := make([]*B, len(s.value))
 	for i, each := range s.value {
 		value[len(s.value)-1-i] = each
@@ -1757,56 +1538,68 @@ func(s *BPStream) Reverse()  *BPStream {
 	s.value = value
 	return s
 }
-func(s *BPStream) UniqueBy(compare func(*B,*B)bool)  *BPStream{
+
+// UniqueBy 通过比较器唯一
+func (s *BPSlice) UniqueBy(compare func(*B, *B)bool) *BPSlice {
 	value := make([]*B, 0, len(s.value))
-	seen:=make(map[int]struct{})
+	seen := make(map[int]struct{})
 	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
+		dup := false
+		if _, exist := seen[i]; exist {
 			continue
 		}		
-		for j,inner :=range s.value {
-			if i==j {
+		for j, inner := range s.value {
+			if i == j {
 				continue
 			}
-			if compare(inner,outter) {
-				seen[j]=struct{}{}				
-				dup=true
+			if compare(inner, outter) {
+				seen[j] = struct{}{}				
+				dup = true
 			}
 		}
 		if dup {
-			seen[i]=struct{}{}
+			seen[i] = struct{}{}
 		}
-		value=append(value,outter)			
+		value = append(value, outter)			
 	}
 	s.value = value
 	return s
 }
-func(s *BPStream) Append(given *B) *BPStream {
-	s.value=append(s.value,given)
+
+// Append 在尾部添加
+func (s *BPSlice) Append(given *B) *BPSlice {
+	s.value = append(s.value, given)
 	return s
 }
-func(s *BPStream) Len() int {
+
+// Len 获取长度
+func (s *BPSlice) Len() int {
 	return len(s.value)
 }
-func(s *BPStream) IsEmpty() bool {
+
+// IsEmpty 是否为空
+func (s *BPSlice) IsEmpty() bool {
 	return len(s.value) == 0
 }
 
-func(s *BPStream) IsNotEmpty() bool {
+// IsNotEmpty 是否非空
+func (s *BPSlice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
 
-func(s *BPStream)  SortBy(less func(*B,*B)bool)  *BPStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i],s.value[j])
+// SortBy 根据比较器排序
+func (s *BPSlice) SortBy(less func(*B, *B) bool) *BPSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i], s.value[j])
 	})
+	
 	return s 
 }
 
-func(s *BPStream) All(fn func(int, *B)bool)  bool {
+// All 是否所有元素满足条件
+func (s *BPSlice) All(fn func(int, *B) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
@@ -1818,9 +1611,10 @@ func(s *BPStream) All(fn func(int, *B)bool)  bool {
 
 
 
-func(s *BPStream) Any(fn func(int, *B)bool)  bool {
+// Any 是否有元素满足条件
+func (s *BPSlice) Any(fn func(int, *B) bool) bool {
 	for i, each := range s.value {
-		if fn(i,each){
+		if fn(i, each) {
 			return true
 		}
 	}
@@ -1832,76 +1626,77 @@ func(s *BPStream) Any(fn func(int, *B)bool)  bool {
 
 
 
-func(s *BPStream) Paginate(size int)  [][]*B {
-	var pages  [][]*B
+// Paginate 分页
+func (s *BPSlice) Paginate(size int) [][]*B {
+	if size <= 0 {
+		size = 1
+	}
+	var pages [][]*B
 	prev := -1
 	for i := range s.value {
 		if (i-prev) < size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
 
-func(s *BPStream) Pop() *B{
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value[lastIdx]=s.defaultReturn
-	s.value=s.value[:lastIdx]
-	return val
-}
-
-func(s *BPStream) Prepend(given *B) *BPStream {
-	s.value = append([]*B{given},s.value...)
+// Preappend 在首部添加元素
+func (s *BPSlice) Preappend(given *B) *BPSlice {
+	value := make([]*B, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
 
-func(s *BPStream) Max(bigger func(*B,*B)bool) *B{
+// Max 获取最大元素
+func (s *BPSlice) Max(bigger func(*B, *B) bool, value *B) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var max *B  = s.value[0]
-	for _,each := range s.value {
-		if bigger(each, max) {
-			max = each
+	*value = *s.value[0]
+	for _, each := range s.value {
+		if bigger(each, value) {
+			*value = *each
 		}
 	}
-	return max
+	return nil
 }
 
-func(s *BPStream) Min(less func(*B,*B)bool) *B{
+// Min 获取最小元素
+func (s *BPSlice) Min(less func(*B, *B) bool, value *B) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var min *B = s.value[0]
-	for _,each := range s.value {
-		if less(each, min) {
-			min = each
+	*value = *s.value[0]
+	for _, each := range s.value {
+		if less(each, value) {
+			*value = *each
 		}
 	}
-	return min
+	return nil
 }
 
-func(s *BPStream) Random() *B{
+// Random 随机获取元素
+func (s *BPSlice) Random(value *B) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = *s.value[n]
+	return nil
 }
 
-func(s *BPStream) Shuffle() *BPStream {
+// Shuffle 打乱列表
+func (s *BPSlice) Shuffle() *BPSlice {
 	if len(s.value) <= 0 {
 		return s
 	}
 	
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
 	})
 	
 	return s
@@ -1913,6 +1708,9 @@ func(s *BPStream) Shuffle() *BPStream {
 
 
 
-func(s *BPStream) Collect() []*B{
+
+
+// Collect 获取列表
+func (s *BPSlice) Collect() []*B {
 	return s.value
 }

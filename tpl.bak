@@ -1,0 +1,216 @@
+package {{.Pkg}}
+import (
+	"sort"
+	"math/rand"
+)
+
+type {{.TitleName}}Slice struct{
+    value []{{.Name}}
+}
+
+func {{.TitleName}}Slice(value []{{.Name}}) {{.TitleName}}Slice {
+	return {{.TitleName}}Slice{value: value}
+}
+
+func(s *{{.TitleName}}Slice) Concat(given []{{.Name}})  *{{.TitleName}}Slice {
+	value := make([]{{.Name}}, len(s.value)+len(given))
+	copy(value, s.value)
+	copy(value[len(s.value):],given)
+	s.value = value
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Drop(n int)  *{{.TitleName}}Slice {
+	if n {{.Lt}} 0 {
+		n = 0
+	}
+	l := len(s.value) - n
+	if l {{.Lt}} 0 {
+		n = len(s.value)
+	}
+	s.value = s.value[n:]
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Slice {
+	value := make([]{{.Name}}, 0, len(s.value))
+	for i, each := range s.value {
+		if fn(i,each){
+			value = append(value,each)
+		}
+	}
+	s.value = value
+	return s
+}
+
+func(s *{{.TitleName}}Slice) First() {{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		panic("empty")
+	} 
+	return s.value[0]
+}
+
+func(s *{{.TitleName}}Slice) Last() {{.Name}} {
+	if len(s.value) {{.Lt}}= 0 {
+		panic("empty")
+	} 
+	return s.value[len(s.value)-1]
+}
+
+func(s *{{.TitleName}}Slice) Map(fn func(int, {{.Name}})) *{{.TitleName}}Slice {
+	for i, each := range s.value {
+		fn(i,each)
+	}
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
+	final := initial
+	for i, each := range s.value {
+		final = fn(final,each,i)
+	}
+	return final
+}
+
+func(s *{{.TitleName}}Slice) Reverse()  *{{.TitleName}}Slice {
+	value := make([]{{.Name}}, len(s.value))
+	for i, each := range s.value {
+		value[len(s.value)-1-i] = each
+	}
+	s.value = value
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Unique()  *{{.TitleName}}Slice{
+	value := make([]{{.Name}}, 0, len(s.value))
+	seen:=make(map[{{.Name}}]struct{})
+	for _, each := range s.value {
+		if _,exist:=seen[each];exist{
+			continue
+		}		
+		seen[each]=struct{}{}
+		value=append(value,each)			
+	}
+	s.value = value
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Append(given {{.Name}}) *{{.TitleName}}Slice {
+	s.value = append(s.value,given)
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Len() int {
+	return len(s.value)
+}
+
+func(s *{{.TitleName}}Slice) IsEmpty() bool {
+	return len(s.value) == 0
+}
+
+func(s *{{.TitleName}}Slice) IsNotEmpty() bool {
+	return len(s.value) != 0
+}
+
+func(s *{{.TitleName}}Slice)  Sort()  *{{.TitleName}}Slice {
+	sort.Slice(s.value, func(i,j int)bool{
+		return s.value[i] {{.Lt}} s.value[j]
+	})
+	return s 
+}
+
+func(s *{{.TitleName}}Slice) All(fn func(int, {{.Name}})bool)  bool {
+	for i, each := range s.value {
+		if !fn(i,each){
+			return false
+		}
+	}
+	return true
+}
+
+func(s *{{.TitleName}}Slice) Any(fn func(int, {{.Name}})bool)  bool {
+	for i, each := range s.value {
+		if fn(i,each){
+			return true
+		}
+	}
+	return false
+}
+
+func(s *{{.TitleName}}Slice) Paginate(size int)  [][]{{.Name}} {
+	var pages [][]{{.Name}}
+	prev := -1
+	for i := range s.value {
+		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
+			continue
+		}
+		pages = append(pages,s.value[prev+1:i+1])
+		prev=i
+	}
+	return pages
+}
+
+func(s *{{.TitleName}}Slice) Pop() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		panic("empty")
+	}
+	lastIdx := len(s.value)-1
+	val := s.value[lastIdx]
+	s.value = s.value[:lastIdx]
+	return val
+}
+
+func(s *{{.TitleName}}Slice) Preapppend(given {{.Name}}) *{{.TitleName}}Slice {
+	s.value = append(s.value,given)
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Max() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		panic("empty")
+	}
+	var max {{.Name}} = s.value[0]
+	for _,each := range s.value {
+		if max {{.Lt}} each {
+			max = each
+		}
+	}
+	return max
+}
+
+func(s *{{.TitleName}}Slice) Min() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		panic("empty")
+	}
+	var min {{.Name}} = s.value[0]
+	for _,each := range s.value {
+		if each  {{.Lt}} min {
+			min = each
+		}
+	}
+	return min
+}
+
+func(s *{{.TitleName}}Slice) Random() {{.Name}}{
+	if len(s.value) {{.Lt}}= 0 {
+		panic("empty")
+	}
+	n := rand.Intn(len(s.value))
+	return s.value[n]
+}
+
+func(s *{{.TitleName}}Slice) Shuffle() *{{.TitleName}}Slice {
+	if len(s.value) {{.Lt}}= 0 {
+		return s
+	}
+
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	})
+	
+	return s
+}
+
+func(s *{{.TitleName}}Slice) Collect() []{{.Name}}{
+	return s.value
+}

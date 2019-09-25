@@ -7,8 +7,6 @@ type Some struct {
 	B string
 	C *Some
 	D *outter.Some
-	E *string
-	F *string
 }
 
 type B struct {

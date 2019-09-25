@@ -1,30 +1,32 @@
 package commons
-
+	
 import (
+	"errors"
 	"math/rand"
 	"sort"
 )
 
-type Float64Stream struct {
-	value         []float64
-	defaultReturn float64
+// Float64Slice float64的Slice
+type Float64Slice struct {
+	value []float64
 }
 
-func StreamOfFloat64(value []float64) *Float64Stream {
-	return &Float64Stream{value: value, defaultReturn: 0.0}
+// ToFloat64Slice float64列表转为Float64Slice
+func ToFloat64Slice(value []float64) *Float64Slice {
+	return &Float64Slice{value: value}
 }
-func (s *Float64Stream) OrElase(defaultReturn float64) *Float64Stream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func (s *Float64Stream) Concate(given []float64) *Float64Stream {
+
+// Concat 拼接
+func (s *Float64Slice) Concat(given []float64) *Float64Slice {
 	value := make([]float64, len(s.value)+len(given))
 	copy(value, s.value)
 	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func (s *Float64Stream) Drop(n int) *Float64Stream {
+
+// Drop 丢弃前n个
+func (s *Float64Slice) Drop(n int) *Float64Slice {
 	if n < 0 {
 		n = 0
 	}
@@ -35,7 +37,9 @@ func (s *Float64Stream) Drop(n int) *Float64Stream {
 	s.value = s.value[n:]
 	return s
 }
-func (s *Float64Stream) Filter(fn func(int, float64) bool) *Float64Stream {
+
+// Filter 过滤
+func (s *Float64Slice) Filter(fn func(int, float64) bool) *Float64Slice {
 	value := make([]float64, 0, len(s.value))
 	for i, each := range s.value {
 		if fn(i, each) {
@@ -45,72 +49,98 @@ func (s *Float64Stream) Filter(fn func(int, float64) bool) *Float64Stream {
 	s.value = value
 	return s
 }
-func (s *Float64Stream) First() float64 {
+
+// First 获取第一个元素
+func (s *Float64Slice) First(value *float64) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	return s.value[0]
+		return errors.New("empty")
+	} 
+	*value = s.value[0]
+	return nil
 }
-func (s *Float64Stream) Last() float64 {
+
+// Last 获取最后一个元素
+func (s *Float64Slice) Last(value *float64) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	return s.value[len(s.value)-1]
+	*value = s.value[len(s.value)-1]
+	return nil
 }
-func (s *Float64Stream) Map(fn func(int, float64)) *Float64Stream {
+
+// Map 对每个元素进行操作
+func (s *Float64Slice) Map(fn func(int, float64) float64) *Float64Slice {
+	value := make([]float64, len(s.value))
 	for i, each := range s.value {
-		fn(i, each)
+		value[i] = fn(i, each)
 	}
+	s.value = value
 	return s
 }
-func (s *Float64Stream) Reduce(fn func(float64, float64, int) float64, initial float64) float64 {
+
+// Reduce reduce
+func (s *Float64Slice) Reduce(fn func(float64, float64, int) float64, initial float64) float64 {
 	final := initial
 	for i, each := range s.value {
 		final = fn(final, each, i)
 	}
 	return final
 }
-func (s *Float64Stream) Reverse() *Float64Stream {
-	value := make([]float64, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
+
+// Reverse 逆序
+func (s *Float64Slice) Reverse() *Float64Slice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i] > s.value[j]
+	})
+	return s 
 }
-func (s *Float64Stream) Unique() *Float64Stream {
+
+// Unique 唯一
+func (s *Float64Slice) Unique() *Float64Slice {
 	value := make([]float64, 0, len(s.value))
 	seen := make(map[float64]struct{})
 	for _, each := range s.value {
 		if _, exist := seen[each]; exist {
 			continue
-		}
+		}		
 		seen[each] = struct{}{}
-		value = append(value, each)
+		value = append(value, each)			
 	}
 	s.value = value
 	return s
 }
-func (s *Float64Stream) Append(given float64) *Float64Stream {
+
+// Append 在尾部添加
+func (s *Float64Slice) Append(given float64) *Float64Slice {
 	s.value = append(s.value, given)
 	return s
 }
-func (s *Float64Stream) Len() int {
+
+// Len 获取长度
+func (s *Float64Slice) Len() int {
 	return len(s.value)
 }
-func (s *Float64Stream) IsEmpty() bool {
+
+// IsEmpty 判断是否为空
+func (s *Float64Slice) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func (s *Float64Stream) IsNotEmpty() bool {
+
+// IsEmpty 判断是否非空
+func (s *Float64Slice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func (s *Float64Stream) Sort() *Float64Stream {
+
+// Sort 排序
+func (s *Float64Slice) Sort() *Float64Slice {
 	sort.Slice(s.value, func(i, j int) bool {
 		return s.value[i] < s.value[j]
 	})
-	return s
+	return s 
 }
-func (s *Float64Stream) All(fn func(int, float64) bool) bool {
+
+// All 是否所有元素满足条件
+func (s *Float64Slice) All(fn func(int, float64) bool) bool {
 	for i, each := range s.value {
 		if !fn(i, each) {
 			return false
@@ -118,7 +148,9 @@ func (s *Float64Stream) All(fn func(int, float64) bool) bool {
 	}
 	return true
 }
-func (s *Float64Stream) Any(fn func(int, float64) bool) bool {
+
+// Any 是否有元素满足条件
+func (s *Float64Slice) Any(fn func(int, float64) bool) bool {
 	for i, each := range s.value {
 		if fn(i, each) {
 			return true
@@ -126,7 +158,12 @@ func (s *Float64Stream) Any(fn func(int, float64) bool) bool {
 	}
 	return false
 }
-func (s *Float64Stream) Paginate(size int) [][]float64 {
+
+// Paginate 分页
+func (s *Float64Slice) Paginate(size int) [][]float64 {
+	if size <= 0 {
+		size = 1
+	}
 	var pages [][]float64
 	prev := -1
 	for i := range s.value {
@@ -138,263 +175,67 @@ func (s *Float64Stream) Paginate(size int) [][]float64 {
 	}
 	return pages
 }
-func (s *Float64Stream) Pop() float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value) - 1
-	val := s.value[lastIdx]
-	s.value = s.value[:lastIdx]
-	return val
-}
-func (s *Float64Stream) Prepend(given float64) *Float64Stream {
-	s.value = append([]float64{given}, s.value...)
+
+// Preappend 在首部添加元素
+func (s *Float64Slice) Preappend(given float64) *Float64Slice {
+	value := make([]float64, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
-func (s *Float64Stream) Max() float64 {
+
+// Max 获取最大元素
+func (s *Float64Slice) Max(value *float64) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var max float64 = s.value[0]
+	*value = s.value[0]
 	for _, each := range s.value {
-		if max < each {
-			max = each
+		if *value < each {
+			*value  = each
 		}
 	}
-	return max
+	return nil 
 }
-func (s *Float64Stream) Min() float64 {
+
+// Min 获取最小元素
+func (s *Float64Slice) Min(value *float64) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var min float64 = s.value[0]
+	*value = s.value[0]
 	for _, each := range s.value {
-		if each < min {
-			min = each
+		if each < *value {
+			*value = each
 		}
 	}
-	return min
+	return nil
 }
-func (s *Float64Stream) Random() float64 {
+
+// Random 随机获取一个元素
+func (s *Float64Slice) Random(value *float64) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = s.value[n]
+	return nil
 }
-func (s *Float64Stream) Shuffle() *Float64Stream {
+
+// Shuffle 打乱列表
+func (s *Float64Slice) Shuffle() *Float64Slice {
 	if len(s.value) <= 0 {
 		return s
 	}
 
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i]
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
 	})
-
+	
 	return s
-}
-func (s *Float64Stream) Collect() []float64 {
-	return s.value
 }
 
-type Float64PStream struct {
-	value         []*float64
-	defaultReturn *float64
-}
-
-func PStreamOfFloat64(value []*float64) *Float64PStream {
-	return &Float64PStream{value: value, defaultReturn: nil}
-}
-func (s *Float64PStream) OrElse(defaultReturn *float64) *Float64PStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func (s *Float64PStream) Concate(given []*float64) *Float64PStream {
-	value := make([]*float64, len(s.value)+len(given))
-	copy(value, s.value)
-	copy(value[len(s.value):], given)
-	s.value = value
-	return s
-}
-func (s *Float64PStream) Drop(n int) *Float64PStream {
-	if n < 0 {
-		n = 0
-	}
-	l := len(s.value) - n
-	if l < 0 {
-		n = len(s.value)
-	}
-	s.value = s.value[n:]
-	return s
-}
-func (s *Float64PStream) Filter(fn func(int, *float64) bool) *Float64PStream {
-	value := make([]*float64, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i, each) {
-			value = append(value, each)
-		}
-	}
-	s.value = value
-	return s
-}
-func (s *Float64PStream) First() *float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	return s.value[0]
-}
-func (s *Float64PStream) Last() *float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	return s.value[len(s.value)-1]
-}
-func (s *Float64PStream) Map(fn func(int, *float64)) *Float64PStream {
-	for i, each := range s.value {
-		fn(i, each)
-	}
-	return s
-}
-func (s *Float64PStream) Reduce(fn func(*float64, *float64, int) *float64, initial *float64) *float64 {
-	final := initial
-	for i, each := range s.value {
-		final = fn(final, each, i)
-	}
-	return final
-}
-func (s *Float64PStream) Reverse() *Float64PStream {
-	value := make([]*float64, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
-}
-func (s *Float64PStream) Unique() *Float64PStream {
-	value := make([]*float64, 0, len(s.value))
-	seen := make(map[*float64]struct{})
-	for _, each := range s.value {
-		if _, exist := seen[each]; exist {
-			continue
-		}
-		seen[each] = struct{}{}
-		value = append(value, each)
-	}
-	s.value = value
-	return s
-}
-func (s *Float64PStream) Append(given *float64) *Float64PStream {
-	s.value = append(s.value, given)
-	return s
-}
-func (s *Float64PStream) Len() int {
-	return len(s.value)
-}
-func (s *Float64PStream) IsEmpty() bool {
-	return len(s.value) == 0
-}
-func (s *Float64PStream) IsNotEmpty() bool {
-	return len(s.value) != 0
-}
-func (s *Float64PStream) Sort(less func(*float64, *float64) bool) *Float64PStream {
-	sort.Slice(s.value, func(i, j int) bool {
-		return less(s.value[i], s.value[j])
-	})
-	return s
-}
-func (s *Float64PStream) All(fn func(int, *float64) bool) bool {
-	for i, each := range s.value {
-		if !fn(i, each) {
-			return false
-		}
-	}
-	return true
-}
-
-func (s *Float64PStream) Any(fn func(int, *float64) bool) bool {
-	for i, each := range s.value {
-		if fn(i, each) {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *Float64PStream) Paginate(size int) [][]*float64 {
-	var pages [][]*float64
-	prev := -1
-	for i := range s.value {
-		if (i-prev) < size && i != (len(s.value)-1) {
-			continue
-		}
-		pages = append(pages, s.value[prev+1:i+1])
-		prev = i
-	}
-	return pages
-}
-func (s *Float64PStream) Pop() *float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value) - 1
-	val := s.value[lastIdx]
-	s.value = s.value[:lastIdx]
-	return val
-}
-func (s *Float64PStream) Prepend(given *float64) *Float64PStream {
-	s.value = append([]*float64{given}, s.value...)
-	return s
-}
-func (s *Float64PStream) Max() *float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var max *float64 = s.value[0]
-	for _, each := range s.value {
-		if max == nil {
-			max = each
-			continue
-		}
-		if each != nil && *max <= *each {
-			max = each
-		}
-	}
-	return max
-}
-func (s *Float64PStream) Min() *float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var min *float64 = s.value[0]
-	for _, each := range s.value {
-		if min == nil {
-			min = each
-			continue
-		}
-		if each != nil && *each <= *min {
-			min = each
-		}
-	}
-	return min
-}
-func (s *Float64PStream) Random() *float64 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	n := rand.Intn(len(s.value))
-	return s.value[n]
-}
-func (s *Float64PStream) Shuffle() *Float64PStream {
-	if len(s.value) <= 0 {
-		return s
-	}
-
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i]
-	})
-
-	return s
-}
-func (s *Float64PStream) Collect() []*float64 {
+// Collect 获取列表
+func (s *Float64Slice) Collect() []float64 {
 	return s.value
 }

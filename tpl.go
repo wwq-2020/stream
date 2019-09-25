@@ -1,774 +1,28 @@
 package main
 
-const (
-	structTplStr = `
-	type {{.Name}}Stream struct{
-		value	[]{{.Name}}
-		defaultReturn {{.Name}}
-	}
-	
-	func StreamOf{{.Name}}(value []{{.Name}}) *{{.Name}}Stream {
-		return &{{.Name}}Stream{value:value, defaultReturn:{{.Name}}{}}
-	}
-	func(s *{{.Name}}Stream) OrElse(defaultReturn {{.Name}})  *{{.Name}}Stream {
-		s.defaultReturn = defaultReturn
-		return s
-	}	
-	func(s *{{.Name}}Stream) Concate(given []{{.Name}})  *{{.Name}}Stream {
-		value := make([]{{.Name}}, len(s.value)+len(given))
-		copy(value,s.value)
-		copy(value[len(s.value):],given)
-		s.value = value
-		return s
-	}
-	
-	func(s *{{.Name}}Stream) Drop(n int)  *{{.Name}}Stream {
-		if n {{.Lt}} 0 {
-			n = 0
-		}
-		l := len(s.value) - n
-		if l {{.Lt}} 0 {
-			n = len(s.value)
-		}
-		s.value = s.value[n:]
-		return s
-	}
-	
-	func(s *{{.Name}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.Name}}Stream {
-		value := make([]{{.Name}}, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
+const structTplStr = `
 
-	{{range $idx,$each := .Fields}}
-	func(s *{{$.Name}}Stream) FilterBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  *{{$.Name}}Stream {
-		value := make([]{{$.Name}}, 0, len(s.value))
-		for i, each := range s.value {
-			if fn(i,each.{{$each.Name}}){
-				value = append(value,each)
-			}
-		}
-		s.value = value
-		return s
-	}
-	{{end}}
-	
-	func(s *{{.Name}}Stream) First() {{.Name}} {
-		if len(s.value) {{.Lt}}= 0 {
-			return s.defaultReturn
-		} 
-		return s.value[0]
-	}
-	
-	func(s *{{.Name}}Stream) Last() {{.Name}} {
-		if len(s.value) {{.Lt}}= 0 {
-			return s.defaultReturn
-		} 
-		return s.value[len(s.value)-1]
-	}
-	
-	func(s *{{.Name}}Stream) Map(fn func(int, {{.Name}})) *{{.Name}}Stream {
-		for i, each := range s.value {
-			fn(i,each)
-		}
-		return s
-	}
-	
-	func(s *{{.Name}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
-		final := initial
-		for i, each := range s.value {
-			final = fn(final,each,i)
-		}
-		return final
-	}
-	
-	func(s *{{.Name}}Stream) Reverse()  *{{.Name}}Stream {
-		value := make([]{{.Name}}, len(s.value))
-		for i, each := range s.value {
-			value[len(s.value)-1-i] = each
-		}
-		s.value = value
-		return s
-	}
-	
-	{{range $idx,$each := .Fields}}
-	{{if $each.IsBuiltin}}
-	func(s *{{$.Name}}Stream)  UniqueBy{{$each.Name}}()  *{{$.Name}}Stream {
-		value := make([]{{$.Name}}, 0, len(s.value))
-		seen:=make(map[{{$each.Type}}]struct{})
-		for _, each := range s.value {
-			if _,dup:=seen[each.{{$each.Name}}];dup{
-				continue
-			}
-			value = append(value, each)
-			seen[each.{{$each.Name}}]=struct{}{}	
-		}
-		s.value = value
-		return s
-	}
-	{{else}}
-	{{if $each.IsPointer}}
-	func(s *{{$.Name}}Stream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
-		value := make([]{{$.Name}}, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
-				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner.{{.Name}},outter.{{.Name}}) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
-			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
-		}
-		s.value = value
-		
-		return s
-	}
-	{{else}}
-	func(s *{{$.Name}}Stream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
-		value := make([]{{$.Name}}, 0, len(s.value))
-		seen:=make(map[int]struct{})
-		for i, outter := range s.value {
-			dup:=false
-			if _,exist:=seen[i];exist{
-				continue
-			}		
-			for j,inner :=range s.value {
-				if i==j {
-					continue
-				}
-				if compare(inner.{{.Name}},outter.{{.Name}}) {
-					seen[j]=struct{}{}				
-					dup=true
-				}
-			}
-			if dup {
-				seen[i]=struct{}{}
-			}
-			value=append(value,outter)			
-		}
-		s.value = value
-		
-		return s
-	}
-	{{end}}
-	{{end}}
-	{{end}}
-	
-	func(s *{{.Name}}Stream) Append(given {{.Name}}) *{{.Name}}Stream {
-		s.value=append(s.value,given)
-		return s
-	}
-	
-	func(s *{{.Name}}Stream) Len() int {
-		return len(s.value)
-	}
-	
-	func(s *{{.Name}}Stream) IsEmpty() bool {
-		return len(s.value) == 0
-	}
-	
-	func(s *{{.Name}}Stream) IsNotEmpty() bool {
-		return len(s.value) != 0
-	}
-
-
-	
-	func(s *{{.Name}}Stream) All(fn func(int, {{.Name}})bool)  bool {
-		for i, each := range s.value {
-			if !fn(i,each){
-				return false
-			}
-		}
-		return true
-	}
-	
-	func(s *{{.Name}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
-		for i, each := range s.value {
-			if fn(i,each){
-				return true
-			}
-		}
-		return false
-	}
-	
-	func(s *{{.Name}}Stream) Paginate(size int)  [][]{{.Name}} {
-		var pages  [][]{{.Name}}
-		prev := -1
-		for i := range s.value {
-			if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
-				continue
-			}
-			pages=append(pages,s.value[prev+1:i+1])
-			prev=i
-		}
-		return pages
-	}
-	
-	func(s *{{.Name}}Stream) Pop() {{.Name}}{
-		if len(s.value) {{.Lt}}= 0 {
-			return s.defaultReturn
-		}
-		lastIdx := len(s.value)-1
-		val:=s.value[lastIdx]
-		s.value[lastIdx]=s.defaultReturn
-		s.value=s.value[:lastIdx]
-		return val
-	}
-	
-	func(s *{{.Name}}Stream) Prepend(given {{.Name}}) *{{.Name}}Stream {
-		s.value = append([]{{.Name}}{given},s.value...)
-		return s
-	}
-	
-	func(s *{{.Name}}Stream) Max(bigger func({{.Name}},{{.Name}})bool) {{.Name}}{
-		if len(s.value) {{.Lt}}= 0 {
-			return s.defaultReturn
-		}
-		var max {{.Name}} = s.value[0]
-		for _,each := range s.value {
-			if bigger(each, max) {
-				max = each
-			}
-		}
-		return max
-	}
-	
-	
-	func(s *{{.Name}}Stream) Min(less func({{.Name}},{{.Name}})bool) {{.Name}}{
-		if len(s.value) {{.Lt}}= 0 {
-			return s.defaultReturn
-		}
-		var min {{.Name}} = s.value[0]
-		for _,each := range s.value {
-			if less(each, min) {
-				min = each
-			}
-		}
-		return min
-	}
-	
-	func(s *{{.Name}}Stream) Random() {{.Name}}{
-		if len(s.value) {{.Lt}}= 0 {
-			return s.defaultReturn
-		}
-		n := rand.Intn(len(s.value))
-		return s.value[n]
-	}
-	
-	func(s *{{.Name}}Stream) Shuffle() *{{.Name}}Stream {
-		if len(s.value) {{.Lt}}= 0 {
-			return s
-		}
-		
-		
-		rand.Shuffle(len(s.value), func(i, j int) {
-			s.value[i], s.value[j] = 	s.value[j], s.value[i] 
-		})
-		
-		return s
-	}
-	
-	{{range $idx,$each := .Fields}}
-	{{if $each.IsBuiltin}}
-	func(s *{{$.Name}}Stream)  SortBy{{$each.Name}}()  *{{$.Name}}Stream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return s.value[i].{{$each.Name}} {{$.Lt}} s.value[j].{{$each.Name}}
-		})
-		return s 
-	}
-	{{else}}
-	func(s *{{$.Name}}Stream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}Stream {
-		sort.Slice(s.value, func(i,j int)bool{
-			return less(s.value[i].{{$each.Name}},s.value[j].{{$each.Name}})
-		})
-		return s 
-	}
-	{{end}}
-	{{end}}
-	
-
-	
-	{{range $idx,$each := .Fields}}
-	{{if $each.SkipFieldStream}}
-	{{else}}
-	{{if $each.IsPointer}}
-	func(s *{{$.Name}}Stream)  {{$each.Name}}PStream()  *{{$each.Pkg}}{{$each.TitleType}}PStream {	
-		value := make([]{{$each.Type}}, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.{{$each.Name}})
-		}
-		newStream := {{$each.Pkg}}PStreamOf{{$each.TitleType}}(value)
-		return newStream
-	}
-	{{else}}
-	func(s *{{$.Name}}Stream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleType}}Stream {	
-		value := make([]{{$each.Type}}, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.{{$each.Name}})
-		}
-		newStream := {{$each.Pkg}}StreamOf{{$each.TitleType}}(value)
-		return newStream
-	}
-	{{end}}
-	{{end}}
-	{{end}}
-	
-	{{range $idx,$each := .Fields}}
-	func(s *{{$.Name}}Stream)  {{$each.Name}}s()  []{{$each.Type}} {	
-		value := make([]{{$each.Type}}, 0, len(s.value))	
-		for _, each := range s.value {
-			value = append(value, each.{{$each.Name}})
-		}
-		return value
-	}
-	{{end}}
-	
-	func(s *{{.Name}}Stream) Collect() []{{.Name}}{
-		return s.value
-	}
-type {{.Name}}PStream struct{
-	value	[]*{{.Name}}
-	defaultReturn *{{.Name}}
-}
-func PStreamOf{{.Name}}(value []*{{.Name}}) *{{.Name}}PStream {
-	return &{{.Name}}PStream{value:value,defaultReturn:nil}
-}
-func(s *{{.Name}}PStream) OrElse(defaultReturn *{{.Name}})  *{{.Name}}PStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *{{.Name}}PStream) Concate(given []*{{.Name}})  *{{.Name}}PStream {
-	value := make([]*{{.Name}}, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
-	s.value = value
-	return s
-}
-func(s *{{.Name}}PStream) Drop(n int)  *{{.Name}}PStream {
-	if n {{.Lt}} 0 {
-		n = 0
-	}
-	l := len(s.value) - n
-	if l {{.Lt}} 0 {
-		n = len(s.value)
-	}
-	s.value = s.value[n:]
-	return s
-}
-func(s *{{.Name}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.Name}}PStream {
-	value := make([]*{{.Name}}, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
-		}
-	}
-	s.value = value
-	return s
+// {{.Name}}Slice {{.Name}}的Slice
+type {{.Name}}Slice struct {
+	value []{{.Name}}
 }
 
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}PStream) FilterBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  *{{$.Name}}PStream {
-	value := make([]*{{$.Name}}, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i,each.{{$each.Name}}){
-			value = append(value,each)
-		}
-	}
-	s.value = value
-	return s
-}
-{{end}}
-
-func(s *{{.Name}}PStream) First() *{{.Name}} {
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn 
-	} 
-	return s.value[0]
-}
-func(s *{{.Name}}PStream) Last() *{{.Name}} {
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn 
-	} 
-	return s.value[len(s.value)-1]
-}
-func(s *{{.Name}}PStream) Map(fn func(int, *{{.Name}})) *{{.Name}}PStream {
-	for i, each := range s.value {
-		fn(i,each)
-	}
-	return s
-}
-func(s *{{.Name}}PStream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
-	final := initial
-	for i, each := range s.value {
-		final = fn(final,each,i)
-	}
-	return final
-}
-func(s *{{.Name}}PStream) Reverse()  *{{.Name}}PStream {
-	value := make([]*{{.Name}}, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
-}
-func(s *{{.Name}}PStream) UniqueBy(compare func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}PStream{
-	value := make([]*{{.Name}}, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner,outter) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	return s
-}
-func(s *{{.Name}}PStream) Append(given *{{.Name}}) *{{.Name}}PStream {
-	s.value=append(s.value,given)
-	return s
-}
-func(s *{{.Name}}PStream) Len() int {
-	return len(s.value)
-}
-func(s *{{.Name}}PStream) IsEmpty() bool {
-	return len(s.value) == 0
+// To{{.Name}}Slice {{.Name}}列表转成{{.Name}}Slice
+func To{{.Name}}Slice(value []{{.Name}}) *{{.Name}}Slice {
+	return &{{.Name}}Slice{value: value}
 }
 
-func(s *{{.Name}}PStream) IsNotEmpty() bool {
-	return len(s.value) != 0
-}
-
-func(s *{{.Name}}PStream)  SortBy(less func(*{{.Name}},*{{.Name}})bool)  *{{.Name}}PStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i],s.value[j])
-	})
-	return s 
-}
-
-func(s *{{.Name}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each){
-			return false
-		}
-	}
-	return true
-}
-
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}PStream) AllBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.{{$each.Name}}){
-			return false
-		}
-	}
-	return true
-}
-{{end}}
-
-
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}Stream) AllBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
-	for i, each := range s.value {
-		if !fn(i,each.{{$each.Name}}){
-			return false
-		}
-	}
-	return true
-}
-{{end}}
-
-func(s *{{.Name}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each){
-			return true
-		}
-	}
-	return false
-}
-
-
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}PStream) AnyBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.{{$each.Name}}){
-			return true
-		}
-	}
-	return false
-}
-{{end}}
-
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}Stream) AnyBy{{$each.Name}}(fn func(int,{{$each.Type}})bool)  bool {
-	for i, each := range s.value {
-		if fn(i,each.{{$each.Name}}){
-			return true
-		}
-	}
-	return false
-}
-{{end}}
-
-func(s *{{.Name}}PStream) Paginate(size int)  [][]*{{.Name}} {
-	var pages  [][]*{{.Name}}
-	prev := -1
-	for i := range s.value {
-		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
-			continue
-		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
-	}
-	return pages
-}
-
-func(s *{{.Name}}PStream) Pop() *{{.Name}}{
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value[lastIdx]=s.defaultReturn
-	s.value=s.value[:lastIdx]
-	return val
-}
-
-func(s *{{.Name}}PStream) Prepend(given *{{.Name}}) *{{.Name}}PStream {
-	s.value = append([]*{{.Name}}{given},s.value...)
-	return s
-}
-
-func(s *{{.Name}}PStream) Max(bigger func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	}
-	var max *{{.Name}}  = s.value[0]
-	for _,each := range s.value {
-		if bigger(each, max) {
-			max = each
-		}
-	}
-	return max
-}
-
-func(s *{{.Name}}PStream) Min(less func(*{{.Name}},*{{.Name}})bool) *{{.Name}}{
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	}
-	var min *{{.Name}} = s.value[0]
-	for _,each := range s.value {
-		if less(each, min) {
-			min = each
-		}
-	}
-	return min
-}
-
-func(s *{{.Name}}PStream) Random() *{{.Name}}{
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	}
-	n := rand.Intn(len(s.value))
-	return s.value[n]
-}
-
-func(s *{{.Name}}PStream) Shuffle() *{{.Name}}PStream {
-	if len(s.value) {{.Lt}}= 0 {
-		return s
-	}
-	
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
-	})
-	
-	return s
-}
-
-{{range $idx,$each := .Fields}}
-{{if $each.IsBuiltin}}
-func(s *{{$.Name}}PStream)  SortBy{{$each.Name}}()  *{{$.Name}}PStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return s.value[i].{{$each.Name}} {{$.Lt}} s.value[j].{{$each.Name}}
-	})
-	return s 
-}
-{{else}}
-func(s *{{$.Name}}PStream)  SortBy{{$each.Name}}(less func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i].{{$each.Name}},s.value[j].{{$each.Name}})
-	})
-	return s 
-}
-{{end}}
-{{end}}
-
-{{range $idx,$each := .Fields}}
-{{if $each.IsBuiltin}}
-func(s *{{$.Name}}PStream)  UniqueBy{{$each.Name}}()  *{{$.Name}}PStream {
-	value := make([]*{{$.Name}}, 0, len(s.value))
-	seen:=make(map[{{$each.Type}}]struct{})
-	for _, each := range s.value {
-		if _,dup:=seen[each.{{$each.Name}}];dup{
-			continue
-		}
-		value = append(value, each)
-		seen[each.{{$each.Name}}]=struct{}{}	
-	}
-	s.value = value
-	return s
-}
-{{else}}
-{{if $each.IsPointer}}
-func(s *{{$.Name}}PStream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
-	value := make([]*{{$.Name}}, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner.{{.Name}},outter.{{.Name}}) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	
-	return s
-}
-{{else}}
-func(s *{{$.Name}}PStream)  UniqueBy{{$each.Name}}(compare func({{$each.Type}},{{$each.Type}})bool)  *{{$.Name}}PStream {
-	value := make([]{{$.Name}}, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
-		if _,exist:=seen[i];exist{
-			continue
-		}		
-		for j,inner :=range s.value {
-			if i==j {
-				continue
-			}
-			if compare(inner.{{.Name}},outter.{{.Name}}) {
-				seen[j]=struct{}{}				
-				dup=true
-			}
-		}
-		if dup {
-			seen[i]=struct{}{}
-		}
-		value=append(value,outter)			
-	}
-	s.value = value
-	
-	return s
-}
-{{end}}
-{{end}}
-{{end}}
-
-{{range $idx,$each := .Fields}}
-{{if $each.SkipFieldStream}}
-{{else}}
-{{if $each.IsPointer}}
-func(s *{{$.Name}}PStream)  {{$each.Name}}PStream()  *{{$each.Pkg}}{{$each.TitleType}}PStream {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.{{$each.Name}})
-	}
-	newStream := {{$each.Pkg}}PStreamOf{{$each.TitleType}}(value)
-	return newStream
-}
-{{else}}
-func(s *{{$.Name}}PStream)  {{$each.Name}}Stream()  *{{$each.Pkg}}{{$each.TitleType}}Stream {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.{{$each.Name}})
-	}
-	newStream := {{$each.Pkg}}StreamOf{{$each.TitleType}}(value)
-	return newStream
-}
-{{end}}
-{{end}}
-{{end}}
-{{range $idx,$each := .Fields}}
-func(s *{{$.Name}}PStream)  {{$each.Name}}s()  []{{$each.Type}} {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
-		value = append(value, each.{{$each.Name}})
-	}
-	return value
-}
-{{end}}
-func(s *{{.Name}}PStream) Collect() []*{{.Name}}{
-	return s.value
-}
-`
-
-	builtinTplStr = `
-package {{.Pkg}}
-import (
-	"sort"
-	"math/rand"
-)
-type {{.TitleName}}Stream struct{
-	value	[]{{.Name}}
-	defaultReturn {{.Name}}
-}
-func StreamOf{{.TitleName}}(value []{{.Name}}) *{{.TitleName}}Stream {
-	return &{{.TitleName}}Stream{value:value,defaultReturn:{{.Empty}}}
-}
-func(s *{{.TitleName}}Stream) OrElase(defaultReturn {{.Name}})  *{{.TitleName}}Stream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *{{.TitleName}}Stream) Concate(given []{{.Name}})  *{{.TitleName}}Stream {
+// Concat 拼接
+func (s *{{.Name}}Slice) Concat(given []{{.Name}}) *{{.Name}}Slice {
 	value := make([]{{.Name}}, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}Stream) Drop(n int)  *{{.TitleName}}Stream {
+
+// Drop 丢弃前n个
+func (s *{{.Name}}Slice) Drop(n int) *{{.Name}}Slice {
 	if n {{.Lt}} 0 {
 		n = 0
 	}
@@ -779,42 +33,72 @@ func(s *{{.TitleName}}Stream) Drop(n int)  *{{.TitleName}}Stream {
 	s.value = s.value[n:]
 	return s
 }
-func(s *{{.TitleName}}Stream) Filter(fn func(int, {{.Name}})bool)  *{{.TitleName}}Stream {
+
+// Filter 过滤
+func (s *{{.Name}}Slice) Filter(fn func(int, {{.Name}}) bool) *{{.Name}}Slice {
 	value := make([]{{.Name}}, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}Stream) First() {{.Name}} {
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[0]
-}
-func(s *{{.TitleName}}Stream) Last() {{.Name}} {
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[len(s.value)-1]
-}
-func(s *{{.TitleName}}Stream) Map(fn func(int, {{.Name}})) *{{.TitleName}}Stream {
+
+{{range $idx,$each := .Fields}}
+// FilterBy{{$each.Name}} 通过过滤器过滤
+func (s *{{$.Name}}Slice) FilterBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) *{{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s.value))
 	for i, each := range s.value {
-		fn(i,each)
+		if fn(i, each.{{$each.Name}}) {
+			value = append(value, each)
+		}
 	}
+	s.value = value
 	return s
 }
-func(s *{{.TitleName}}Stream) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}},initial {{.Name}}) {{.Name}}   {
+{{end}}
+
+// First 获取第一个元素
+func (s *{{.Name}}Slice) First(value *{{.Name}}) error {
+	if len(s.value) {{.Lt}}= 0 {
+		return errors.New("empty")
+	} 
+	*value = s.value[0]
+	return nil
+}
+
+// Last 获取最后一个元素
+func (s *{{.Name}}Slice) Last(value *{{.Name}}) error {
+	if len(s.value) {{.Lt}}= 0 {
+		return errors.New("empty")
+	} 
+	*value = s.value[len(s.value)-1]
+	return nil
+}
+
+// Map 对每个元素进行操作
+func (s *{{.Name}}Slice) Map(fn func(int, {{.Name}}) {{.Name}}) *{{.Name}}Slice {
+	value := make([]{{.Name}}, len(s.value))
+	for i, each := range s.value {
+		value[i] = fn(i, each)
+	}
+	s.value = value
+	return s
+}
+
+// Reduce reduce
+func (s *{{.Name}}Slice) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}}, initial {{.Name}}) {{.Name}} {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *{{.TitleName}}Stream) Reverse()  *{{.TitleName}}Stream {
+
+// Reverse 逆序
+func (s *{{.Name}}Slice) Reverse() *{{.Name}}Slice {
 	value := make([]{{.Name}}, len(s.value))
 	for i, each := range s.value {
 		value[len(s.value)-1-i] = each
@@ -822,143 +106,285 @@ func(s *{{.TitleName}}Stream) Reverse()  *{{.TitleName}}Stream {
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}Stream) Unique()  *{{.TitleName}}Stream{
-	value := make([]{{.Name}}, 0, len(s.value))
-	seen:=make(map[{{.Name}}]struct{})
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// UniqueBy{{$each.Name}} 通过{{$each.Name}}唯一
+func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}() *{{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s.value))
+	seen := make(map[{{$each.Type}}]struct{})
 	for _, each := range s.value {
-		if _,exist:=seen[each];exist{
+		if _, dup := seen[each.{{$each.Name}}]; dup {
 			continue
-		}		
-		seen[each]=struct{}{}
-		value=append(value,each)			
+		}
+		value = append(value, each)
+		
+		seen[each.{{$each.Name}}] = struct{}{}	
 	}
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}Stream) Append(given {{.Name}}) *{{.TitleName}}Stream {
-	s.value=append(s.value,given)
+{{else}}
+{{if $each.IsPointer}}
+// UniqueBy{{$each.Name}} 通过{{$each.Name}}唯一
+func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s.value))
+	seen := make(map[int]struct{})
+	for i, outter := range s.value {
+		dup := false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j, inner := range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.{{.Name}}, outter.{{.Name}}) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
 	return s
 }
-func(s *{{.TitleName}}Stream) Len() int {
+{{else}}
+// UniqueBy{{$each.Name}} 通过{{$each.Name}}唯一
+func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s.value))
+	seen:=make(map[int]struct{})
+	for i, outter := range s.value {
+		dup:=false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j,inner :=range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.{{.Name}}, outter.{{.Name}}) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value,outter)			
+	}
+	s.value = value
+	return s
+}
+{{end}}
+{{end}}
+{{end}}
+
+// Append 在尾部添加元素
+func (s *{{.Name}}Slice) Append(given {{.Name}}) *{{.Name}}Slice {
+	s.value = append(s.value, given)
+	return s
+}
+
+// Len 获取长度
+func (s *{{.Name}}Slice) Len() int {
 	return len(s.value)
 }
-func(s *{{.TitleName}}Stream) IsEmpty() bool {
+
+// IsEmpty 判断是否为空
+func (s *{{.Name}}Slice) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func(s *{{.TitleName}}Stream) IsNotEmpty() bool {
+
+// IsNotEmpty 判断是否非空
+func (s *{{.Name}}Slice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func(s *{{.TitleName}}Stream)  Sort()  *{{.TitleName}}Stream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return s.value[i] {{.Lt}} s.value[j]
-	})
-	return s 
-}
-func(s *{{.TitleName}}Stream) All(fn func(int, {{.Name}})bool)  bool {
+
+// All 是否所有元素满足添加
+func (s *{{.Name}}Slice) All(fn func(int, {{.Name}}) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
 	return true
 }
-func(s *{{.TitleName}}Stream) Any(fn func(int, {{.Name}})bool)  bool {
+
+// Any 是否有元素满足条件
+func (s *{{.Name}}Slice) Any(fn func(int, {{.Name}}) bool) bool {
 	for i, each := range s.value {
-		if fn(i,each){
+		if fn(i, each) {
 			return true
 		}
 	}
 	return false
 }
-func(s *{{.TitleName}}Stream) Paginate(size int)  [][]{{.Name}} {
-	var pages  [][]{{.Name}}
+
+// Paginate 分页
+func (s *{{.Name}}Slice) Paginate(size int) [][]{{.Name}} {
+	if size {{.Lt}}= 0 {
+		size = 1
+	}
+	var pages [][]{{.Name}}
 	prev := -1
 	for i := range s.value {
 		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
-func(s *{{.TitleName}}Stream) Pop() {{.Name}}{
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value=s.value[:lastIdx]
-	return val
-}
-func(s *{{.TitleName}}Stream) Prepend(given {{.Name}}) *{{.TitleName}}Stream {
-	s.value = append([]{{.Name}}{given},s.value...)
+
+// Preappend 在首部添加元素
+func (s *{{.Name}}Slice) Preappend(given {{.Name}}) *{{.Name}}Slice {
+	value := make([]{{.Name}}, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
-func(s *{{.TitleName}}Stream) Max() {{.Name}}{
+
+// Max 获取最后元素
+func (s *{{.Name}}Slice) Max(bigger func({{.Name}}, {{.Name}}) bool, value *{{.Name}}) error {
 	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var max {{.Name}} = s.value[0]
-	for _,each := range s.value {
-		if max {{.Lt}} each {
-			max = each
+	*value = s.value[0]
+	for _, each := range s.value {
+		if bigger(each, *value) {
+			*value = each
 		}
 	}
-	return max
+	return nil
 }
-func(s *{{.TitleName}}Stream) Min() {{.Name}}{
+
+// Min 获取最小元素
+func (s *{{.Name}}Slice) Min(less func({{.Name}}, {{.Name}}) bool, value *{{.Name}}) error {
 	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var min {{.Name}} = s.value[0]
-	for _,each := range s.value {
-		if each  {{.Lt}} min {
-			min = each
+	*value = s.value[0]
+	for _, each := range s.value {
+		if less(each, *value) {
+			*value = each
 		}
 	}
-	return min
+	return nil
 }
-func(s *{{.TitleName}}Stream) Random() {{.Name}}{
+
+// Random 随机获取一个元素
+func (s *{{.Name}}Slice) Random(value *{{.Name}}) error {
 	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = s.value[n]
+	return nil
 }
-func(s *{{.TitleName}}Stream) Shuffle() *{{.TitleName}}Stream {
+
+// Shuffle 打乱列表
+func (s *{{.Name}}Slice) Shuffle() *{{.Name}}Slice {
 	if len(s.value) {{.Lt}}= 0 {
 		return s
 	}
-
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
-	})
 	
+	rand.Shuffle(len(s.value), func(i, j int) {
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	})
 	return s
 }
-func(s *{{.TitleName}}Stream) Collect() []{{.Name}}{
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// SortBy{{$each.Name}} 根据{{$each.Name}}排序
+func (s *{{$.Name}}Slice) SortBy{{$each.Name}}() *{{$.Name}}Slice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i].{{$each.Name}} {{$.Lt}} s.value[j].{{$each.Name}}
+	})
+	return s 
+}
+{{else}}
+// SortBy{{$each.Name}} 根据{{$each.Name}}排序
+func (s *{{$.Name}}Slice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}Slice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i].{{$each.Name}}, s.value[j].{{$each.Name}})
+	})
+	return s 
+}
+{{end}}
+{{end}}
+
+
+
+{{range $idx,$each := .Fields}}
+{{if $each.SkipFieldSlice}}
+{{else}}
+{{if $each.IsPointer}}
+// {{$each.Name}}PSlice 获取{{$each.Name}}的PSlice
+func (s *{{$.Name}}Slice) {{$each.Name}}PSlice() *{{$each.Pkg}}{{$each.TitleType}}PSlice {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.{{$each.Name}})
+	}
+	newSlice := {{$each.Pkg}}To{{$each.TitleType}}PSlice(value)
+	return newSlice
+}
+{{else}}
+// {{$each.Name}}PSlice 获取{{$each.Name}}的Slice
+func (s *{{$.Name}}Slice) {{$each.Name}}Slice() *{{$each.Pkg}}{{$each.TitleType}}Slice {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.{{$each.Name}})
+	}
+	newSlice := {{$each.Pkg}}To{{$each.TitleType}}Slice(value)
+	return newSlice
+}
+{{end}}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+// {{$each.Name}}s 获取{{$each.Name}}的列表
+func (s *{{$.Name}}Slice) {{$each.Name}}s() []{{$each.Type}} {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.{{$each.Name}})
+	}
+	return value
+}
+{{end}}
+
+// Collect 获取最终的列表
+func (s *{{.Name}}Slice) Collect() []{{.Name}} {
 	return s.value
 }
-type {{.TitleName}}PStream struct{
-	value	[]*{{.Name}}
-	defaultReturn *{{.Name}}
+	
+// {{.Name}}PSlice	{{.Name}}的PSlice		
+type {{.Name}}PSlice struct {
+	value []*{{.Name}}
 }
-func PStreamOf{{.TitleName}}(value []*{{.Name}}) *{{.TitleName}}PStream {
-	return &{{.TitleName}}PStream{value:value,defaultReturn:nil}
+
+// To{{.Name}}PSlice {{.Name}}的指针列表转成{{.Name}}PSlice 
+func To{{.Name}}PSlice(value []*{{.Name}}) *{{.Name}}PSlice {
+	return &{{.Name}}PSlice{value: value}
 }
-func(s *{{.TitleName}}PStream) OrElse(defaultReturn *{{.Name}})  *{{.TitleName}}PStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func(s *{{.TitleName}}PStream) Concate(given []*{{.Name}})  *{{.TitleName}}PStream {
+
+// Concat 拼接
+func (s *{{.Name}}PSlice) Concat(given []*{{.Name}}) *{{.Name}}PSlice {
 	value := make([]*{{.Name}}, len(s.value)+len(given))
-	copy(value,s.value)
-	copy(value[len(s.value):],given)
+	copy(value, s.value)
+	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}PStream) Drop(n int)  *{{.TitleName}}PStream {
+
+// Drop 丢弃前n个
+func (s *{{.Name}}PSlice) Drop(n int) *{{.Name}}PSlice {
 	if n {{.Lt}} 0 {
 		n = 0
 	}
@@ -969,42 +395,72 @@ func(s *{{.TitleName}}PStream) Drop(n int)  *{{.TitleName}}PStream {
 	s.value = s.value[n:]
 	return s
 }
-func(s *{{.TitleName}}PStream) Filter(fn func(int, *{{.Name}})bool)  *{{.TitleName}}PStream {
+
+// Filter 过滤
+func (s *{{.Name}}PSlice) Filter(fn func(int, *{{.Name}}) bool) *{{.Name}}PSlice {
 	value := make([]*{{.Name}}, 0, len(s.value))
 	for i, each := range s.value {
-		if fn(i,each){
-			value = append(value,each)
+		if fn(i, each) {
+			value = append(value, each)
 		}
 	}
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}PStream) First() *{{.Name}} {
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[0]
-}
-func(s *{{.TitleName}}PStream) Last() *{{.Name}} {
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	} 
-	return s.value[len(s.value)-1]
-}
-func(s *{{.TitleName}}PStream) Map(fn func(int, *{{.Name}})) *{{.TitleName}}PStream {
+
+{{range $idx,$each := .Fields}}
+// FilterBy{{$each.Name}} 通过过滤器过滤
+func (s *{{$.Name}}PSlice) FilterBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) *{{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, 0, len(s.value))
 	for i, each := range s.value {
-		fn(i,each)
+		if fn(i, each.{{$each.Name}}) {
+			value = append(value, each)
+		}
 	}
+	s.value = value
 	return s
 }
-func(s *{{.TitleName}}PStream) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}},initial *{{.Name}}) *{{.Name}}   {
+{{end}}
+
+// First 获取第一个元素
+func (s *{{.Name}}PSlice) First(value *{{.Name}}) error {
+	if len(s.value) {{.Lt}}= 0 {
+		return errors.New("empty")
+	}
+	*value = *s.value[0]
+	return nil
+}
+
+// Last 获取最后一个元素
+func (s *{{.Name}}PSlice) Last(value *{{.Name}}) error {
+	if len(s.value) {{.Lt}}= 0 {
+		return errors.New("empty")
+	} 
+	*value = *s.value[len(s.value)-1]
+	return nil
+}
+
+// Map 对每个元素进行操作
+func (s *{{.Name}}PSlice) Map(fn func(int, *{{.Name}}) *{{.Name}}) *{{.Name}}PSlice {
+	value := make([]*{{.Name}}, len(s.value))
+	for i, each := range s.value {
+		value[i] = fn(i, each)
+	}
+	s.value = value
+	return s
+}
+
+// Reduce reduce
+func (s *{{.Name}}PSlice) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}}, initial *{{.Name}}) *{{.Name}} {
 	final := initial
 	for i, each := range s.value {
-		final = fn(final,each,i)
+		final = fn(final, each, i)
 	}
 	return final
 }
-func(s *{{.TitleName}}PStream) Reverse()  *{{.TitleName}}PStream {
+
+// Reverse 逆序
+func (s *{{.Name}}PSlice) Reverse() *{{.Name}}PSlice {
 	value := make([]*{{.Name}}, len(s.value))
 	for i, each := range s.value {
 		value[len(s.value)-1-i] = each
@@ -1012,52 +468,103 @@ func(s *{{.TitleName}}PStream) Reverse()  *{{.TitleName}}PStream {
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}PStream) Unique()  *{{.TitleName}}PStream{
+
+// UniqueBy 通过比较器唯一
+func (s *{{.Name}}PSlice) UniqueBy(compare func(*{{.Name}}, *{{.Name}})bool) *{{.Name}}PSlice {
 	value := make([]*{{.Name}}, 0, len(s.value))
-	seen:=make(map[*{{.Name}}]struct{})
-	for _, each := range s.value {
-		if _,exist:=seen[each];exist{
+	seen := make(map[int]struct{})
+	for i, outter := range s.value {
+		dup := false
+		if _, exist := seen[i]; exist {
 			continue
 		}		
-		seen[each]=struct{}{}
-		value=append(value,each)			
+		for j, inner := range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner, outter) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
 	}
 	s.value = value
 	return s
 }
-func(s *{{.TitleName}}PStream) Append(given *{{.Name}}) *{{.TitleName}}PStream {
-	s.value=append(s.value,given)
+
+// Append 在尾部添加
+func (s *{{.Name}}PSlice) Append(given *{{.Name}}) *{{.Name}}PSlice {
+	s.value = append(s.value, given)
 	return s
 }
-func(s *{{.TitleName}}PStream) Len() int {
+
+// Len 获取长度
+func (s *{{.Name}}PSlice) Len() int {
 	return len(s.value)
 }
-func(s *{{.TitleName}}PStream) IsEmpty() bool {
+
+// IsEmpty 是否为空
+func (s *{{.Name}}PSlice) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func(s *{{.TitleName}}PStream) IsNotEmpty() bool {
+
+// IsNotEmpty 是否非空
+func (s *{{.Name}}PSlice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func(s *{{.TitleName}}PStream)  Sort(less func(*{{.Name}},*{{.Name}}) bool )  *{{.TitleName}}PStream {
-	sort.Slice(s.value, func(i,j int)bool{
-		return less(s.value[i],s.value[j])
+
+// SortBy 根据比较器排序
+func (s *{{.Name}}PSlice) SortBy(less func(*{{.Name}}, *{{.Name}}) bool) *{{.Name}}PSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i], s.value[j])
 	})
+	
 	return s 
 }
-func(s *{{.TitleName}}PStream) All(fn func(int, *{{.Name}})bool)  bool {
+
+// All 是否所有元素满足条件
+func (s *{{.Name}}PSlice) All(fn func(int, *{{.Name}}) bool) bool {
 	for i, each := range s.value {
-		if !fn(i,each){
+		if !fn(i, each) {
 			return false
 		}
 	}
 	return true
 }
 
-
-
-func(s *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
+{{range $idx,$each := .Fields}}
+// AllBy{{$each.Name}} 是否所有元素的{{$each.Name}}满足条件
+func (s *{{$.Name}}PSlice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
 	for i, each := range s.value {
-		if fn(i,each){
+		if !fn(i, each.{{$each.Name}}){
+			return false
+		}
+	}
+	return true
+}
+{{end}}
+
+
+{{range $idx,$each := .Fields}}
+// AllBy{{$each.Name}} 是否所有元素的{{$each.Name}}满足条件
+func (s *{{$.Name}}Slice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s.value {
+		if !fn(i, each.{{$each.Name}}){
+			return false
+		}
+	}
+	return true
+}
+{{end}}
+
+// Any 是否有元素满足条件
+func (s *{{.Name}}PSlice) Any(fn func(int, *{{.Name}}) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each) {
 			return true
 		}
 	}
@@ -1065,84 +572,244 @@ func(s *{{.TitleName}}PStream) Any(fn func(int, *{{.Name}})bool)  bool {
 }
 
 
-func(s *{{.TitleName}}PStream) Paginate(size int)  [][]*{{.Name}} {
-	var pages  [][]*{{.Name}}
+{{range $idx,$each := .Fields}}
+// AnyBy{{$each.Name}} 是否有元素的{{$each.Name}}满足条件
+func (s *{{$.Name}}PSlice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.{{$each.Name}}) {
+			return true
+		}
+	}
+	return false
+}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+// AnyBy{{$each.Name}} 是否有元素的{{$each.Name}}满足条件
+func (s *{{$.Name}}Slice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s.value {
+		if fn(i, each.{{$each.Name}}) {
+			return true
+		}
+	}
+	return false
+}
+{{end}}
+
+// Paginate 分页
+func (s *{{.Name}}PSlice) Paginate(size int) [][]*{{.Name}} {
+	if size {{.Lt}}= 0 {
+		size = 1
+	}
+	var pages [][]*{{.Name}}
 	prev := -1
 	for i := range s.value {
 		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
 			continue
 		}
-		pages=append(pages,s.value[prev+1:i+1])
-		prev=i
+		pages = append(pages, s.value[prev+1:i+1])
+		prev = i
 	}
 	return pages
 }
-func(s *{{.TitleName}}PStream) Pop() *{{.Name}}{
-	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value)-1
-	val:=s.value[lastIdx]
-	s.value=s.value[:lastIdx]
-	return val
-}
-func(s *{{.TitleName}}PStream) Prepend(given *{{.Name}}) *{{.TitleName}}PStream {
-	s.value = append([]*{{.Name}}{given},s.value...)
+
+// Preappend 在首部添加元素
+func (s *{{.Name}}PSlice) Preappend(given *{{.Name}}) *{{.Name}}PSlice {
+	value := make([]*{{.Name}}, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
-func(s *{{.TitleName}}PStream) Max() *{{.Name}}{
+
+// Max 获取最大元素
+func (s *{{.Name}}PSlice) Max(bigger func(*{{.Name}}, *{{.Name}}) bool, value *{{.Name}}) error {
 	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var max *{{.Name}} = s.value[0]
-	for _,each := range s.value {
-		if max == nil{
-			max = each
-			continue
-		}
-		if each != nil && *max {{.Lt}}= *each {
-			max = each
+	*value = *s.value[0]
+	for _, each := range s.value {
+		if bigger(each, value) {
+			*value = *each
 		}
 	}
-	return max
+	return nil
 }
-func(s *{{.TitleName}}PStream) Min() *{{.Name}}{
+
+// Min 获取最小元素
+func (s *{{.Name}}PSlice) Min(less func(*{{.Name}}, *{{.Name}}) bool, value *{{.Name}}) error {
 	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var min *{{.Name}} = s.value[0]
-	for _,each := range s.value {
-		if min == nil{
-			min = each
-			continue
-		}
-		if  each != nil && *each  {{.Lt}}= *min {
-			min = each
+	*value = *s.value[0]
+	for _, each := range s.value {
+		if less(each, value) {
+			*value = *each
 		}
 	}
-	return min
+	return nil
 }
-func(s *{{.TitleName}}PStream) Random() *{{.Name}}{
+
+// Random 随机获取元素
+func (s *{{.Name}}PSlice) Random(value *{{.Name}}) error {
 	if len(s.value) {{.Lt}}= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = *s.value[n]
+	return nil
 }
-func(s *{{.TitleName}}PStream) Shuffle() *{{.TitleName}}PStream {
+
+// Shuffle 打乱列表
+func (s *{{.Name}}PSlice) Shuffle() *{{.Name}}PSlice {
 	if len(s.value) {{.Lt}}= 0 {
 		return s
 	}
 	
-	
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = 	s.value[j], s.value[i] 
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
 	})
 	
 	return s
 }
-func(s *{{.TitleName}}PStream) Collect() []*{{.Name}}{
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// SortBy{{$each.Name}} 根据元素的{{$each.Name}}排序
+func (s *{{$.Name}}PSlice) SortBy{{$each.Name}}() *{{$.Name}}PSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i].{{$each.Name}} {{$.Lt}} s.value[j].{{$each.Name}}
+	})
+	return s 
+}
+{{else}}
+// SortBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器排序
+func (s *{{$.Name}}PSlice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}PSlice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return less(s.value[i].{{$each.Name}}, s.value[j].{{$each.Name}})
+	})
+	return s 
+}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}唯一
+func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}() *{{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, 0, len(s.value))
+	seen:=make(map[{{$each.Type}}]struct{})
+	for _, each := range s.value {
+		if _, dup := seen[each.{{$each.Name}}]; dup {
+			continue
+		}
+		value = append(value, each)
+		
+		seen[each.{{$each.Name}}] = struct{}{}	
+	}
+	s.value = value
+	return s
+}
+{{else}}
+{{if $each.IsPointer}}
+// UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器唯一
+func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, 0, len(s.value))
+	seen:=make(map[int]struct{})
+	for i, outter := range s.value {
+		dup:=false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j,inner :=range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.{{.Name}}, outter.{{.Name}}) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value, outter)			
+	}
+	s.value = value
+	
+	return s
+}
+{{else}}
+// UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器唯一
+func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}PSlice {
+	value := make([]{{$.Name}}, 0, len(s.value))
+	seen:=make(map[int]struct{})
+	for i, outter := range s.value {
+		dup:=false
+		if _, exist := seen[i]; exist {
+			continue
+		}		
+		for j,inner :=range s.value {
+			if i == j {
+				continue
+			}
+			if compare(inner.{{.Name}}, outter.{{.Name}}) {
+				seen[j] = struct{}{}				
+				dup = true
+			}
+		}
+		if dup {
+			seen[i] = struct{}{}
+		}
+		value = append(value,outter)			
+	}
+	s.value = value
+	
+	return s
+}
+{{end}}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.SkipFieldSlice}}
+{{else}}
+{{if $each.IsPointer}}
+// {{$each.Name}}PSlice 获取{{$each.Name}}的PSlice
+func (s *{{$.Name}}PSlice) {{$each.Name}}PSlice() *{{$each.Pkg}}{{$each.TitleType}}PSlice {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.{{$each.Name}})
+	}
+	newSlice := {{$each.Pkg}}To{{$each.TitleType}}PSlice(value)
+	return newSlice
+}
+{{else}}
+// {{$each.Name}}Slice 获取{{$each.Name}}的Slice
+func (s *{{$.Name}}PSlice) {{$each.Name}}Slice() *{{$each.Pkg}}{{$each.TitleType}}Slice {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.{{$each.Name}})
+	}
+	newSlice := {{$each.Pkg}}To{{$each.TitleType}}Slice(value)
+	return newSlice
+}
+{{end}}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+// {{$each.Name}}s 获取{{$each.Name}}列表
+func (s *{{$.Name}}PSlice) {{$each.Name}}s() []{{$each.Type}} {	
+	value := make([]{{$each.Type}}, 0, len(s.value))	
+	for _, each := range s.value {
+		value = append(value, each.{{$each.Name}})
+	}
+	return value
+}
+{{end}}
+
+// Collect 获取列表
+func (s *{{.Name}}PSlice) Collect() []*{{.Name}} {
 	return s.value
 }
 `
-)

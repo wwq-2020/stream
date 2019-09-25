@@ -1,30 +1,32 @@
 package commons
-
+	
 import (
+	"errors"
 	"math/rand"
 	"sort"
 )
 
-type Uint32Stream struct {
-	value         []uint32
-	defaultReturn uint32
+// Uint32Slice uint32的Slice
+type Uint32Slice struct {
+	value []uint32
 }
 
-func StreamOfUint32(value []uint32) *Uint32Stream {
-	return &Uint32Stream{value: value, defaultReturn: 0}
+// ToUint32Slice uint32列表转为Uint32Slice
+func ToUint32Slice(value []uint32) *Uint32Slice {
+	return &Uint32Slice{value: value}
 }
-func (s *Uint32Stream) OrElase(defaultReturn uint32) *Uint32Stream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func (s *Uint32Stream) Concate(given []uint32) *Uint32Stream {
+
+// Concat 拼接
+func (s *Uint32Slice) Concat(given []uint32) *Uint32Slice {
 	value := make([]uint32, len(s.value)+len(given))
 	copy(value, s.value)
 	copy(value[len(s.value):], given)
 	s.value = value
 	return s
 }
-func (s *Uint32Stream) Drop(n int) *Uint32Stream {
+
+// Drop 丢弃前n个
+func (s *Uint32Slice) Drop(n int) *Uint32Slice {
 	if n < 0 {
 		n = 0
 	}
@@ -35,7 +37,9 @@ func (s *Uint32Stream) Drop(n int) *Uint32Stream {
 	s.value = s.value[n:]
 	return s
 }
-func (s *Uint32Stream) Filter(fn func(int, uint32) bool) *Uint32Stream {
+
+// Filter 过滤
+func (s *Uint32Slice) Filter(fn func(int, uint32) bool) *Uint32Slice {
 	value := make([]uint32, 0, len(s.value))
 	for i, each := range s.value {
 		if fn(i, each) {
@@ -45,72 +49,98 @@ func (s *Uint32Stream) Filter(fn func(int, uint32) bool) *Uint32Stream {
 	s.value = value
 	return s
 }
-func (s *Uint32Stream) First() uint32 {
+
+// First 获取第一个元素
+func (s *Uint32Slice) First(value *uint32) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	return s.value[0]
+		return errors.New("empty")
+	} 
+	*value = s.value[0]
+	return nil
 }
-func (s *Uint32Stream) Last() uint32 {
+
+// Last 获取最后一个元素
+func (s *Uint32Slice) Last(value *uint32) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	return s.value[len(s.value)-1]
+	*value = s.value[len(s.value)-1]
+	return nil
 }
-func (s *Uint32Stream) Map(fn func(int, uint32)) *Uint32Stream {
+
+// Map 对每个元素进行操作
+func (s *Uint32Slice) Map(fn func(int, uint32) uint32) *Uint32Slice {
+	value := make([]uint32, len(s.value))
 	for i, each := range s.value {
-		fn(i, each)
+		value[i] = fn(i, each)
 	}
+	s.value = value
 	return s
 }
-func (s *Uint32Stream) Reduce(fn func(uint32, uint32, int) uint32, initial uint32) uint32 {
+
+// Reduce reduce
+func (s *Uint32Slice) Reduce(fn func(uint32, uint32, int) uint32, initial uint32) uint32 {
 	final := initial
 	for i, each := range s.value {
 		final = fn(final, each, i)
 	}
 	return final
 }
-func (s *Uint32Stream) Reverse() *Uint32Stream {
-	value := make([]uint32, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
+
+// Reverse 逆序
+func (s *Uint32Slice) Reverse() *Uint32Slice {
+	sort.Slice(s.value, func(i, j int) bool {
+		return s.value[i] > s.value[j]
+	})
+	return s 
 }
-func (s *Uint32Stream) Unique() *Uint32Stream {
+
+// Unique 唯一
+func (s *Uint32Slice) Unique() *Uint32Slice {
 	value := make([]uint32, 0, len(s.value))
 	seen := make(map[uint32]struct{})
 	for _, each := range s.value {
 		if _, exist := seen[each]; exist {
 			continue
-		}
+		}		
 		seen[each] = struct{}{}
-		value = append(value, each)
+		value = append(value, each)			
 	}
 	s.value = value
 	return s
 }
-func (s *Uint32Stream) Append(given uint32) *Uint32Stream {
+
+// Append 在尾部添加
+func (s *Uint32Slice) Append(given uint32) *Uint32Slice {
 	s.value = append(s.value, given)
 	return s
 }
-func (s *Uint32Stream) Len() int {
+
+// Len 获取长度
+func (s *Uint32Slice) Len() int {
 	return len(s.value)
 }
-func (s *Uint32Stream) IsEmpty() bool {
+
+// IsEmpty 判断是否为空
+func (s *Uint32Slice) IsEmpty() bool {
 	return len(s.value) == 0
 }
-func (s *Uint32Stream) IsNotEmpty() bool {
+
+// IsEmpty 判断是否非空
+func (s *Uint32Slice) IsNotEmpty() bool {
 	return len(s.value) != 0
 }
-func (s *Uint32Stream) Sort() *Uint32Stream {
+
+// Sort 排序
+func (s *Uint32Slice) Sort() *Uint32Slice {
 	sort.Slice(s.value, func(i, j int) bool {
 		return s.value[i] < s.value[j]
 	})
-	return s
+	return s 
 }
-func (s *Uint32Stream) All(fn func(int, uint32) bool) bool {
+
+// All 是否所有元素满足条件
+func (s *Uint32Slice) All(fn func(int, uint32) bool) bool {
 	for i, each := range s.value {
 		if !fn(i, each) {
 			return false
@@ -118,7 +148,9 @@ func (s *Uint32Stream) All(fn func(int, uint32) bool) bool {
 	}
 	return true
 }
-func (s *Uint32Stream) Any(fn func(int, uint32) bool) bool {
+
+// Any 是否有元素满足条件
+func (s *Uint32Slice) Any(fn func(int, uint32) bool) bool {
 	for i, each := range s.value {
 		if fn(i, each) {
 			return true
@@ -126,7 +158,12 @@ func (s *Uint32Stream) Any(fn func(int, uint32) bool) bool {
 	}
 	return false
 }
-func (s *Uint32Stream) Paginate(size int) [][]uint32 {
+
+// Paginate 分页
+func (s *Uint32Slice) Paginate(size int) [][]uint32 {
+	if size <= 0 {
+		size = 1
+	}
 	var pages [][]uint32
 	prev := -1
 	for i := range s.value {
@@ -138,263 +175,67 @@ func (s *Uint32Stream) Paginate(size int) [][]uint32 {
 	}
 	return pages
 }
-func (s *Uint32Stream) Pop() uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value) - 1
-	val := s.value[lastIdx]
-	s.value = s.value[:lastIdx]
-	return val
-}
-func (s *Uint32Stream) Prepend(given uint32) *Uint32Stream {
-	s.value = append([]uint32{given}, s.value...)
+
+// Preappend 在首部添加元素
+func (s *Uint32Slice) Preappend(given uint32) *Uint32Slice {
+	value := make([]uint32, 0, len(s.value)+1)
+	value = append(value, given)
+	s.value = append(value, s.value...)
 	return s
 }
-func (s *Uint32Stream) Max() uint32 {
+
+// Max 获取最大元素
+func (s *Uint32Slice) Max(value *uint32) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var max uint32 = s.value[0]
+	*value = s.value[0]
 	for _, each := range s.value {
-		if max < each {
-			max = each
+		if *value < each {
+			*value  = each
 		}
 	}
-	return max
+	return nil 
 }
-func (s *Uint32Stream) Min() uint32 {
+
+// Min 获取最小元素
+func (s *Uint32Slice) Min(value *uint32) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
-	var min uint32 = s.value[0]
+	*value = s.value[0]
 	for _, each := range s.value {
-		if each < min {
-			min = each
+		if each < *value {
+			*value = each
 		}
 	}
-	return min
+	return nil
 }
-func (s *Uint32Stream) Random() uint32 {
+
+// Random 随机获取一个元素
+func (s *Uint32Slice) Random(value *uint32) error {
 	if len(s.value) <= 0 {
-		return s.defaultReturn
+		return errors.New("empty")
 	}
 	n := rand.Intn(len(s.value))
-	return s.value[n]
+	*value = s.value[n]
+	return nil
 }
-func (s *Uint32Stream) Shuffle() *Uint32Stream {
+
+// Shuffle 打乱列表
+func (s *Uint32Slice) Shuffle() *Uint32Slice {
 	if len(s.value) <= 0 {
 		return s
 	}
 
 	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i]
+		s.value[i], s.value[j] = s.value[j], s.value[i] 
 	})
-
+	
 	return s
-}
-func (s *Uint32Stream) Collect() []uint32 {
-	return s.value
 }
 
-type Uint32PStream struct {
-	value         []*uint32
-	defaultReturn *uint32
-}
-
-func PStreamOfUint32(value []*uint32) *Uint32PStream {
-	return &Uint32PStream{value: value, defaultReturn: nil}
-}
-func (s *Uint32PStream) OrElse(defaultReturn *uint32) *Uint32PStream {
-	s.defaultReturn = defaultReturn
-	return s
-}
-func (s *Uint32PStream) Concate(given []*uint32) *Uint32PStream {
-	value := make([]*uint32, len(s.value)+len(given))
-	copy(value, s.value)
-	copy(value[len(s.value):], given)
-	s.value = value
-	return s
-}
-func (s *Uint32PStream) Drop(n int) *Uint32PStream {
-	if n < 0 {
-		n = 0
-	}
-	l := len(s.value) - n
-	if l < 0 {
-		n = len(s.value)
-	}
-	s.value = s.value[n:]
-	return s
-}
-func (s *Uint32PStream) Filter(fn func(int, *uint32) bool) *Uint32PStream {
-	value := make([]*uint32, 0, len(s.value))
-	for i, each := range s.value {
-		if fn(i, each) {
-			value = append(value, each)
-		}
-	}
-	s.value = value
-	return s
-}
-func (s *Uint32PStream) First() *uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	return s.value[0]
-}
-func (s *Uint32PStream) Last() *uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	return s.value[len(s.value)-1]
-}
-func (s *Uint32PStream) Map(fn func(int, *uint32)) *Uint32PStream {
-	for i, each := range s.value {
-		fn(i, each)
-	}
-	return s
-}
-func (s *Uint32PStream) Reduce(fn func(*uint32, *uint32, int) *uint32, initial *uint32) *uint32 {
-	final := initial
-	for i, each := range s.value {
-		final = fn(final, each, i)
-	}
-	return final
-}
-func (s *Uint32PStream) Reverse() *Uint32PStream {
-	value := make([]*uint32, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
-	}
-	s.value = value
-	return s
-}
-func (s *Uint32PStream) Unique() *Uint32PStream {
-	value := make([]*uint32, 0, len(s.value))
-	seen := make(map[*uint32]struct{})
-	for _, each := range s.value {
-		if _, exist := seen[each]; exist {
-			continue
-		}
-		seen[each] = struct{}{}
-		value = append(value, each)
-	}
-	s.value = value
-	return s
-}
-func (s *Uint32PStream) Append(given *uint32) *Uint32PStream {
-	s.value = append(s.value, given)
-	return s
-}
-func (s *Uint32PStream) Len() int {
-	return len(s.value)
-}
-func (s *Uint32PStream) IsEmpty() bool {
-	return len(s.value) == 0
-}
-func (s *Uint32PStream) IsNotEmpty() bool {
-	return len(s.value) != 0
-}
-func (s *Uint32PStream) Sort(less func(*uint32, *uint32) bool) *Uint32PStream {
-	sort.Slice(s.value, func(i, j int) bool {
-		return less(s.value[i], s.value[j])
-	})
-	return s
-}
-func (s *Uint32PStream) All(fn func(int, *uint32) bool) bool {
-	for i, each := range s.value {
-		if !fn(i, each) {
-			return false
-		}
-	}
-	return true
-}
-
-func (s *Uint32PStream) Any(fn func(int, *uint32) bool) bool {
-	for i, each := range s.value {
-		if fn(i, each) {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *Uint32PStream) Paginate(size int) [][]*uint32 {
-	var pages [][]*uint32
-	prev := -1
-	for i := range s.value {
-		if (i-prev) < size && i != (len(s.value)-1) {
-			continue
-		}
-		pages = append(pages, s.value[prev+1:i+1])
-		prev = i
-	}
-	return pages
-}
-func (s *Uint32PStream) Pop() *uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	lastIdx := len(s.value) - 1
-	val := s.value[lastIdx]
-	s.value = s.value[:lastIdx]
-	return val
-}
-func (s *Uint32PStream) Prepend(given *uint32) *Uint32PStream {
-	s.value = append([]*uint32{given}, s.value...)
-	return s
-}
-func (s *Uint32PStream) Max() *uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var max *uint32 = s.value[0]
-	for _, each := range s.value {
-		if max == nil {
-			max = each
-			continue
-		}
-		if each != nil && *max <= *each {
-			max = each
-		}
-	}
-	return max
-}
-func (s *Uint32PStream) Min() *uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	var min *uint32 = s.value[0]
-	for _, each := range s.value {
-		if min == nil {
-			min = each
-			continue
-		}
-		if each != nil && *each <= *min {
-			min = each
-		}
-	}
-	return min
-}
-func (s *Uint32PStream) Random() *uint32 {
-	if len(s.value) <= 0 {
-		return s.defaultReturn
-	}
-	n := rand.Intn(len(s.value))
-	return s.value[n]
-}
-func (s *Uint32PStream) Shuffle() *Uint32PStream {
-	if len(s.value) <= 0 {
-		return s
-	}
-
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i]
-	})
-
-	return s
-}
-func (s *Uint32PStream) Collect() []*uint32 {
+// Collect 获取列表
+func (s *Uint32Slice) Collect() []uint32 {
 	return s.value
 }

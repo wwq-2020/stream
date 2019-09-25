@@ -48,14 +48,14 @@ type UniqueInfo struct {
 }
 
 type FieldInfo struct {
-	Type            string
-	Name            string
-	StreamType      string
-	SkipFieldStream bool
-	Pkg             string
-	IsPointer       bool
-	TitleType       string
-	IsBuiltin       bool
+	Type           string
+	Name           string
+	StreamType     string
+	SkipFieldSlice bool
+	Pkg            string
+	IsPointer      bool
+	TitleType      string
+	IsBuiltin      bool
 }
 
 type tpl struct {
@@ -64,6 +64,7 @@ type tpl struct {
 	NeedCommonStream bool
 	commonStreamDir  string
 	Lt               template.HTML
+	Ht               template.HTML
 	TitleName        string
 	Sorts            []SortInfo
 	Uniques          []UniqueInfo
@@ -124,23 +125,25 @@ func genStruct() {
 		}
 		if buf.Len() != 0 {
 			var importStr string = fmt.Sprintf(`package %s
-			import (
-				"sort"
-				"math/rand"`, p.Name)
+
+import (
+	"errors"
+	"math/rand"
+	"sort"`, p.Name)
 			if curHasBuiltin {
 				importStr = fmt.Sprintf(`%s
-						commons "%s"						
+		
+	commons "%s"						
 					`, importStr, commonStreamDir)
 
 			}
 			if curImport != "" {
 				importStr = fmt.Sprintf(`%s
-					"%s"						
-				`, importStr, curImport)
+	"%s"`, importStr, curImport)
 
 			}
 			importStr = fmt.Sprintf(`%s
-				)`, importStr)
+)`, importStr)
 			rd := io.MultiReader(strings.NewReader(importStr), buf)
 			bytes, _ := ioutil.ReadAll(rd)
 			if err := ioutil.WriteFile(dst, bytes, 0644); err != nil {
@@ -236,7 +239,7 @@ func setTagInfo(fields *ast.FieldList) {
 		}
 
 		isBuiltIn := isBuiltIn(typ)
-		fi := FieldInfo{Name: field.Names[0].Name, Type: typ, TitleType: titleType, SkipFieldStream: !fieldStream && outter, Pkg: pkg, IsPointer: pointerStr == "*", IsBuiltin: isBuiltIn && pointerStr == ""}
+		fi := FieldInfo{Name: field.Names[0].Name, Type: typ, TitleType: titleType, SkipFieldSlice: !fieldStream && outter, Pkg: pkg, IsPointer: pointerStr == "*", IsBuiltin: isBuiltIn && pointerStr == ""}
 		curFields = append(curFields, fi)
 
 		if isBuiltIn && !curHasBuiltin {
@@ -257,7 +260,7 @@ func isBuiltIn(typ string) bool {
 	}
 }
 func execTpl(buf io.Writer) error {
-	tpl := tpl{Name: curStruct, Pkg: curPkg, Lt: template.HTML("<"), Empty: template.HTML(curEmpty), TitleName: curTitleName, Fields: curFields}
+	tpl := tpl{Name: curStruct, Pkg: curPkg, Lt: template.HTML("<"), Ht: template.HTML(">"), Empty: template.HTML(curEmpty), TitleName: curTitleName, Fields: curFields}
 	t, err := template.New("stream").Parse(curTplStr)
 	if err != nil {
 		return err
