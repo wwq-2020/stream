@@ -4,7 +4,6 @@ test:
 	@rm -rf commons/*
 	@go build .
 	
-	@./stream -builtin -dir slice
 	@./stream -builtin -dir commons
 	@./stream -dir outter 
 	@./stream -dir tests -fs
