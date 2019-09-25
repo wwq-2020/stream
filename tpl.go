@@ -3,117 +3,104 @@ package main
 const structTplStr = `
 
 // {{.Name}}Slice {{.Name}}的Slice
-type {{.Name}}Slice struct {
-	value []{{.Name}}
-}
-
-// To{{.Name}}Slice {{.Name}}列表转成{{.Name}}Slice
-func To{{.Name}}Slice(value []{{.Name}}) *{{.Name}}Slice {
-	return &{{.Name}}Slice{value: value}
-}
+type {{.Name}}Slice []{{.Name}}
 
 // Concat 拼接
-func (s *{{.Name}}Slice) Concat(given []{{.Name}}) *{{.Name}}Slice {
-	value := make([]{{.Name}}, len(s.value)+len(given))
-	copy(value, s.value)
-	copy(value[len(s.value):], given)
-	s.value = value
-	return s
+func (s {{.Name}}Slice) Concat(given []{{.Name}}) {{.Name}}Slice {
+	value := make([]{{.Name}}, len(s)+len(given))
+	copy(value, s)
+	copy(value[len(s):], given)
+	return {{.Name}}Slice(value)
 }
 
 // Drop 丢弃前n个
-func (s *{{.Name}}Slice) Drop(n int) *{{.Name}}Slice {
+func (s {{.Name}}Slice) Drop(n int) {{.Name}}Slice {
 	if n {{.Lt}} 0 {
 		n = 0
 	}
-	l := len(s.value) - n
+	l := len(s) - n
 	if l {{.Lt}} 0 {
-		n = len(s.value)
+		n = len(s)
 	}
-	s.value = s.value[n:]
-	return s
+	return s[n:]
 }
 
 // Filter 过滤
-func (s *{{.Name}}Slice) Filter(fn func(int, {{.Name}}) bool) *{{.Name}}Slice {
-	value := make([]{{.Name}}, 0, len(s.value))
-	for i, each := range s.value {
+func (s {{.Name}}Slice) Filter(fn func(int, {{.Name}}) bool) {{.Name}}Slice {
+	value := make([]{{.Name}}, 0, len(s))
+	for i, each := range s {
 		if fn(i, each) {
 			value = append(value, each)
 		}
 	}
-	s.value = value
-	return s
+	return {{.Name}}Slice(value)
 }
 
 {{range $idx,$each := .Fields}}
 // FilterBy{{$each.Name}} 通过过滤器过滤
-func (s *{{$.Name}}Slice) FilterBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) *{{$.Name}}Slice {
-	value := make([]{{$.Name}}, 0, len(s.value))
-	for i, each := range s.value {
+func (s {{$.Name}}Slice) FilterBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) {{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s))
+	for i, each := range s {
 		if fn(i, each.{{$each.Name}}) {
 			value = append(value, each)
 		}
 	}
-	s.value = value
-	return s
+	return {{$.Name}}Slice(value)
 }
 {{end}}
 
 // First 获取第一个元素
-func (s *{{.Name}}Slice) First(value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}Slice) First() ({{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		var defaultReturn {{.Name}}
+		return defaultReturn, errors.New("empty")
 	} 
-	*value = s.value[0]
-	return nil
+	return s[0], nil
 }
 
 // Last 获取最后一个元素
-func (s *{{.Name}}Slice) Last(value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
-	} 
-	*value = s.value[len(s.value)-1]
-	return nil
+func (s {{.Name}}Slice) Last(value *{{.Name}}) ({{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		var defaultReturn {{.Name}}
+		return defaultReturn, errors.New("empty")
+	}
+	return s[len(s)-1], nil
 }
 
 // Map 对每个元素进行操作
-func (s *{{.Name}}Slice) Map(fn func(int, {{.Name}}) {{.Name}}) *{{.Name}}Slice {
-	value := make([]{{.Name}}, len(s.value))
-	for i, each := range s.value {
+func (s {{.Name}}Slice) Map(fn func(int, {{.Name}}) {{.Name}}) {{.Name}}Slice {
+	value := make([]{{.Name}}, len(s))
+	for i, each := range s {
 		value[i] = fn(i, each)
 	}
-	s.value = value
-	return s
+	return {{.Name}}Slice(value)
 }
 
 // Reduce reduce
-func (s *{{.Name}}Slice) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}}, initial {{.Name}}) {{.Name}} {
+func (s {{.Name}}Slice) Reduce(fn func({{.Name}}, {{.Name}}, int) {{.Name}}, initial {{.Name}}) {{.Name}} {
 	final := initial
-	for i, each := range s.value {
+	for i, each := range s {
 		final = fn(final, each, i)
 	}
 	return final
 }
 
 // Reverse 逆序
-func (s *{{.Name}}Slice) Reverse() *{{.Name}}Slice {
-	value := make([]{{.Name}}, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
+func (s {{.Name}}Slice) Reverse() {{.Name}}Slice {
+	value := make([]{{.Name}}, len(s))
+	for i, each := range s {
+		value[len(s)-1-i] = each
 	}
-	s.value = value
-	return s
+	return {{.Name}}Slice(value)
 }
 
 {{range $idx,$each := .Fields}}
 {{if $each.IsBuiltin}}
 // UniqueBy{{$each.Name}} 通过{{$each.Name}}唯一
-func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}() *{{$.Name}}Slice {
-	value := make([]{{$.Name}}, 0, len(s.value))
+func (s {{$.Name}}Slice) UniqueBy{{$each.Name}}() {{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s))
 	seen := make(map[{{$each.Type}}]struct{})
-	for _, each := range s.value {
+	for _, each := range s {
 		if _, dup := seen[each.{{$each.Name}}]; dup {
 			continue
 		}
@@ -121,21 +108,20 @@ func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}() *{{$.Name}}Slice {
 		
 		seen[each.{{$each.Name}}] = struct{}{}	
 	}
-	s.value = value
-	return s
+	return {{$.Name}}Slice(value)
 }
 {{else}}
 {{if $each.IsPointer}}
 // UniqueBy{{$each.Name}} 通过{{$each.Name}}唯一
-func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}Slice {
-	value := make([]{{$.Name}}, 0, len(s.value))
+func (s {{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s))
 	seen := make(map[int]struct{})
-	for i, outter := range s.value {
+	for i, outter := range s {
 		dup := false
 		if _, exist := seen[i]; exist {
 			continue
 		}		
-		for j, inner := range s.value {
+		for j, inner := range s {
 			if i == j {
 				continue
 			}
@@ -149,20 +135,19 @@ func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func({{$each.Type}}, {{
 		}
 		value = append(value, outter)			
 	}
-	s.value = value
-	return s
+	return {{$.Name}}Slice(value)
 }
 {{else}}
 // UniqueBy{{$each.Name}} 通过{{$each.Name}}唯一
-func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}Slice {
-	value := make([]{{$.Name}}, 0, len(s.value))
+func (s {{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}Slice {
+	value := make([]{{$.Name}}, 0, len(s))
 	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
+	for i, outter := range s {
 		dup:=false
 		if _, exist := seen[i]; exist {
 			continue
 		}		
-		for j,inner :=range s.value {
+		for j,inner :=range s {
 			if i == j {
 				continue
 			}
@@ -176,37 +161,35 @@ func (s *{{$.Name}}Slice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {
 		}
 		value = append(value,outter)			
 	}
-	s.value = value
-	return s
+	return {{$.Name}}Slice(value)
 }
 {{end}}
 {{end}}
 {{end}}
 
 // Append 在尾部添加元素
-func (s *{{.Name}}Slice) Append(given {{.Name}}) *{{.Name}}Slice {
-	s.value = append(s.value, given)
-	return s
+func (s {{.Name}}Slice) Append(given {{.Name}}) {{.Name}}Slice {
+	return append(s, given)
 }
 
 // Len 获取长度
-func (s *{{.Name}}Slice) Len() int {
-	return len(s.value)
+func (s {{.Name}}Slice) Len() int {
+	return len(s)
 }
 
 // IsEmpty 判断是否为空
-func (s *{{.Name}}Slice) IsEmpty() bool {
-	return len(s.value) == 0
+func (s {{.Name}}Slice) IsEmpty() bool {
+	return len(s) == 0
 }
 
 // IsNotEmpty 判断是否非空
-func (s *{{.Name}}Slice) IsNotEmpty() bool {
-	return len(s.value) != 0
+func (s {{.Name}}Slice) IsNotEmpty() bool {
+	return len(s) != 0
 }
 
 // All 是否所有元素满足添加
-func (s *{{.Name}}Slice) All(fn func(int, {{.Name}}) bool) bool {
-	for i, each := range s.value {
+func (s {{.Name}}Slice) All(fn func(int, {{.Name}}) bool) bool {
+	for i, each := range s {
 		if !fn(i, each) {
 			return false
 		}
@@ -215,8 +198,8 @@ func (s *{{.Name}}Slice) All(fn func(int, {{.Name}}) bool) bool {
 }
 
 // Any 是否有元素满足条件
-func (s *{{.Name}}Slice) Any(fn func(int, {{.Name}}) bool) bool {
-	for i, each := range s.value {
+func (s {{.Name}}Slice) Any(fn func(int, {{.Name}}) bool) bool {
+	for i, each := range s {
 		if fn(i, each) {
 			return true
 		}
@@ -225,76 +208,81 @@ func (s *{{.Name}}Slice) Any(fn func(int, {{.Name}}) bool) bool {
 }
 
 // Paginate 分页
-func (s *{{.Name}}Slice) Paginate(size int) [][]{{.Name}} {
+func (s {{.Name}}Slice) Paginate(size int) [][]{{.Name}} {
 	if size {{.Lt}}= 0 {
 		size = 1
 	}
 	var pages [][]{{.Name}}
 	prev := -1
-	for i := range s.value {
-		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
+	for i := range s {
+		if (i-prev) {{.Lt}} size && i != (len(s)-1) {
 			continue
 		}
-		pages = append(pages, s.value[prev+1:i+1])
+		pages = append(pages, s[prev+1:i+1])
 		prev = i
 	}
 	return pages
 }
 
 // Preappend 在首部添加元素
-func (s *{{.Name}}Slice) Preappend(given {{.Name}}) *{{.Name}}Slice {
-	value := make([]{{.Name}}, 0, len(s.value)+1)
+func (s {{.Name}}Slice) Preappend(given {{.Name}}) {{.Name}}Slice {
+	value := make([]{{.Name}}, len(s)+1)
 	value = append(value, given)
-	s.value = append(value, s.value...)
-	return s
+	value[0] = given
+	copy(value[1:], s)
+	return {{.Name}}Slice(value)
 }
 
 // Max 获取最后元素
-func (s *{{.Name}}Slice) Max(bigger func({{.Name}}, {{.Name}}) bool, value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}Slice) Max(bigger func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		var defaultReturn {{.Name}}
+		return defaultReturn, errors.New("empty")
 	}
-	*value = s.value[0]
-	for _, each := range s.value {
-		if bigger(each, *value) {
-			*value = each
+	max := s[0]
+	for _, each := range s {
+		if bigger(each, max) {
+			max = each
 		}
 	}
-	return nil
+	return max, nil
 }
 
 // Min 获取最小元素
-func (s *{{.Name}}Slice) Min(less func({{.Name}}, {{.Name}}) bool, value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}Slice) Min(less func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		var defaultReturn {{.Name}}
+		return defaultReturn, errors.New("empty")
 	}
-	*value = s.value[0]
-	for _, each := range s.value {
-		if less(each, *value) {
-			*value = each
+	min := s[0]
+	for _, each := range s {
+		if less(each, min) {
+			min = each
 		}
 	}
-	return nil
+	return min, nil
 }
 
 // Random 随机获取一个元素
-func (s *{{.Name}}Slice) Random(value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}Slice) Random() ({{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		var defaultReturn {{.Name}}
+		return defaultReturn, errors.New("empty")
 	}
-	n := rand.Intn(len(s.value))
-	*value = s.value[n]
-	return nil
+	n := rand.Intn(len(s))
+	return s[n], nil
 }
 
 // Shuffle 打乱列表
-func (s *{{.Name}}Slice) Shuffle() *{{.Name}}Slice {
-	if len(s.value) {{.Lt}}= 0 {
+func (s {{.Name}}Slice) Shuffle() {{.Name}}Slice {
+	if len(s) {{.Lt}}= 0 {
 		return s
 	}
 	
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	value := make([]{{.Name}}, len(s))
+	copy(value, s)
+	rand.Shuffle(len(value), func(i, j int) {
+		value[i], value[j] = value[j], value[i] 
 	})
 	return s
 }
@@ -302,17 +290,21 @@ func (s *{{.Name}}Slice) Shuffle() *{{.Name}}Slice {
 {{range $idx,$each := .Fields}}
 {{if $each.IsBuiltin}}
 // SortBy{{$each.Name}} 根据{{$each.Name}}排序
-func (s *{{$.Name}}Slice) SortBy{{$each.Name}}() *{{$.Name}}Slice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return s.value[i].{{$each.Name}} {{$.Lt}} s.value[j].{{$each.Name}}
+func (s {{$.Name}}Slice) SortBy{{$each.Name}}() {{$.Name}}Slice {
+	value := make([]{{$.Name}}, len(s))
+	copy(value, s)
+	sort.Slice(value, func(i, j int) bool {
+		return value[i].{{$each.Name}} {{$.Lt}} value[j].{{$each.Name}}
 	})
 	return s 
 }
 {{else}}
 // SortBy{{$each.Name}} 根据{{$each.Name}}排序
-func (s *{{$.Name}}Slice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}Slice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return less(s.value[i].{{$each.Name}}, s.value[j].{{$each.Name}})
+func (s {{$.Name}}Slice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}Slice {
+	value := make([]{{$.Name}}, len(s))
+	copy(value, s)
+	sort.Slice(value, func(i, j int) bool {
+		return less(value[i].{{$each.Name}}, value[j].{{$each.Name}})
 	})
 	return s 
 }
@@ -326,22 +318,22 @@ func (s *{{$.Name}}Slice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each
 {{else}}
 {{if $each.IsPointer}}
 // {{$each.Name}}PSlice 获取{{$each.Name}}的PSlice
-func (s *{{$.Name}}Slice) {{$each.Name}}PSlice() *{{$each.Pkg}}{{$each.TitleType}}PSlice {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
+func (s {{$.Name}}Slice) {{$each.Name}}PSlice() {{$each.Pkg}}{{$each.TitleType}}PSlice {	
+	value := make([]{{$each.Type}}, 0, len(s))	
+	for _, each := range s {
 		value = append(value, each.{{$each.Name}})
 	}
-	newSlice := {{$each.Pkg}}To{{$each.TitleType}}PSlice(value)
+	newSlice := {{$each.Pkg}}{{$each.TitleType}}PSlice(value)
 	return newSlice
 }
 {{else}}
 // {{$each.Name}}PSlice 获取{{$each.Name}}的Slice
-func (s *{{$.Name}}Slice) {{$each.Name}}Slice() *{{$each.Pkg}}{{$each.TitleType}}Slice {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
+func (s {{$.Name}}Slice) {{$each.Name}}Slice() {{$each.Pkg}}{{$each.TitleType}}Slice {	
+	value := make([]{{$each.Type}}, 0, len(s))	
+	for _, each := range s {
 		value = append(value, each.{{$each.Name}})
 	}
-	newSlice := {{$each.Pkg}}To{{$each.TitleType}}Slice(value)
+	newSlice := {{$each.Pkg}}{{$each.TitleType}}Slice(value)
 	return newSlice
 }
 {{end}}
@@ -350,135 +342,121 @@ func (s *{{$.Name}}Slice) {{$each.Name}}Slice() *{{$each.Pkg}}{{$each.TitleType}
 
 {{range $idx,$each := .Fields}}
 // {{$each.Name}}s 获取{{$each.Name}}的列表
-func (s *{{$.Name}}Slice) {{$each.Name}}s() []{{$each.Type}} {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
+func (s {{$.Name}}Slice) {{$each.Name}}s() []{{$each.Type}} {	
+	value := make([]{{$each.Type}}, 0, len(s))	
+	for _, each := range s {
 		value = append(value, each.{{$each.Name}})
 	}
 	return value
+
 }
 {{end}}
 
 // Collect 获取最终的列表
-func (s *{{.Name}}Slice) Collect() []{{.Name}} {
-	return s.value
+func (s {{.Name}}Slice) Collect() []{{.Name}} {
+	return s
 }
 	
 // {{.Name}}PSlice	{{.Name}}的PSlice		
-type {{.Name}}PSlice struct {
-	value []*{{.Name}}
-}
-
-// To{{.Name}}PSlice {{.Name}}的指针列表转成{{.Name}}PSlice 
-func To{{.Name}}PSlice(value []*{{.Name}}) *{{.Name}}PSlice {
-	return &{{.Name}}PSlice{value: value}
-}
+type {{.Name}}PSlice []*{{.Name}}
 
 // Concat 拼接
-func (s *{{.Name}}PSlice) Concat(given []*{{.Name}}) *{{.Name}}PSlice {
-	value := make([]*{{.Name}}, len(s.value)+len(given))
-	copy(value, s.value)
-	copy(value[len(s.value):], given)
-	s.value = value
-	return s
+func (s {{.Name}}PSlice) Concat(given []*{{.Name}}) {{.Name}}PSlice {
+	value := make([]*{{.Name}}, len(s)+len(given))
+	copy(value, s)
+	copy(value[len(s):], given)
+	return {{.Name}}PSlice(value)
 }
 
 // Drop 丢弃前n个
-func (s *{{.Name}}PSlice) Drop(n int) *{{.Name}}PSlice {
+func (s {{.Name}}PSlice) Drop(n int) {{.Name}}PSlice {
 	if n {{.Lt}} 0 {
 		n = 0
 	}
-	l := len(s.value) - n
+	l := len(s) - n
 	if l {{.Lt}} 0 {
-		n = len(s.value)
+		n = len(s)
 	}
-	s.value = s.value[n:]
-	return s
+	return s[n:]
 }
 
 // Filter 过滤
-func (s *{{.Name}}PSlice) Filter(fn func(int, *{{.Name}}) bool) *{{.Name}}PSlice {
-	value := make([]*{{.Name}}, 0, len(s.value))
-	for i, each := range s.value {
+func (s {{.Name}}PSlice) Filter(fn func(int, *{{.Name}}) bool) {{.Name}}PSlice {
+	value := make([]*{{.Name}}, 0, len(s))
+	for i, each := range s {
 		if fn(i, each) {
 			value = append(value, each)
 		}
 	}
-	s.value = value
-	return s
+	return {{.Name}}PSlice(value)
 }
 
 {{range $idx,$each := .Fields}}
 // FilterBy{{$each.Name}} 通过过滤器过滤
-func (s *{{$.Name}}PSlice) FilterBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) *{{$.Name}}PSlice {
-	value := make([]*{{$.Name}}, 0, len(s.value))
-	for i, each := range s.value {
+func (s {{$.Name}}PSlice) FilterBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) {{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, 0, len(s))
+	for i, each := range s {
 		if fn(i, each.{{$each.Name}}) {
 			value = append(value, each)
 		}
 	}
-	s.value = value
-	return s
+	return {{$.Name}}PSlice(value)
 }
 {{end}}
 
 // First 获取第一个元素
-func (s *{{.Name}}PSlice) First(value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}PSlice) First() (*{{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		return nil, errors.New("empty")
 	}
-	*value = *s.value[0]
-	return nil
+	return s[0], nil
 }
 
 // Last 获取最后一个元素
-func (s *{{.Name}}PSlice) Last(value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}PSlice) Last() (*{{.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		return nil, errors.New("empty")
 	} 
-	*value = *s.value[len(s.value)-1]
-	return nil
+	return s[len(s)-1], nil
 }
 
 // Map 对每个元素进行操作
-func (s *{{.Name}}PSlice) Map(fn func(int, *{{.Name}}) *{{.Name}}) *{{.Name}}PSlice {
-	value := make([]*{{.Name}}, len(s.value))
-	for i, each := range s.value {
+func (s {{.Name}}PSlice) Map(fn func(int, *{{.Name}}) *{{.Name}}) {{.Name}}PSlice {
+	value := make([]*{{.Name}}, len(s))
+	for i, each := range s {
 		value[i] = fn(i, each)
 	}
-	s.value = value
-	return s
+	return {{.Name}}PSlice(value)
 }
 
 // Reduce reduce
-func (s *{{.Name}}PSlice) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}}, initial *{{.Name}}) *{{.Name}} {
+func (s {{.Name}}PSlice) Reduce(fn func(*{{.Name}}, *{{.Name}}, int) *{{.Name}}, initial *{{.Name}}) *{{.Name}} {
 	final := initial
-	for i, each := range s.value {
+	for i, each := range s {
 		final = fn(final, each, i)
 	}
 	return final
 }
 
 // Reverse 逆序
-func (s *{{.Name}}PSlice) Reverse() *{{.Name}}PSlice {
-	value := make([]*{{.Name}}, len(s.value))
-	for i, each := range s.value {
-		value[len(s.value)-1-i] = each
+func (s {{.Name}}PSlice) Reverse() {{.Name}}PSlice {
+	value := make([]*{{.Name}}, len(s))
+	for i, each := range s {
+		value[len(s)-1-i] = each
 	}
-	s.value = value
-	return s
+	return {{.Name}}PSlice(value)
 }
 
 // UniqueBy 通过比较器唯一
-func (s *{{.Name}}PSlice) UniqueBy(compare func(*{{.Name}}, *{{.Name}})bool) *{{.Name}}PSlice {
-	value := make([]*{{.Name}}, 0, len(s.value))
+func (s {{.Name}}PSlice) UniqueBy(compare func(*{{.Name}}, *{{.Name}})bool) {{.Name}}PSlice {
+	value := make([]*{{.Name}}, 0, len(s))
 	seen := make(map[int]struct{})
-	for i, outter := range s.value {
+	for i, outter := range s {
 		dup := false
 		if _, exist := seen[i]; exist {
 			continue
 		}		
-		for j, inner := range s.value {
+		for j, inner := range s {
 			if i == j {
 				continue
 			}
@@ -492,43 +470,43 @@ func (s *{{.Name}}PSlice) UniqueBy(compare func(*{{.Name}}, *{{.Name}})bool) *{{
 		}
 		value = append(value, outter)			
 	}
-	s.value = value
-	return s
+	return {{.Name}}PSlice(value)
 }
 
 // Append 在尾部添加
-func (s *{{.Name}}PSlice) Append(given *{{.Name}}) *{{.Name}}PSlice {
-	s.value = append(s.value, given)
-	return s
+func (s {{.Name}}PSlice) Append(given *{{.Name}}) {{.Name}}PSlice {
+	return append(s, given)
 }
 
 // Len 获取长度
-func (s *{{.Name}}PSlice) Len() int {
-	return len(s.value)
+func (s {{.Name}}PSlice) Len() int {
+	return len(s)
 }
 
 // IsEmpty 是否为空
-func (s *{{.Name}}PSlice) IsEmpty() bool {
-	return len(s.value) == 0
+func (s {{.Name}}PSlice) IsEmpty() bool {
+	return len(s) == 0
 }
 
 // IsNotEmpty 是否非空
-func (s *{{.Name}}PSlice) IsNotEmpty() bool {
-	return len(s.value) != 0
+func (s {{.Name}}PSlice) IsNotEmpty() bool {
+	return len(s) != 0
 }
 
 // SortBy 根据比较器排序
-func (s *{{.Name}}PSlice) SortBy(less func(*{{.Name}}, *{{.Name}}) bool) *{{.Name}}PSlice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return less(s.value[i], s.value[j])
+func (s {{.Name}}PSlice) SortBy(less func(*{{.Name}}, *{{.Name}}) bool) {{.Name}}PSlice {
+	value := make([]*{{$.Name}}, len(s))
+	copy(value, s)
+	sort.Slice(value, func(i, j int) bool {
+		return less(value[i], value[j])
 	})
 	
 	return s 
 }
 
 // All 是否所有元素满足条件
-func (s *{{.Name}}PSlice) All(fn func(int, *{{.Name}}) bool) bool {
-	for i, each := range s.value {
+func (s {{.Name}}PSlice) All(fn func(int, *{{.Name}}) bool) bool {
+	for i, each := range s {
 		if !fn(i, each) {
 			return false
 		}
@@ -538,8 +516,8 @@ func (s *{{.Name}}PSlice) All(fn func(int, *{{.Name}}) bool) bool {
 
 {{range $idx,$each := .Fields}}
 // AllBy{{$each.Name}} 是否所有元素的{{$each.Name}}满足条件
-func (s *{{$.Name}}PSlice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
-	for i, each := range s.value {
+func (s {{$.Name}}PSlice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s {
 		if !fn(i, each.{{$each.Name}}){
 			return false
 		}
@@ -551,8 +529,8 @@ func (s *{{$.Name}}PSlice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool
 
 {{range $idx,$each := .Fields}}
 // AllBy{{$each.Name}} 是否所有元素的{{$each.Name}}满足条件
-func (s *{{$.Name}}Slice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
-	for i, each := range s.value {
+func (s {{$.Name}}Slice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s {
 		if !fn(i, each.{{$each.Name}}){
 			return false
 		}
@@ -562,8 +540,8 @@ func (s *{{$.Name}}Slice) AllBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool)
 {{end}}
 
 // Any 是否有元素满足条件
-func (s *{{.Name}}PSlice) Any(fn func(int, *{{.Name}}) bool) bool {
-	for i, each := range s.value {
+func (s {{.Name}}PSlice) Any(fn func(int, *{{.Name}}) bool) bool {
+	for i, each := range s {
 		if fn(i, each) {
 			return true
 		}
@@ -574,8 +552,8 @@ func (s *{{.Name}}PSlice) Any(fn func(int, *{{.Name}}) bool) bool {
 
 {{range $idx,$each := .Fields}}
 // AnyBy{{$each.Name}} 是否有元素的{{$each.Name}}满足条件
-func (s *{{$.Name}}PSlice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
-	for i, each := range s.value {
+func (s {{$.Name}}PSlice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s {
 		if fn(i, each.{{$each.Name}}) {
 			return true
 		}
@@ -586,8 +564,8 @@ func (s *{{$.Name}}PSlice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool
 
 {{range $idx,$each := .Fields}}
 // AnyBy{{$each.Name}} 是否有元素的{{$each.Name}}满足条件
-func (s *{{$.Name}}Slice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
-	for i, each := range s.value {
+func (s {{$.Name}}Slice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool) bool {
+	for i, each := range s {
 		if fn(i, each.{{$each.Name}}) {
 			return true
 		}
@@ -597,97 +575,101 @@ func (s *{{$.Name}}Slice) AnyBy{{$each.Name}}(fn func(int, {{$each.Type}}) bool)
 {{end}}
 
 // Paginate 分页
-func (s *{{.Name}}PSlice) Paginate(size int) [][]*{{.Name}} {
+func (s {{.Name}}PSlice) Paginate(size int) [][]*{{.Name}} {
 	if size {{.Lt}}= 0 {
 		size = 1
 	}
 	var pages [][]*{{.Name}}
 	prev := -1
-	for i := range s.value {
-		if (i-prev) {{.Lt}} size && i != (len(s.value)-1) {
+	for i := range s {
+		if (i-prev) {{.Lt}} size && i != (len(s)-1) {
 			continue
 		}
-		pages = append(pages, s.value[prev+1:i+1])
+		pages = append(pages, s[prev+1:i+1])
 		prev = i
 	}
 	return pages
 }
 
 // Preappend 在首部添加元素
-func (s *{{.Name}}PSlice) Preappend(given *{{.Name}}) *{{.Name}}PSlice {
-	value := make([]*{{.Name}}, 0, len(s.value)+1)
-	value = append(value, given)
-	s.value = append(value, s.value...)
-	return s
+func (s {{.Name}}PSlice) Preappend(given *{{.Name}}) {{.Name}}PSlice {
+	value := make([]*{{.Name}}, len(s)+1)
+	value[0] = given
+	copy(value[1:], s)
+	return {{.Name}}PSlice(value)
 }
 
 // Max 获取最大元素
-func (s *{{.Name}}PSlice) Max(bigger func(*{{.Name}}, *{{.Name}}) bool, value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}PSlice) Max(bigger func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		return nil, errors.New("empty")
 	}
-	*value = *s.value[0]
-	for _, each := range s.value {
-		if bigger(each, value) {
-			*value = *each
+	max := s[0]
+	for _, each := range s {
+		if bigger(each, max) {
+			max = max
 		}
 	}
-	return nil
+	return max, nil
 }
 
 // Min 获取最小元素
-func (s *{{.Name}}PSlice) Min(less func(*{{.Name}}, *{{.Name}}) bool, value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}PSlice) Min(less func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		return nil, errors.New("empty")
 	}
-	*value = *s.value[0]
-	for _, each := range s.value {
-		if less(each, value) {
-			*value = *each
+	min := s[0]
+	for _, each := range s {
+		if less(each, min) {
+			min = each
 		}
 	}
-	return nil
+	return min, nil
 }
 
 // Random 随机获取元素
-func (s *{{.Name}}PSlice) Random(value *{{.Name}}) error {
-	if len(s.value) {{.Lt}}= 0 {
-		return errors.New("empty")
+func (s {{.Name}}PSlice) Random() (*{{$.Name}}, error) {
+	if len(s) {{.Lt}}= 0 {
+		return nil, errors.New("empty")
 	}
-	n := rand.Intn(len(s.value))
-	*value = *s.value[n]
-	return nil
+	n := rand.Intn(len(s))
+	return s[n], nil
 }
 
 // Shuffle 打乱列表
-func (s *{{.Name}}PSlice) Shuffle() *{{.Name}}PSlice {
-	if len(s.value) {{.Lt}}= 0 {
+func (s {{.Name}}PSlice) Shuffle() {{.Name}}PSlice {
+	if len(s) {{.Lt}}= 0 {
 		return s
 	}
-	
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	value := make([]*{{$.Name}}, len(s))
+	copy(value, s)
+	rand.Shuffle(len(value), func(i, j int) {
+		value[i], value[j] = value[j], value[i] 
 	})
 	
-	return s
+	return {{$.Name}}PSlice(value)
 }
 
 {{range $idx,$each := .Fields}}
 {{if $each.IsBuiltin}}
 // SortBy{{$each.Name}} 根据元素的{{$each.Name}}排序
-func (s *{{$.Name}}PSlice) SortBy{{$each.Name}}() *{{$.Name}}PSlice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return s.value[i].{{$each.Name}} {{$.Lt}} s.value[j].{{$each.Name}}
+func (s {{$.Name}}PSlice) SortBy{{$each.Name}}() {{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, len(s))
+	copy(value, s)
+	sort.Slice(value, func(i, j int) bool {
+		return value[i].{{$each.Name}} {{$.Lt}} value[j].{{$each.Name}}
 	})
-	return s 
+	return {{$.Name}}PSlice(value)
 }
 {{else}}
 // SortBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器排序
-func (s *{{$.Name}}PSlice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}PSlice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return less(s.value[i].{{$each.Name}}, s.value[j].{{$each.Name}})
+func (s {{$.Name}}PSlice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, len(s))
+	copy(value, s)
+	sort.Slice(value, func(i, j int) bool {
+		return less(value[i].{{$each.Name}}, value[j].{{$each.Name}})
 	})
-	return s 
+	return {{$.Name}}PSlice(value)
 }
 {{end}}
 {{end}}
@@ -695,10 +677,10 @@ func (s *{{$.Name}}PSlice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$eac
 {{range $idx,$each := .Fields}}
 {{if $each.IsBuiltin}}
 // UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}唯一
-func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}() *{{$.Name}}PSlice {
-	value := make([]*{{$.Name}}, 0, len(s.value))
-	seen:=make(map[{{$each.Type}}]struct{})
-	for _, each := range s.value {
+func (s {{$.Name}}PSlice) UniqueBy{{$each.Name}}() {{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, 0, len(s))
+	seen := make(map[{{$each.Type}}]struct{})
+	for _, each := range s {
 		if _, dup := seen[each.{{$each.Name}}]; dup {
 			continue
 		}
@@ -706,21 +688,20 @@ func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}() *{{$.Name}}PSlice {
 		
 		seen[each.{{$each.Name}}] = struct{}{}	
 	}
-	s.value = value
-	return s
+	return {{$.Name}}PSlice(value)
 }
 {{else}}
 {{if $each.IsPointer}}
 // UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器唯一
-func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}PSlice {
-	value := make([]*{{$.Name}}, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
+func (s {{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}PSlice {
+	value := make([]*{{$.Name}}, 0, len(s))
+	seen := make(map[int]struct{})
+	for i, outter := range s {
+		dup := false
 		if _, exist := seen[i]; exist {
 			continue
 		}		
-		for j,inner :=range s.value {
+		for j,inner :=range s {
 			if i == j {
 				continue
 			}
@@ -734,21 +715,19 @@ func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, 
 		}
 		value = append(value, outter)			
 	}
-	s.value = value
-	
-	return s
+	return {{$.Name}}PSlice(value)
 }
 {{else}}
 // UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器唯一
-func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) *{{$.Name}}PSlice {
-	value := make([]{{$.Name}}, 0, len(s.value))
-	seen:=make(map[int]struct{})
-	for i, outter := range s.value {
-		dup:=false
+func (s {{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}PSlice {
+	value := make([]{{$.Name}}, 0, len(s))
+	seen := make(map[int]struct{})
+	for i, outter := range s {
+		dup := false
 		if _, exist := seen[i]; exist {
 			continue
 		}		
-		for j,inner :=range s.value {
+		for j, inner := range s {
 			if i == j {
 				continue
 			}
@@ -760,11 +739,9 @@ func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, 
 		if dup {
 			seen[i] = struct{}{}
 		}
-		value = append(value,outter)			
+		value = append(value, outter)			
 	}
-	s.value = value
-	
-	return s
+	return {{$.Name}}PSlice(value)
 }
 {{end}}
 {{end}}
@@ -775,22 +752,22 @@ func (s *{{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, 
 {{else}}
 {{if $each.IsPointer}}
 // {{$each.Name}}PSlice 获取{{$each.Name}}的PSlice
-func (s *{{$.Name}}PSlice) {{$each.Name}}PSlice() *{{$each.Pkg}}{{$each.TitleType}}PSlice {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
+func (s {{$.Name}}PSlice) {{$each.Name}}PSlice() {{$each.Pkg}}{{$each.TitleType}}PSlice {	
+	value := make([]{{$each.Type}}, 0, len(s))	
+	for _, each := range s {
 		value = append(value, each.{{$each.Name}})
 	}
-	newSlice := {{$each.Pkg}}To{{$each.TitleType}}PSlice(value)
+	newSlice := {{$each.Pkg}}{{$each.TitleType}}PSlice(value)
 	return newSlice
 }
 {{else}}
 // {{$each.Name}}Slice 获取{{$each.Name}}的Slice
-func (s *{{$.Name}}PSlice) {{$each.Name}}Slice() *{{$each.Pkg}}{{$each.TitleType}}Slice {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
+func (s {{$.Name}}PSlice) {{$each.Name}}Slice() {{$each.Pkg}}{{$each.TitleType}}Slice {	
+	value := make([]{{$each.Type}}, 0, len(s))	
+	for _, each := range s {
 		value = append(value, each.{{$each.Name}})
 	}
-	newSlice := {{$each.Pkg}}To{{$each.TitleType}}Slice(value)
+	newSlice := {{$each.Pkg}}{{$each.TitleType}}Slice(value)
 	return newSlice
 }
 {{end}}
@@ -799,17 +776,18 @@ func (s *{{$.Name}}PSlice) {{$each.Name}}Slice() *{{$each.Pkg}}{{$each.TitleType
 
 {{range $idx,$each := .Fields}}
 // {{$each.Name}}s 获取{{$each.Name}}列表
-func (s *{{$.Name}}PSlice) {{$each.Name}}s() []{{$each.Type}} {	
-	value := make([]{{$each.Type}}, 0, len(s.value))	
-	for _, each := range s.value {
+func (s {{$.Name}}PSlice) {{$each.Name}}s() []{{$each.Type}} {	
+	value := make([]{{$each.Type}}, 0, len(s))	
+	for _, each := range s {
 		value = append(value, each.{{$each.Name}})
 	}
 	return value
+
 }
 {{end}}
 
 // Collect 获取列表
-func (s *{{.Name}}PSlice) Collect() []*{{.Name}} {
-	return s.value
+func (s {{.Name}}PSlice) Collect() []*{{.Name}} {
+	return s
 }
 `

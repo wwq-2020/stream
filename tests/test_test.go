@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 func TestConcate(t *testing.T) {
 	data1 := []*Some{&Some{A: "hello"}}
 	data2 := []*Some{&Some{A: "world"}}
-	c := ToSomePSlice(data1)
+	c := SomePSlice(data1)
 	r := c.Concat(data2).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -19,7 +20,7 @@ func TestConcate(t *testing.T) {
 
 func TestDrop(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.Drop(1).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -28,7 +29,7 @@ func TestDrop(t *testing.T) {
 
 func TestFilter(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	filter := func(idx int, some *Some) bool {
 		return idx == 0
 	}
@@ -40,7 +41,7 @@ func TestFilter(t *testing.T) {
 
 func TestFilterByA(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	filter := func(idx int, val string) bool {
 		return val == "hello"
 	}
@@ -52,31 +53,31 @@ func TestFilterByA(t *testing.T) {
 
 func TestFirst(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
-	value := &Some{}
-	if err := c.First(value); err != nil {
+	c := SomePSlice(data)
+	first, err := c.First()
+	if err != nil {
 		t.Fatal("empty")
 	}
-	if !reflect.DeepEqual(value, &Some{A: "hello"}) {
+	if !reflect.DeepEqual(first, &Some{A: "hello"}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestLast(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
-	value := &Some{}
-	if err := c.Last(value); err != nil {
+	c := SomePSlice(data)
+	last, err := c.Last()
+	if err != nil {
 		t.Fatal("empty")
 	}
-	if !reflect.DeepEqual(value, &Some{A: "world"}) {
+	if !reflect.DeepEqual(last, &Some{A: "world"}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestMap(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	mapFn := func(idx int, some *Some) *Some {
 		return &Some{A: some.A + "_test"}
 	}
@@ -88,7 +89,7 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	reduceFn := func(initial *Some, cur *Some, idx int) *Some {
 		return &Some{A: initial.A + " " + cur.A}
 	}
@@ -99,7 +100,7 @@ func TestReduce(t *testing.T) {
 }
 func TestReverse(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.Reverse().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -108,7 +109,7 @@ func TestReverse(t *testing.T) {
 
 func TestUnique(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.UniqueBy(func(one, another *Some) bool {
 		return one.A == another.A && one.B == another.B
 	}).Collect()
@@ -119,7 +120,7 @@ func TestUnique(t *testing.T) {
 
 func TestAppend(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.Append(&Some{A: "world"}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -128,7 +129,7 @@ func TestAppend(t *testing.T) {
 
 func TestLen(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if r := c.Len(); r != len(data) {
 		t.Fatal("mistach")
 	}
@@ -136,7 +137,7 @@ func TestLen(t *testing.T) {
 
 func TestIsEmpty(t *testing.T) {
 	var data []*Some
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if !c.IsEmpty() {
 		t.Fatal("mistach")
 	}
@@ -144,7 +145,7 @@ func TestIsEmpty(t *testing.T) {
 
 func TestIsNotEmpty(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if !c.IsNotEmpty() {
 		t.Fatal("mistach")
 	}
@@ -152,18 +153,24 @@ func TestIsNotEmpty(t *testing.T) {
 
 func TestSortBy(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
+
+	c := SomePSlice(data)
 	r := c.SortBy(func(one, another *Some) bool {
 		return one.A < another.A
 	}).Collect()
-	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
+
+	if len(r) != len(data) {
+		t.Fatal("len mismatch")
+	}
+	if !reflect.DeepEqual(r[0], data[0]) || !reflect.DeepEqual(r[1], data[1]) {
+		fmt.Println(r[0], r[1])
 		t.Fatal("mistach")
 	}
 }
 
 func TestAll(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if !c.All(func(i int, some *Some) bool {
 		return some.A == "world"
 	}) {
@@ -173,7 +180,7 @@ func TestAll(t *testing.T) {
 
 func TestAllByA(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if !c.AllByA(func(i int, val string) bool {
 		return val == "world"
 	}) {
@@ -183,7 +190,7 @@ func TestAllByA(t *testing.T) {
 
 func TestAnyByA(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if !c.AnyByA(func(i int, val string) bool {
 		return val == "hello"
 	}) {
@@ -193,7 +200,7 @@ func TestAnyByA(t *testing.T) {
 
 func TestAny(t *testing.T) {
 	data := []*Some{&Some{A: "hello"}, &Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	if !c.Any(func(i int, some *Some) bool {
 		return some.A == "world"
 	}) {
@@ -203,7 +210,7 @@ func TestAny(t *testing.T) {
 
 func TestPaginate(t *testing.T) {
 	data := []*Some{&Some{A: "hello1"}, &Some{A: "world1"}, &Some{A: "hello2"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	pages := c.Paginate(2)
 	if len(pages) != 2 {
 		t.Fatal("mistach")
@@ -218,7 +225,7 @@ func TestPaginate(t *testing.T) {
 
 func TestPrepend(t *testing.T) {
 	data := []*Some{&Some{A: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.Preappend(&Some{A: "hello"}).Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello"}, &Some{A: "world"}}) {
 		t.Fatal("mistach")
@@ -227,47 +234,47 @@ func TestPrepend(t *testing.T) {
 
 func TestMax(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
-	value := &Some{}
-	if err := c.Max(func(one, another *Some) bool {
+	c := SomePSlice(data)
+	max, err := c.Max(func(one, another *Some) bool {
 		return one.A > another.A
-	}, value); err != nil {
+	})
+	if err != nil {
 		t.Fatal("empty")
 	}
-	if !reflect.DeepEqual(value, &Some{A: "world"}) {
+	if !reflect.DeepEqual(max, &Some{A: "world"}) {
 		t.Fatal("mistach")
 	}
 }
 func TestMin(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
-	value := &Some{}
-	if err := c.Min(func(one, another *Some) bool {
+	c := SomePSlice(data)
+	min, err := c.Min(func(one, another *Some) bool {
 		return one.A < another.A
-	}, value); err != nil {
+	})
+	if err != nil {
 		t.Fatal("empty")
 	}
-	if !reflect.DeepEqual(value, &Some{A: "hello"}) {
+	if !reflect.DeepEqual(min, &Some{A: "hello"}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestRandom(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
-	value := &Some{}
-	if err := c.Random(value); err != nil {
+	c := SomePSlice(data)
+	random, err := c.Random()
+	if err != nil {
 		t.Fatal("empty")
 	}
 
-	if !reflect.DeepEqual(value, &Some{A: "hello"}) && !reflect.DeepEqual(value, &Some{A: "world"}) {
+	if !reflect.DeepEqual(random, &Some{A: "hello"}) && !reflect.DeepEqual(random, &Some{A: "world"}) {
 		t.Fatal("mistach")
 	}
 }
 
 func TestShuffle(t *testing.T) {
 	data := []*Some{&Some{A: "world"}, &Some{A: "hello"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.Shuffle().Collect()
 	if len(r) != 2 {
 		t.Fatal("mistach")
@@ -279,7 +286,7 @@ func TestShuffle(t *testing.T) {
 
 func TestSortByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.SortByA().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "hello"}}) {
 		t.Fatal("mistach")
@@ -288,7 +295,7 @@ func TestSortByA(t *testing.T) {
 
 func TestSortByB(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.SortByB().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "world", B: "hello"}, &Some{A: "hello", B: "world"}}) {
 		t.Fatal("mistach")
@@ -297,7 +304,7 @@ func TestSortByB(t *testing.T) {
 
 func TestSortByC(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello", C: &Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", C: &Some{A: "hello", B: "world"}}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.SortByC(func(one, another *Some) bool {
 		return one.A < another.A
 	}).Collect()
@@ -308,7 +315,7 @@ func TestSortByC(t *testing.T) {
 
 func TestUniqueByA(t *testing.T) {
 	data := []*Some{&Some{A: "world", B: "hello"}, &Some{A: "world", B: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.UniqueByA().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "world", B: "hello"}}) {
 		t.Fatal("mistach")
@@ -317,7 +324,7 @@ func TestUniqueByA(t *testing.T) {
 
 func TestUniqueByB(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world"}, &Some{A: "world", B: "world"}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.UniqueByB().Collect()
 	if !reflect.DeepEqual(r, []*Some{&Some{A: "hello", B: "world"}}) {
 		t.Fatal("mistach")
@@ -326,7 +333,7 @@ func TestUniqueByB(t *testing.T) {
 
 func TestUniqueByC(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world", C: &Some{A: "world", B: "hello"}}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.UniqueByC(func(one, another *Some) bool {
 		return one.A == another.A && one.B == another.B
 	}).Collect()
@@ -337,7 +344,7 @@ func TestUniqueByC(t *testing.T) {
 
 func TestFields(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world", D: &outter.Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", D: &outter.Some{A: "hello", B: "world"}}}
-	c := ToSomePSlice(data)
+	c := SomePSlice(data)
 	r := c.As()
 	if !reflect.DeepEqual(r, []string{"hello", "hello"}) {
 		t.Fatal("mistach")
@@ -346,12 +353,12 @@ func TestFields(t *testing.T) {
 
 func TestFieldStream(t *testing.T) {
 	data := []*Some{&Some{A: "hello", B: "world", D: &outter.Some{A: "world", B: "hello"}}, &Some{A: "hello", B: "world", D: &outter.Some{A: "hello", B: "world"}}}
-	c := ToSomePSlice(data)
-	value := &outter.Some{}
-	if err := c.DPSlice().First(value); err != nil {
+	c := SomePSlice(data)
+	first, err := c.DPSlice().First()
+	if err != nil {
 		t.Fatal("empty")
 	}
-	if !reflect.DeepEqual(value, &outter.Some{A: "world", B: "hello"}) {
+	if !reflect.DeepEqual(first, &outter.Some{A: "world", B: "hello"}) {
 		t.Fatal("mistach")
 	}
 }

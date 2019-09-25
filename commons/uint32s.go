@@ -7,141 +7,131 @@ import (
 )
 
 // Uint32Slice uint32的Slice
-type Uint32Slice struct {
-	value []uint32
-}
-
-// ToUint32Slice uint32列表转为Uint32Slice
-func ToUint32Slice(value []uint32) *Uint32Slice {
-	return &Uint32Slice{value: value}
-}
+type Uint32Slice []uint32
 
 // Concat 拼接
-func (s *Uint32Slice) Concat(given []uint32) *Uint32Slice {
-	value := make([]uint32, len(s.value)+len(given))
-	copy(value, s.value)
-	copy(value[len(s.value):], given)
-	s.value = value
-	return s
+func (s Uint32Slice) Concat(given []uint32) Uint32Slice {
+	value := make([]uint32, len(s)+len(given))
+	copy(value, s)
+	copy(value[len(s):], given)
+	return Uint32Slice(value)
 }
 
 // Drop 丢弃前n个
-func (s *Uint32Slice) Drop(n int) *Uint32Slice {
+func (s Uint32Slice) Drop(n int) Uint32Slice {
 	if n < 0 {
 		n = 0
 	}
-	l := len(s.value) - n
+	l := len(s) - n
 	if l < 0 {
-		n = len(s.value)
+		n = len(s)
 	}
-	s.value = s.value[n:]
-	return s
+	return Uint32Slice(s[n:])
 }
 
 // Filter 过滤
-func (s *Uint32Slice) Filter(fn func(int, uint32) bool) *Uint32Slice {
-	value := make([]uint32, 0, len(s.value))
-	for i, each := range s.value {
+func (s Uint32Slice) Filter(fn func(int, uint32) bool) Uint32Slice {
+	value := make([]uint32, 0, len(s))
+	for i, each := range s {
 		if fn(i, each) {
 			value = append(value, each)
 		}
 	}
-	s.value = value
-	return s
+	return Uint32Slice(value)
 }
 
 // First 获取第一个元素
-func (s *Uint32Slice) First(value *uint32) error {
-	if len(s.value) <= 0 {
-		return errors.New("empty")
-	} 
-	*value = s.value[0]
-	return nil
+func (s Uint32Slice) First() (uint32, error) {
+	if len(s) <= 0 {
+		var defaultReturn uint32
+		return defaultReturn, errors.New("empty")
+	}
+	return s[0], nil
 }
 
 // Last 获取最后一个元素
-func (s *Uint32Slice) Last(value *uint32) error {
-	if len(s.value) <= 0 {
-		return errors.New("empty")
+func (s Uint32Slice) Last() (uint32, error) {
+	if len(s) <= 0 {
+		var defaultReturn uint32
+		return defaultReturn, errors.New("empty")
 	}
-	*value = s.value[len(s.value)-1]
-	return nil
+	return s[len(s)-1], nil
 }
 
 // Map 对每个元素进行操作
-func (s *Uint32Slice) Map(fn func(int, uint32) uint32) *Uint32Slice {
-	value := make([]uint32, len(s.value))
-	for i, each := range s.value {
+func (s Uint32Slice) Map(fn func(int, uint32) uint32) Uint32Slice {
+	value := make([]uint32, len(s))
+	for i, each := range s {
 		value[i] = fn(i, each)
 	}
-	s.value = value
-	return s
+	return Uint32Slice(value)
 }
 
 // Reduce reduce
-func (s *Uint32Slice) Reduce(fn func(uint32, uint32, int) uint32, initial uint32) uint32 {
+func (s Uint32Slice) Reduce(fn func(uint32, uint32, int) uint32, initial uint32) uint32 {
 	final := initial
-	for i, each := range s.value {
+	for i, each := range s {
 		final = fn(final, each, i)
 	}
 	return final
 }
 
 // Reverse 逆序
-func (s *Uint32Slice) Reverse() *Uint32Slice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return s.value[i] > s.value[j]
-	})
-	return s 
+func (s Uint32Slice) Reverse() Uint32Slice {
+	value := make([]uint32, len(s))
+	for i, each := range s {
+		value[len(s)-1-i] = each
+	}
+	return Uint32Slice(value)
 }
 
 // Unique 唯一
-func (s *Uint32Slice) Unique() *Uint32Slice {
-	value := make([]uint32, 0, len(s.value))
+func (s Uint32Slice) Unique() Uint32Slice {
+	value := make([]uint32, 0, len(s))
 	seen := make(map[uint32]struct{})
-	for _, each := range s.value {
+	for _, each := range s {
 		if _, exist := seen[each]; exist {
 			continue
 		}		
 		seen[each] = struct{}{}
 		value = append(value, each)			
 	}
-	s.value = value
-	return s
+	return Uint32Slice(value)
 }
 
 // Append 在尾部添加
-func (s *Uint32Slice) Append(given uint32) *Uint32Slice {
-	s.value = append(s.value, given)
-	return s
+func (s Uint32Slice) Append(given uint32) Uint32Slice {
+	return append(s, given)
 }
 
 // Len 获取长度
-func (s *Uint32Slice) Len() int {
-	return len(s.value)
+func (s Uint32Slice) Len() int {
+	return len(s)
 }
 
 // IsEmpty 判断是否为空
-func (s *Uint32Slice) IsEmpty() bool {
-	return len(s.value) == 0
+func (s Uint32Slice) IsEmpty() bool {
+	return len(s) == 0
 }
 
 // IsEmpty 判断是否非空
-func (s *Uint32Slice) IsNotEmpty() bool {
-	return len(s.value) != 0
+func (s Uint32Slice) IsNotEmpty() bool {
+	return len(s) != 0
 }
 
 // Sort 排序
-func (s *Uint32Slice) Sort() *Uint32Slice {
-	sort.Slice(s.value, func(i, j int) bool {
-		return s.value[i] < s.value[j]
+func (s Uint32Slice) Sort() Uint32Slice {
+	value := make([]uint32, len(s))
+	copy(value, s)
+	sort.Slice(value, func(i, j int) bool {
+		return value[i] < value[j]
 	})
-	return s 
+	return Uint32Slice(value)
 }
 
 // All 是否所有元素满足条件
-func (s *Uint32Slice) All(fn func(int, uint32) bool) bool {
-	for i, each := range s.value {
+func (s Uint32Slice) All(fn func(int, uint32) bool) bool {
+	for i, each := range s {
 		if !fn(i, each) {
 			return false
 		}
@@ -150,8 +140,8 @@ func (s *Uint32Slice) All(fn func(int, uint32) bool) bool {
 }
 
 // Any 是否有元素满足条件
-func (s *Uint32Slice) Any(fn func(int, uint32) bool) bool {
-	for i, each := range s.value {
+func (s Uint32Slice) Any(fn func(int, uint32) bool) bool {
+	for i, each := range s {
 		if fn(i, each) {
 			return true
 		}
@@ -160,82 +150,84 @@ func (s *Uint32Slice) Any(fn func(int, uint32) bool) bool {
 }
 
 // Paginate 分页
-func (s *Uint32Slice) Paginate(size int) [][]uint32 {
+func (s Uint32Slice) Paginate(size int) [][]uint32 {
 	if size <= 0 {
 		size = 1
 	}
 	var pages [][]uint32
 	prev := -1
-	for i := range s.value {
-		if (i-prev) < size && i != (len(s.value)-1) {
+	for i := range s {
+		if (i-prev) < size && i != (len(s)-1) {
 			continue
 		}
-		pages = append(pages, s.value[prev+1:i+1])
+		pages = append(pages, s[prev+1:i+1])
 		prev = i
 	}
 	return pages
 }
 
 // Preappend 在首部添加元素
-func (s *Uint32Slice) Preappend(given uint32) *Uint32Slice {
-	value := make([]uint32, 0, len(s.value)+1)
-	value = append(value, given)
-	s.value = append(value, s.value...)
+func (s Uint32Slice) Preappend(given uint32) Uint32Slice {
+	value := make([]uint32, len(s)+1)
+	value[0] = given
+	copy(value[1:], s)
 	return s
 }
 
 // Max 获取最大元素
-func (s *Uint32Slice) Max(value *uint32) error {
-	if len(s.value) <= 0 {
-		return errors.New("empty")
+func (s Uint32Slice) Max() (uint32, error) {
+	if len(s) <= 0 {
+		var defaultReturn uint32
+		return defaultReturn, errors.New("empty")
 	}
-	*value = s.value[0]
-	for _, each := range s.value {
-		if *value < each {
-			*value  = each
+	max := s[0]
+	for _, each := range s {
+		if max < each {
+			max = each
 		}
 	}
-	return nil 
+	return max, nil 
 }
 
 // Min 获取最小元素
-func (s *Uint32Slice) Min(value *uint32) error {
-	if len(s.value) <= 0 {
-		return errors.New("empty")
+func (s Uint32Slice) Min() (uint32, error) {
+	if len(s) <= 0 {
+		var defaultReturn uint32
+		return defaultReturn, errors.New("empty")
 	}
-	*value = s.value[0]
-	for _, each := range s.value {
-		if each < *value {
-			*value = each
+	min := s[0]
+	for _, each := range s {
+		if each < min {
+			min = each
 		}
 	}
-	return nil
+	return min, nil
 }
 
 // Random 随机获取一个元素
-func (s *Uint32Slice) Random(value *uint32) error {
-	if len(s.value) <= 0 {
-		return errors.New("empty")
+func (s Uint32Slice) Random() (uint32, error) {
+	if len(s) <= 0 {
+		var defaultReturn uint32
+		return defaultReturn, errors.New("empty")
 	}
-	n := rand.Intn(len(s.value))
-	*value = s.value[n]
-	return nil
+	n := rand.Intn(len(s))
+	return s[n], nil
 }
 
-// Shuffle 打乱列表
-func (s *Uint32Slice) Shuffle() *Uint32Slice {
-	if len(s.value) <= 0 {
+// Shuffle 打乱[]uint32
+func (s Uint32Slice) Shuffle() Uint32Slice {
+	if len(s) <= 0 {
 		return s
 	}
-
-	rand.Shuffle(len(s.value), func(i, j int) {
-		s.value[i], s.value[j] = s.value[j], s.value[i] 
+	value := make([]uint32, len(s))
+	copy(value, s)
+	rand.Shuffle(len(value), func(i, j int) {
+		value[i], value[j] = value[j], value[i] 
 	})
-	
-	return s
+	return Uint32Slice(value)
 }
 
-// Collect 获取列表
-func (s *Uint32Slice) Collect() []uint32 {
-	return s.value
+// Collect 获取[]uint32
+func (s Uint32Slice) Collect() []uint32 {
+	return s
 }
