@@ -173,7 +173,7 @@ func (s {{.TitleName}}Slice) Preappend(given {{.Name}}) {{.TitleName}}Slice {
 	value := make([]{{.Name}}, len(s)+1)
 	value[0] = given
 	copy(value[1:], s)
-	return s
+	return {{.TitleName}}Slice(value)
 }
 
 // Max 获取最大元素
