@@ -113,7 +113,7 @@ func genStruct() {
 		if err != nil {
 			return err
 		}
-		curImport := strings.Join(p.Imports, "\n")
+		curImport := strings.Join(p.Imports, "\"\n\"")
 		curHasBuiltin = false
 		curPkg = p.Name
 		baseDir := filepath.Dir(path)
@@ -127,15 +127,34 @@ func genStruct() {
 			var importStr string = fmt.Sprintf(`package %s
 
 import (
-	"errors"
-	"math/rand"
-	"sort"`, p.Name)
+`, p.Name)
+			for _, toImport := range []string{"errors", "math/rand", "sort"} {
+				found := false
+				for _, each := range p.Imports {
+					if each == toImport {
+						found = true
+					}
+				}
+				if !found {
+					importStr = fmt.Sprintf(`%s
+	"%s"						
+`, importStr, toImport)
+				}
+
+			}
 			if curHasBuiltin {
-				importStr = fmt.Sprintf(`%s
+				found := false
+				for _, each := range p.Imports {
+					if each == commonStreamDir {
+						found = true
+					}
+				}
+				if !found {
+					importStr = fmt.Sprintf(`%s
 		
 	commons "%s"						
-					`, importStr, commonStreamDir)
-
+`, importStr, commonStreamDir)
+				}
 			}
 			if curImport != "" {
 				importStr = fmt.Sprintf(`%s
@@ -184,11 +203,12 @@ func walkGd(gd *ast.GenDecl, buf io.Writer) error {
 			continue
 		}
 		st, ok := ts.Type.(*ast.StructType)
-		if !ok {
-			continue
+		if ok {
+			setTagInfo(st.Fields)
+		} else {
+			setTagInfo(&ast.FieldList{})
 		}
 		curStruct = ts.Name.Name
-		setTagInfo(st.Fields)
 		if err := execTpl(buf); err != nil {
 			return err
 		}
@@ -224,6 +244,7 @@ func setTagInfo(fields *ast.FieldList) {
 				if isBuiltIn(t.Name) {
 					pkg = "commons."
 				}
+
 				typ = pointerStr + t.Name + typ
 				break loop
 			case *ast.StarExpr:
@@ -237,11 +258,12 @@ func setTagInfo(fields *ast.FieldList) {
 				titleType = strings.Title(t.Sel.Name)
 			}
 		}
-
+		if typ == "bool" {
+			continue
+		}
 		isBuiltIn := isBuiltIn(typ)
 		fi := FieldInfo{Name: field.Names[0].Name, Type: typ, TitleType: titleType, SkipFieldSlice: !fieldStream && outter, Pkg: pkg, IsPointer: pointerStr == "*", IsBuiltin: isBuiltIn && pointerStr == ""}
 		curFields = append(curFields, fi)
-
 		if isBuiltIn && !curHasBuiltin {
 			curHasBuiltin = true
 		}

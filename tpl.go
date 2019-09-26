@@ -249,7 +249,7 @@ func (s {{.Name}}Slice) Max(bigger func({{.Name}}, {{.Name}}) bool) ({{.Name}}, 
 }
 
 // Min 获取最小元素
-func (s {{.Name}}Slice) Min(less func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
+func (s {{.Name}}Slice) MinBy(less func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
 	if len(s) {{.Lt}}= 0 {
 		var defaultReturn {{.Name}}
 		return defaultReturn, errors.New("empty")
@@ -614,7 +614,7 @@ func (s {{.Name}}PSlice) Max(bigger func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Nam
 }
 
 // Min 获取最小元素
-func (s {{.Name}}PSlice) Min(less func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Name}}, error) {
+func (s {{.Name}}PSlice) MinBy(less func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Name}}, error) {
 	if len(s) {{.Lt}}= 0 {
 		return nil, errors.New("empty")
 	}
@@ -720,7 +720,7 @@ func (s {{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {
 {{else}}
 // UniqueBy{{$each.Name}} 根据元素的{{$each.Name}}和比较器唯一
 func (s {{$.Name}}PSlice) UniqueBy{{$each.Name}}(compare func ({{$each.Type}}, {{$each.Type}}) bool) {{$.Name}}PSlice {
-	value := make([]{{$.Name}}, 0, len(s))
+	value := make([]*{{$.Name}}, 0, len(s))
 	seen := make(map[int]struct{})
 	for i, outter := range s {
 		dup := false
@@ -784,6 +784,19 @@ func (s {{$.Name}}PSlice) {{$each.Name}}s() []{{$each.Type}} {
 	return value
 
 }
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// {{$each.Name}}2{{$.Name}} {{$each.Name}}到{{$.Name}}的map
+func (s {{$.Name}}PSlice) {{$each.Name}}2{{$.Name}}() map[{{$each.Type}}]*{{$.Name}} {
+	result := make(map[{{$each.Type}}]*{{$.Name}}, len(s))
+	for _, each := range s {
+		result[each.{{$each.Name}}] = each
+	}
+	return result
+}
+{{end}}
 {{end}}
 
 // Collect 获取列表

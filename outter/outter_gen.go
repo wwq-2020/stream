@@ -1,12 +1,16 @@
 package outter
 
 import (
-	"errors"
-	"math/rand"
-	"sort"
+
+	"errors"						
+
+	"math/rand"						
+
+	"sort"						
+
 		
 	commons "github.com/wwq1988/stream/commons"						
-					
+
 )
 
 // SomeSlice Some的Slice
@@ -1003,6 +1007,32 @@ func (s SomePSlice) Cs() []*Some {
 	return value
 
 }
+
+
+
+
+// A2Some A到Some的map
+func (s SomePSlice) A2Some() map[string]*Some {
+	result := make(map[string]*Some, len(s))
+	for _, each := range s {
+		result[each.A] = each
+	}
+	return result
+}
+
+
+
+// B2Some B到Some的map
+func (s SomePSlice) B2Some() map[string]*Some {
+	result := make(map[string]*Some, len(s))
+	for _, each := range s {
+		result[each.B] = each
+	}
+	return result
+}
+
+
+
 
 
 // Collect 获取列表

@@ -1,12 +1,16 @@
 package tests
 
 import (
-	"errors"
-	"math/rand"
-	"sort"
+
+	"errors"						
+
+	"math/rand"						
+
+	"sort"						
+
 		
 	commons "github.com/wwq1988/stream/commons"						
-					
+
 	"github.com/wwq1988/stream/outter"
 )
 
@@ -1200,6 +1204,34 @@ func (s SomePSlice) Ds() []*outter.Some {
 }
 
 
+
+
+// A2Some A到Some的map
+func (s SomePSlice) A2Some() map[string]*Some {
+	result := make(map[string]*Some, len(s))
+	for _, each := range s {
+		result[each.A] = each
+	}
+	return result
+}
+
+
+
+// B2Some B到Some的map
+func (s SomePSlice) B2Some() map[string]*Some {
+	result := make(map[string]*Some, len(s))
+	for _, each := range s {
+		result[each.B] = each
+	}
+	return result
+}
+
+
+
+
+
+
+
 // Collect 获取列表
 func (s SomePSlice) Collect() []*Some {
 	return s
@@ -1663,6 +1695,8 @@ func (s BPSlice) Shuffle() BPSlice {
 	
 	return BPSlice(value)
 }
+
+
 
 
 
