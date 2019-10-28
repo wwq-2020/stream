@@ -32,10 +32,10 @@ func (s {{.TitleName}}Slice) Drop(n int) {{.TitleName}}Slice {
 }
 
 // Filter 过滤
-func (s {{.TitleName}}Slice) Filter(fn func(int, {{.Name}}) bool) {{.TitleName}}Slice {
+func (s {{.TitleName}}Slice) Filter(fn func({{.Name}}) bool) {{.TitleName}}Slice {
 	value := make([]{{.Name}}, 0, len(s))
-	for i, each := range s {
-		if fn(i, each) {
+	for _, each := range s {
+		if fn(each) {
 			value = append(value, each)
 		}
 	}
