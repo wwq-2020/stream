@@ -17,7 +17,7 @@ func (s {{.Name}}Slice) Concat(given []{{.Name}}) {{.Name}}Slice {
 func (s {{.Name}}Slice) TakeN(n int) {{.Name}}Slice {
 	value := make([]{{.Name}}, 0, len(s))
 	for idx, each := range s {
-		if idx+1 {{.Lt}} n {
+		if idx {{.Lt}} n {
 			value = append(value, each)
 		}
 	}
@@ -244,8 +244,8 @@ func (s {{.Name}}Slice) Preappend(given {{.Name}}) {{.Name}}Slice {
 	return {{.Name}}Slice(value)
 }
 
-// Max 获取最后元素
-func (s {{.Name}}Slice) Max(bigger func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
+// MaxBy 获取最后元素
+func (s {{.Name}}Slice) MaxBy(bigger func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
 	if len(s) {{.Lt}}= 0 {
 		var defaultReturn {{.Name}}
 		return defaultReturn, errors.New("empty")
@@ -258,6 +258,7 @@ func (s {{.Name}}Slice) Max(bigger func({{.Name}}, {{.Name}}) bool) ({{.Name}}, 
 	}
 	return max, nil
 }
+
 
 // MinBy 获取最小元素
 func (s {{.Name}}Slice) MinBy(less func({{.Name}}, {{.Name}}) bool) ({{.Name}}, error) {
@@ -352,6 +353,19 @@ func (s {{$.Name}}Slice) {{$each.Name}}Slice() {{$each.Pkg}}{{$each.TitleType}}S
 {{end}}
 
 {{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// {{$each.Name}}2{{$.Name}} {{$each.Name}}到{{$.Name}}的map
+func (s {{$.Name}}Slice) {{$each.Name}}2{{$.Name}}() map[{{$each.Type}}]{{$.Name}} {
+	result := make(map[{{$each.Type}}]{{$.Name}}, len(s))
+	for _, each := range s {
+		result[each.{{$each.Name}}] = each
+	}
+	return result
+}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
 // {{$each.Name}}s 获取{{$each.Name}}的列表
 func (s {{$.Name}}Slice) {{$each.Name}}s() []{{$each.Type}} {	
 	value := make([]{{$each.Type}}, 0, len(s))	
@@ -361,6 +375,38 @@ func (s {{$.Name}}Slice) {{$each.Name}}s() []{{$each.Type}} {
 	return value
 
 }
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// Max{{$each.Name}} 获取最大的{{$each.Name}}
+func (s {{$.Name}}Slice) Max{{$each.Name}}() ({{$each.Type}}, error) {
+	max, err := s.MaxBy(func(one, another {{$.Name}}) bool {
+		return one.{{$each.Name}} > another.{{$each.Name}}
+	})
+	if err != nil {
+		var defaultReturn {{$each.Type}}
+		return defaultReturn, err
+	}
+	return max.{{$each.Name}}, nil
+}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// Min{{$each.Name}} 获取最小的{{$each.Name}}
+func (s {{$.Name}}Slice) Min{{$each.Name}}() ({{$each.Type}}, error) {
+	min, err := s.MaxBy(func(one, another {{$.Name}}) bool {
+		return one.{{$each.Name}} {{$.Lt}} another.{{$each.Name}}
+	})
+	if err != nil {
+		var defaultReturn {{$each.Type}}
+		return defaultReturn, err
+	}
+	return min.{{$each.Name}}, nil
+}
+{{end}}
 {{end}}
 
 // Collect 获取最终的列表
@@ -383,7 +429,7 @@ func (s {{.Name}}PSlice) Concat(given []*{{.Name}}) {{.Name}}PSlice {
 func (s {{.Name}}PSlice) TakeN(n int) {{.Name}}PSlice {
 	value := make([]*{{.Name}}, 0, len(s))
 	for idx, each := range s {
-		if idx+1 {{.Lt}} n {
+		if idx {{.Lt}} n {
 			value = append(value, each)
 		}
 	}
@@ -621,15 +667,15 @@ func (s {{.Name}}PSlice) Preappend(given *{{.Name}}) {{.Name}}PSlice {
 	return {{.Name}}PSlice(value)
 }
 
-// Max 获取最大元素
-func (s {{.Name}}PSlice) Max(bigger func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Name}}, error) {
+// MaxBy 获取最大元素
+func (s {{.Name}}PSlice) MaxBy(bigger func(*{{.Name}}, *{{.Name}}) bool) (*{{$.Name}}, error) {
 	if len(s) {{.Lt}}= 0 {
 		return nil, errors.New("empty")
 	}
 	max := s[0]
 	for _, each := range s {
 		if bigger(each, max) {
-			max = max
+			max = each
 		}
 	}
 	return max, nil
@@ -692,6 +738,38 @@ func (s {{$.Name}}PSlice) SortBy{{$each.Name}}(less func({{$each.Type}}, {{$each
 		return less(value[i].{{$each.Name}}, value[j].{{$each.Name}})
 	})
 	return {{$.Name}}PSlice(value)
+}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// Max{{$each.Name}} 获取最大的{{$each.Name}}
+func (s {{$.Name}}PSlice) Max{{$each.Name}}() ({{$each.Type}}, error) {
+	max, err := s.MaxBy(func(one, another *{{$.Name}}) bool {
+		return one.{{$each.Name}} > another.{{$each.Name}}
+	})
+	if err != nil {
+		var defaultReturn {{$each.Type}}
+		return defaultReturn, err
+	}
+	return max.{{$each.Name}}, nil
+}
+{{end}}
+{{end}}
+
+{{range $idx,$each := .Fields}}
+{{if $each.IsBuiltin}}
+// Min{{$each.Name}} 获取最小的{{$each.Name}}
+func (s {{$.Name}}PSlice) Min{{$each.Name}}() ({{$each.Type}}, error) {
+	min, err := s.MinBy(func(one, another *{{$.Name}}) bool {
+		return one.{{$each.Name}} {{$.Lt}} another.{{$each.Name}}
+	})
+	if err != nil {
+		var defaultReturn {{$each.Type}}
+		return defaultReturn, err
+	}
+	return min.{{$each.Name}}, nil
 }
 {{end}}
 {{end}}

@@ -124,7 +124,7 @@ func genStruct() {
 			return err
 		}
 		if buf.Len() != 0 {
-			var importStr string = fmt.Sprintf(`package %s
+			importStr := fmt.Sprintf(`package %s
 
 import (
 `, p.Name)
