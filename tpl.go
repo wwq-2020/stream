@@ -254,6 +254,16 @@ func (s {{.Name}}Slice) Preappend(given {{.Name}}) {{.Name}}Slice {
 	return result
 }
 
+// Sort 排序
+func (s {{.Name}}Slice) Sort(comparator func({{.Name}}, {{.Name}}) bool) {{.Name}}Slice {
+	result := make([]{{.Name}}, len(s))
+	copy(result, s)
+	sort.Slice(result, func(i, j int) bool {
+		return comparator(result[i],result[j])
+	})
+	return result
+}
+
 // Max 获取最大元素
 func (s {{.Name}}Slice) Max(comparator func({{.Name}}, {{.Name}}) bool) {{.Name}}Result {
 	if len(s) {{.Lt}}= 0 {
@@ -574,6 +584,16 @@ func (s {{.Name}}PSlice) Preappend(given *{{.Name}}) {{.Name}}PSlice {
 	result := make([]*{{.Name}}, len(s)+1)
 	result[0] = given
 	copy(result[1:], s)
+	return result
+}
+
+// Sort 排序
+func (s {{.Name}}PSlice) Sort(comparator func(*{{.Name}}, *{{.Name}}) bool) {{.Name}}PSlice {
+	result := make([]*{{.Name}}, len(s))
+	copy(result, s)
+	sort.Slice(result, func(i, j int) bool {
+		return comparator(result[i],result[j])
+	})
 	return result
 }
 

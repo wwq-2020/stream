@@ -1,11 +1,14 @@
 package outter
 
 import (
+
 	"math/rand"
+"sort"
 )
 
 // SomeSlice Some的Slice
 type SomeSlice []Some
+
 
 // AOfSomeMap AOfSomeMap
 type AOfSomeMap map[string]SomeSlice
@@ -37,10 +40,11 @@ func (m COfSomeMap) FlatMap(fn func([]Some)) {
 	}
 }
 
+
 // SomeResult SomeResult
-type SomeResult struct {
-	value     Some
-	isPresent bool
+type SomeResult struct{
+	value Some
+	isPresent bool 
 }
 
 // IsPresent 是否存在
@@ -108,12 +112,13 @@ func (s SomeSlice) Filter(filters ...func(Some) bool) SomeSlice {
 	return result
 }
 
+
 // GroupByA 通过A分组
 func (s SomeSlice) GroupByA(comparator func(string, string) bool) AOfSomeMap {
 	result := make(map[string]SomeSlice, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _,skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -131,7 +136,7 @@ func (s SomeSlice) GroupByB(comparator func(string, string) bool) BOfSomeMap {
 	result := make(map[string]SomeSlice, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _,skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -149,7 +154,7 @@ func (s SomeSlice) GroupByC(comparator func(*Some, *Some) bool) COfSomeMap {
 	result := make(map[*Some]SomeSlice, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _,skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -162,22 +167,23 @@ func (s SomeSlice) GroupByC(comparator func(*Some, *Some) bool) COfSomeMap {
 	return result
 }
 
+
 // First 获取第一个元素
 func (s SomeSlice) First() SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return SomeResult{value: defaultReturn, isPresent: false}
-	}
-	return SomeResult{value: s[0], isPresent: true}
+		return SomeResult{value:defaultReturn, isPresent:false}
+	} 
+	return SomeResult{value:s[0], isPresent:true}
 }
 
 // Last 获取最后一个元素
 func (s SomeSlice) Last(value *Some) SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return SomeResult{value: defaultReturn, isPresent: false}
+		return SomeResult{value:defaultReturn, isPresent:false}
 	}
-	return SomeResult{value: s[len(s)-1], isPresent: true}
+	return SomeResult{value:s[len(s)-1], isPresent:true}
 }
 
 // Map 对每个元素进行操作
@@ -212,7 +218,7 @@ func (s SomeSlice) Distinct(comparator func(Some, Some) bool) SomeSlice {
 	result := make(SomeSlice, 0, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _, skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -220,7 +226,7 @@ func (s SomeSlice) Distinct(comparator func(Some, Some) bool) SomeSlice {
 				skip[j] = struct{}{}
 			}
 		}
-		result = append(result, outter)
+		result = append(result,outter)
 	}
 	return result
 }
@@ -281,6 +287,7 @@ func (s SomeSlice) NoneMatch(matchFuncs ...func(Some) bool) bool {
 	return true
 }
 
+
 // Paginate 分页
 func (s SomeSlice) Paginate(size int) [][]Some {
 	if size <= 0 {
@@ -307,11 +314,21 @@ func (s SomeSlice) Preappend(given Some) SomeSlice {
 	return result
 }
 
+// Sort 排序
+func (s SomeSlice) Sort(comparator func(Some, Some) bool) SomeSlice {
+	result := make([]Some, len(s))
+	copy(result, s)
+	sort.Slice(result, func(i, j int) bool {
+		return comparator(result[i],result[j])
+	})
+	return result
+}
+
 // Max 获取最大元素
 func (s SomeSlice) Max(comparator func(Some, Some) bool) SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return SomeResult{value: defaultReturn, isPresent: false}
+		return SomeResult{value:defaultReturn, isPresent:false}
 	}
 	max := s[0]
 	for _, each := range s {
@@ -319,14 +336,15 @@ func (s SomeSlice) Max(comparator func(Some, Some) bool) SomeResult {
 			max = each
 		}
 	}
-	return SomeResult{value: max, isPresent: true}
+	return SomeResult{value:max, isPresent:true}
 }
+
 
 // Min 获取最小元素
 func (s SomeSlice) Min(less func(Some, Some) bool) SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return SomeResult{value: defaultReturn, isPresent: true}
+		return SomeResult{value:defaultReturn, isPresent:true}
 	}
 	min := s[0]
 	for _, each := range s {
@@ -334,17 +352,17 @@ func (s SomeSlice) Min(less func(Some, Some) bool) SomeResult {
 			min = each
 		}
 	}
-	return SomeResult{value: min, isPresent: true}
+	return SomeResult{value:min, isPresent:true}
 }
 
 // Random 随机获取一个元素
 func (s SomeSlice) Random() SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return SomeResult{value: defaultReturn, isPresent: true}
+		return SomeResult{value:defaultReturn, isPresent:true}
 	}
 	n := rand.Intn(len(s))
-	return SomeResult{value: s[n], isPresent: true}
+	return SomeResult{value:s[n], isPresent:true}
 }
 
 // Shuffle 打乱列表
@@ -352,18 +370,20 @@ func (s SomeSlice) Shuffle() SomeSlice {
 	if len(s) <= 0 {
 		return s
 	}
-
+	
 	result := make([]Some, len(s))
 	copy(result, s)
 	rand.Shuffle(len(result), func(i, j int) {
-		result[i], result[j] = result[j], result[i]
+		result[i], result[j] = result[j], result[i] 
 	})
 	return result
 }
 
+
+
 // As 获取A的列表
-func (s SomeSlice) As() []string {
-	value := make([]string, 0, len(s))
+func (s SomeSlice) As() []string {	
+	value := make([]string, 0, len(s))	
 	for _, each := range s {
 		value = append(value, each.A)
 	}
@@ -371,8 +391,8 @@ func (s SomeSlice) As() []string {
 }
 
 // Bs 获取B的列表
-func (s SomeSlice) Bs() []string {
-	value := make([]string, 0, len(s))
+func (s SomeSlice) Bs() []string {	
+	value := make([]string, 0, len(s))	
 	for _, each := range s {
 		value = append(value, each.B)
 	}
@@ -380,13 +400,14 @@ func (s SomeSlice) Bs() []string {
 }
 
 // Cs 获取C的列表
-func (s SomeSlice) Cs() []*Some {
-	value := make([]*Some, 0, len(s))
+func (s SomeSlice) Cs() []*Some {	
+	value := make([]*Some, 0, len(s))	
 	for _, each := range s {
 		value = append(value, each.C)
 	}
 	return value
 }
+
 
 // Collect 获取最终的列表
 func (s SomeSlice) Collect() []Some {
@@ -395,6 +416,7 @@ func (s SomeSlice) Collect() []Some {
 
 // SomePSlice Some的PSlice
 type SomePSlice []*Some
+
 
 // AOfSomePMap AOfSomePMap
 type AOfSomePMap map[string]SomePSlice
@@ -426,10 +448,11 @@ func (m COfSomePMap) FlatMap(fn func([]*Some)) {
 	}
 }
 
+
 // SomePResult SomePResult
-type SomePResult struct {
-	value     *Some
-	isPresent bool
+type SomePResult struct{
+	value *Some
+	isPresent bool 
 }
 
 // IsPresent 是否存在
@@ -497,12 +520,13 @@ func (s SomePSlice) Filter(filters ...func(*Some) bool) SomePSlice {
 	return result
 }
 
+
 // GroupByA 通过A分组
 func (s SomePSlice) GroupByA(comparator func(string, string) bool) AOfSomePMap {
 	result := make(map[string]SomePSlice, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _, skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -520,7 +544,7 @@ func (s SomePSlice) GroupByB(comparator func(string, string) bool) BOfSomePMap {
 	result := make(map[string]SomePSlice, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _, skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -538,7 +562,7 @@ func (s SomePSlice) GroupByC(comparator func(*Some, *Some) bool) COfSomePMap {
 	result := make(map[*Some]SomePSlice, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _, skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -551,22 +575,23 @@ func (s SomePSlice) GroupByC(comparator func(*Some, *Some) bool) COfSomePMap {
 	return result
 }
 
+
 // First 获取第一个元素
 func (s SomePSlice) First() SomePResult {
 	if len(s) <= 0 {
 		var defaultReturn *Some
-		return SomePResult{value: defaultReturn, isPresent: false}
-	}
-	return SomePResult{value: s[0], isPresent: true}
+		return SomePResult{value:defaultReturn, isPresent:false}
+	} 
+	return SomePResult{value:s[0], isPresent:true}
 }
 
 // Last 获取最后一个元素
 func (s SomePSlice) Last(value *Some) SomePResult {
 	if len(s) <= 0 {
 		var defaultReturn *Some
-		return SomePResult{value: defaultReturn, isPresent: false}
+		return SomePResult{value:defaultReturn, isPresent:false}
 	}
-	return SomePResult{value: s[len(s)-1], isPresent: true}
+	return SomePResult{value:s[len(s)-1], isPresent:true}
 }
 
 // Map 对每个元素进行操作
@@ -601,7 +626,7 @@ func (s SomePSlice) Distinct(comparator func(*Some, *Some) bool) SomePSlice {
 	result := make([]*Some, len(s))
 	skip := make(map[int]struct{})
 	for i, outter := range s {
-		if _, skip := skip[i]; skip {
+		if _, skip:=skip[i];skip{
 			continue
 		}
 		for j, inner := range s[i:] {
@@ -609,7 +634,7 @@ func (s SomePSlice) Distinct(comparator func(*Some, *Some) bool) SomePSlice {
 				skip[j] = struct{}{}
 			}
 		}
-		result = append(result, outter)
+		result = append(result,outter)
 	}
 	return result
 }
@@ -670,6 +695,7 @@ func (s SomePSlice) NoneMatch(matchFuncs ...func(*Some) bool) bool {
 	return true
 }
 
+
 // Paginate 分页
 func (s SomePSlice) Paginate(size int) [][]*Some {
 	if size <= 0 {
@@ -695,11 +721,21 @@ func (s SomePSlice) Preappend(given *Some) SomePSlice {
 	return result
 }
 
+// Sort 排序
+func (s SomePSlice) Sort(comparator func(*Some, *Some) bool) SomePSlice {
+	result := make([]*Some, len(s))
+	copy(result, s)
+	sort.Slice(result, func(i, j int) bool {
+		return comparator(result[i],result[j])
+	})
+	return result
+}
+
 // Max 获取最大元素
 func (s SomePSlice) Max(comparator func(*Some, *Some) bool) SomePResult {
 	if len(s) <= 0 {
 		var defaultReturn *Some
-		return SomePResult{value: defaultReturn, isPresent: false}
+		return SomePResult{value:defaultReturn, isPresent:false}
 	}
 	max := s[0]
 	for _, each := range s {
@@ -707,14 +743,15 @@ func (s SomePSlice) Max(comparator func(*Some, *Some) bool) SomePResult {
 			max = each
 		}
 	}
-	return SomePResult{value: max, isPresent: true}
+	return SomePResult{value:max, isPresent:true}
 }
+
 
 // Min 获取最小元素
 func (s SomePSlice) Min(comparator func(*Some, *Some) bool) SomePResult {
 	if len(s) <= 0 {
 		var defaultReturn *Some
-		return SomePResult{value: defaultReturn, isPresent: false}
+		return SomePResult{value:defaultReturn, isPresent:false}
 	}
 	min := s[0]
 	for _, each := range s {
@@ -722,17 +759,17 @@ func (s SomePSlice) Min(comparator func(*Some, *Some) bool) SomePResult {
 			min = each
 		}
 	}
-	return SomePResult{value: min, isPresent: true}
+	return SomePResult{value:min, isPresent:true}
 }
 
 // Random 随机获取一个元素
 func (s SomePSlice) Random() SomePResult {
 	if len(s) <= 0 {
 		var defaultReturn *Some
-		return SomePResult{value: defaultReturn, isPresent: false}
+		return SomePResult{value:defaultReturn, isPresent:false}
 	}
 	n := rand.Intn(len(s))
-	return SomePResult{value: s[n], isPresent: true}
+	return SomePResult{value:s[n], isPresent:true}
 }
 
 // Shuffle 打乱列表
@@ -740,18 +777,20 @@ func (s SomePSlice) Shuffle() SomePSlice {
 	if len(s) <= 0 {
 		return s
 	}
-
+	
 	result := make([]*Some, len(s))
 	copy(result, s)
 	rand.Shuffle(len(result), func(i, j int) {
-		result[i], result[j] = result[j], result[i]
+		result[i], result[j] = result[j], result[i] 
 	})
 	return result
 }
 
+
+
 // As 获取A的列表
-func (s SomePSlice) As() []string {
-	value := make([]string, 0, len(s))
+func (s SomePSlice) As() []string {	
+	value := make([]string, 0, len(s))	
 	for _, each := range s {
 		value = append(value, each.A)
 	}
@@ -759,8 +798,8 @@ func (s SomePSlice) As() []string {
 }
 
 // Bs 获取B的列表
-func (s SomePSlice) Bs() []string {
-	value := make([]string, 0, len(s))
+func (s SomePSlice) Bs() []string {	
+	value := make([]string, 0, len(s))	
 	for _, each := range s {
 		value = append(value, each.B)
 	}
@@ -768,15 +807,17 @@ func (s SomePSlice) Bs() []string {
 }
 
 // Cs 获取C的列表
-func (s SomePSlice) Cs() []*Some {
-	value := make([]*Some, 0, len(s))
+func (s SomePSlice) Cs() []*Some {	
+	value := make([]*Some, 0, len(s))	
 	for _, each := range s {
 		value = append(value, each.C)
 	}
 	return value
 }
 
+
 // Collect 获取最终的列表
 func (s SomePSlice) Collect() []*Some {
 	return s
 }
+

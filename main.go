@@ -128,7 +128,7 @@ func genStruct() {
 
 import (
 `, p.Name)
-			for _, toImport := range []string{"math/rand"} {
+			for _, toImport := range []string{"sort", "math/rand"} {
 				found := false
 				for _, each := range p.Imports {
 					if each == toImport {
