@@ -128,7 +128,7 @@ func genStruct() {
 
 import (
 `, p.Name)
-			for _, toImport := range []string{"errors", "math/rand", "sort"} {
+			for _, toImport := range []string{"math/rand"} {
 				found := false
 				for _, each := range p.Imports {
 					if each == toImport {
@@ -142,20 +142,7 @@ import (
 				}
 
 			}
-			if curHasBuiltin {
-				found := false
-				for _, each := range p.Imports {
-					if each == commonStreamDir {
-						found = true
-					}
-				}
-				if !found {
-					importStr = fmt.Sprintf(`%s
-		
-	commons "%s"						
-`, importStr, commonStreamDir)
-				}
-			}
+
 			if curImport != "" {
 				importStr = fmt.Sprintf(`%s
 	"%s"`, importStr, curImport)

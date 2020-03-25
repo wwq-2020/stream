@@ -1,31 +1,86 @@
 package outter
 
 import (
-
-	"errors"						
-
-	"math/rand"						
-
-	"sort"						
-
-		
-	commons "github.com/wwq1988/stream/commons"						
-
+	"math/rand"
 )
 
 // SomeSlice Some的Slice
 type SomeSlice []Some
 
-// Concat 拼接
-func (s SomeSlice) Concat(given []Some) SomeSlice {
-	value := make([]Some, len(s)+len(given))
-	copy(value, s)
-	copy(value[len(s):], given)
-	return SomeSlice(value)
+// AOfSomeMap AOfSomeMap
+type AOfSomeMap map[string]SomeSlice
+
+// FlatMap FlatMap
+func (m AOfSomeMap) FlatMap(fn func([]Some)) {
+	for _, list := range m {
+		fn(list)
+	}
 }
 
-// Drop 丢弃前n个
-func (s SomeSlice) Drop(n int) SomeSlice {
+// BOfSomeMap BOfSomeMap
+type BOfSomeMap map[string]SomeSlice
+
+// FlatMap FlatMap
+func (m BOfSomeMap) FlatMap(fn func([]Some)) {
+	for _, list := range m {
+		fn(list)
+	}
+}
+
+// COfSomeMap COfSomeMap
+type COfSomeMap map[*Some]SomeSlice
+
+// FlatMap FlatMap
+func (m COfSomeMap) FlatMap(fn func([]Some)) {
+	for _, list := range m {
+		fn(list)
+	}
+}
+
+// SomeResult SomeResult
+type SomeResult struct {
+	value     Some
+	isPresent bool
+}
+
+// IsPresent 是否存在
+func (r SomeResult) IsPresent() bool {
+	return r.isPresent
+}
+
+// Get 获取值
+func (r SomeResult) Get() Some {
+	return r.value
+}
+
+// Concat 拼接
+func (s SomeSlice) Concat(given []Some) SomeSlice {
+	result := make([]Some, len(s)+len(given))
+	copy(result, s)
+	copy(result[len(s):], given)
+	return result
+}
+
+// Limit 取前n个
+func (s SomeSlice) Limit(n int) SomeSlice {
+	result := make([]Some, 0, len(s))
+	for idx, each := range s {
+		if idx < n {
+			result = append(result, each)
+		}
+	}
+	return result
+}
+
+// Peek Peek
+func (s SomeSlice) Peek(fn func(Some)) {
+	for _, each := range s {
+		fn(each)
+	}
+}
+
+// Skip 丢弃前n个
+func (s SomeSlice) Skip(n int) SomeSlice {
 	if n < 0 {
 		n = 0
 	}
@@ -37,161 +92,138 @@ func (s SomeSlice) Drop(n int) SomeSlice {
 }
 
 // Filter 过滤
-func (s SomeSlice) Filter(fn func(int, Some) bool) SomeSlice {
-	value := make([]Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each) {
-			value = append(value, each)
+func (s SomeSlice) Filter(filters ...func(Some) bool) SomeSlice {
+	result := make([]Some, 0, len(s))
+	for _, each := range s {
+		valid := true
+		for _, filter := range filters {
+			if !filter(each) {
+				valid = false
+			}
+		}
+		if valid {
+			result = append(result, each)
 		}
 	}
-	return SomeSlice(value)
+	return result
 }
 
-
-// FilterByA 通过过滤器过滤
-func (s SomeSlice) FilterByA(fn func(int, string) bool) SomeSlice {
-	value := make([]Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each.A) {
-			value = append(value, each)
+// GroupByA 通过A分组
+func (s SomeSlice) GroupByA(comparator func(string, string) bool) AOfSomeMap {
+	result := make(map[string]SomeSlice, len(s))
+	skip := make(map[int]struct{})
+	for i, outter := range s {
+		if _, skip := skip[i]; skip {
+			continue
 		}
-	}
-	return SomeSlice(value)
-}
-
-// FilterByB 通过过滤器过滤
-func (s SomeSlice) FilterByB(fn func(int, string) bool) SomeSlice {
-	value := make([]Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each.B) {
-			value = append(value, each)
+		for j, inner := range s[i:] {
+			if comparator(outter.A, inner.A) {
+				skip[j] = struct{}{}
+			}
 		}
+		result[outter.A] = append(result[outter.A], outter)
 	}
-	return SomeSlice(value)
+	return result
 }
 
-// FilterByC 通过过滤器过滤
-func (s SomeSlice) FilterByC(fn func(int, *Some) bool) SomeSlice {
-	value := make([]Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each.C) {
-			value = append(value, each)
+// GroupByB 通过B分组
+func (s SomeSlice) GroupByB(comparator func(string, string) bool) BOfSomeMap {
+	result := make(map[string]SomeSlice, len(s))
+	skip := make(map[int]struct{})
+	for i, outter := range s {
+		if _, skip := skip[i]; skip {
+			continue
 		}
+		for j, inner := range s[i:] {
+			if comparator(outter.B, inner.B) {
+				skip[j] = struct{}{}
+			}
+		}
+		result[outter.B] = append(result[outter.B], outter)
 	}
-	return SomeSlice(value)
+	return result
 }
 
+// GroupByC 通过C分组
+func (s SomeSlice) GroupByC(comparator func(*Some, *Some) bool) COfSomeMap {
+	result := make(map[*Some]SomeSlice, len(s))
+	skip := make(map[int]struct{})
+	for i, outter := range s {
+		if _, skip := skip[i]; skip {
+			continue
+		}
+		for j, inner := range s[i:] {
+			if comparator(outter.C, inner.C) {
+				skip[j] = struct{}{}
+			}
+		}
+		result[outter.C] = append(result[outter.C], outter)
+	}
+	return result
+}
 
 // First 获取第一个元素
-func (s SomeSlice) First() (Some, error) {
+func (s SomeSlice) First() SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return defaultReturn, errors.New("empty")
-	} 
-	return s[0], nil
+		return SomeResult{value: defaultReturn, isPresent: false}
+	}
+	return SomeResult{value: s[0], isPresent: true}
 }
 
 // Last 获取最后一个元素
-func (s SomeSlice) Last(value *Some) (Some, error) {
+func (s SomeSlice) Last(value *Some) SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return defaultReturn, errors.New("empty")
+		return SomeResult{value: defaultReturn, isPresent: false}
 	}
-	return s[len(s)-1], nil
+	return SomeResult{value: s[len(s)-1], isPresent: true}
 }
 
 // Map 对每个元素进行操作
-func (s SomeSlice) Map(fn func(int, Some) Some) SomeSlice {
-	value := make([]Some, len(s))
+func (s SomeSlice) Map(fn func(Some) Some) SomeSlice {
+	result := make([]Some, len(s))
 	for i, each := range s {
-		value[i] = fn(i, each)
+		result[i] = fn(each)
 	}
-	return SomeSlice(value)
+	return result
 }
 
 // Reduce reduce
-func (s SomeSlice) Reduce(fn func(Some, Some, int) Some, initial Some) Some {
+func (s SomeSlice) Reduce(fn func(Some, Some) Some, initial Some) Some {
 	final := initial
-	for i, each := range s {
-		final = fn(final, each, i)
+	for _, each := range s {
+		final = fn(final, each)
 	}
 	return final
 }
 
 // Reverse 逆序
 func (s SomeSlice) Reverse() SomeSlice {
-	value := make([]Some, len(s))
+	result := make([]Some, len(s))
 	for i, each := range s {
-		value[len(s)-1-i] = each
+		result[len(s)-1-i] = each
 	}
-	return SomeSlice(value)
+	return result
 }
 
-
-
-// UniqueByA 通过A唯一
-func (s SomeSlice) UniqueByA() SomeSlice {
-	value := make([]Some, 0, len(s))
-	seen := make(map[string]struct{})
-	for _, each := range s {
-		if _, dup := seen[each.A]; dup {
-			continue
-		}
-		value = append(value, each)
-		
-		seen[each.A] = struct{}{}	
-	}
-	return SomeSlice(value)
-}
-
-
-
-// UniqueByB 通过B唯一
-func (s SomeSlice) UniqueByB() SomeSlice {
-	value := make([]Some, 0, len(s))
-	seen := make(map[string]struct{})
-	for _, each := range s {
-		if _, dup := seen[each.B]; dup {
-			continue
-		}
-		value = append(value, each)
-		
-		seen[each.B] = struct{}{}	
-	}
-	return SomeSlice(value)
-}
-
-
-
-
-// UniqueByC 通过C唯一
-func (s SomeSlice) UniqueByC(compare func(*Some, *Some) bool) SomeSlice {
-	value := make([]Some, 0, len(s))
-	seen := make(map[int]struct{})
+// Distinct 去重
+func (s SomeSlice) Distinct(comparator func(Some, Some) bool) SomeSlice {
+	result := make(SomeSlice, 0, len(s))
+	skip := make(map[int]struct{})
 	for i, outter := range s {
-		dup := false
-		if _, exist := seen[i]; exist {
+		if _, skip := skip[i]; skip {
 			continue
-		}		
-		for j, inner := range s {
-			if i == j {
-				continue
-			}
-			if compare(inner.C, outter.C) {
-				seen[j] = struct{}{}				
-				dup = true
+		}
+		for j, inner := range s[i:] {
+			if comparator(outter, inner) {
+				skip[j] = struct{}{}
 			}
 		}
-		if dup {
-			seen[i] = struct{}{}
-		}
-		value = append(value, outter)			
+		result = append(result, outter)
 	}
-	return SomeSlice(value)
+	return result
 }
-
-
-
 
 // Append 在尾部添加元素
 func (s SomeSlice) Append(given Some) SomeSlice {
@@ -213,24 +245,40 @@ func (s SomeSlice) IsNotEmpty() bool {
 	return len(s) != 0
 }
 
-// All 是否所有元素满足添加
-func (s SomeSlice) All(fn func(int, Some) bool) bool {
-	for i, each := range s {
-		if !fn(i, each) {
-			return false
+// AllMatch 是否所有元素满足添加
+func (s SomeSlice) AllMatch(matchFuncs ...func(Some) bool) bool {
+	for _, each := range s {
+		for _, matchFunc := range matchFuncs {
+			if !matchFunc(each) {
+				return false
+			}
 		}
 	}
 	return true
 }
 
-// Any 是否有元素满足条件
-func (s SomeSlice) Any(fn func(int, Some) bool) bool {
-	for i, each := range s {
-		if fn(i, each) {
-			return true
+// AnyMatch 是否有元素满足条件
+func (s SomeSlice) AnyMatch(matchFuncs ...func(Some) bool) bool {
+	for _, each := range s {
+		for _, matchFunc := range matchFuncs {
+			if matchFunc(each) {
+				return true
+			}
 		}
 	}
 	return false
+}
+
+// NoneMatch 是否没有元素满足条件
+func (s SomeSlice) NoneMatch(matchFuncs ...func(Some) bool) bool {
+	for _, each := range s {
+		for _, matchFunc := range matchFuncs {
+			if matchFunc(each) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // Paginate 分页
@@ -252,33 +300,33 @@ func (s SomeSlice) Paginate(size int) [][]Some {
 
 // Preappend 在首部添加元素
 func (s SomeSlice) Preappend(given Some) SomeSlice {
-	value := make([]Some, len(s)+1)
-	value = append(value, given)
-	value[0] = given
-	copy(value[1:], s)
-	return SomeSlice(value)
+	result := make([]Some, len(s)+1)
+	result = append(result, given)
+	result[0] = given
+	copy(result[1:], s)
+	return result
 }
 
-// Max 获取最后元素
-func (s SomeSlice) Max(bigger func(Some, Some) bool) (Some, error) {
+// Max 获取最大元素
+func (s SomeSlice) Max(comparator func(Some, Some) bool) SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return defaultReturn, errors.New("empty")
+		return SomeResult{value: defaultReturn, isPresent: false}
 	}
 	max := s[0]
 	for _, each := range s {
-		if bigger(each, max) {
+		if comparator(each, max) {
 			max = each
 		}
 	}
-	return max, nil
+	return SomeResult{value: max, isPresent: true}
 }
 
 // Min 获取最小元素
-func (s SomeSlice) Min(less func(Some, Some) bool) (Some, error) {
+func (s SomeSlice) Min(less func(Some, Some) bool) SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return defaultReturn, errors.New("empty")
+		return SomeResult{value: defaultReturn, isPresent: true}
 	}
 	min := s[0]
 	for _, each := range s {
@@ -286,17 +334,17 @@ func (s SomeSlice) Min(less func(Some, Some) bool) (Some, error) {
 			min = each
 		}
 	}
-	return min, nil
+	return SomeResult{value: min, isPresent: true}
 }
 
 // Random 随机获取一个元素
-func (s SomeSlice) Random() (Some, error) {
+func (s SomeSlice) Random() SomeResult {
 	if len(s) <= 0 {
 		var defaultReturn Some
-		return defaultReturn, errors.New("empty")
+		return SomeResult{value: defaultReturn, isPresent: true}
 	}
 	n := rand.Intn(len(s))
-	return s[n], nil
+	return SomeResult{value: s[n], isPresent: true}
 }
 
 // Shuffle 打乱列表
@@ -304,149 +352,124 @@ func (s SomeSlice) Shuffle() SomeSlice {
 	if len(s) <= 0 {
 		return s
 	}
-	
-	value := make([]Some, len(s))
-	copy(value, s)
-	rand.Shuffle(len(value), func(i, j int) {
-		value[i], value[j] = value[j], value[i] 
+
+	result := make([]Some, len(s))
+	copy(result, s)
+	rand.Shuffle(len(result), func(i, j int) {
+		result[i], result[j] = result[j], result[i]
 	})
-	return s
+	return result
 }
-
-
-
-// SortByA 根据A排序
-func (s SomeSlice) SortByA() SomeSlice {
-	value := make([]Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return value[i].A < value[j].A
-	})
-	return s 
-}
-
-
-
-// SortByB 根据B排序
-func (s SomeSlice) SortByB() SomeSlice {
-	value := make([]Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return value[i].B < value[j].B
-	})
-	return s 
-}
-
-
-
-// SortByC 根据C排序
-func (s SomeSlice) SortByC(less func(*Some, *Some) bool) SomeSlice {
-	value := make([]Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return less(value[i].C, value[j].C)
-	})
-	return s 
-}
-
-
-
-
-
-
-
-
-// APSlice 获取A的Slice
-func (s SomeSlice) ASlice() commons.StringSlice {	
-	value := make([]string, 0, len(s))	
-	for _, each := range s {
-		value = append(value, each.A)
-	}
-	newSlice := commons.StringSlice(value)
-	return newSlice
-}
-
-
-
-
-
-// BPSlice 获取B的Slice
-func (s SomeSlice) BSlice() commons.StringSlice {	
-	value := make([]string, 0, len(s))	
-	for _, each := range s {
-		value = append(value, each.B)
-	}
-	newSlice := commons.StringSlice(value)
-	return newSlice
-}
-
-
-
-
-
-// CPSlice 获取C的PSlice
-func (s SomeSlice) CPSlice() SomePSlice {	
-	value := make([]*Some, 0, len(s))	
-	for _, each := range s {
-		value = append(value, each.C)
-	}
-	newSlice := SomePSlice(value)
-	return newSlice
-}
-
-
-
-
 
 // As 获取A的列表
-func (s SomeSlice) As() []string {	
-	value := make([]string, 0, len(s))	
+func (s SomeSlice) As() []string {
+	value := make([]string, 0, len(s))
 	for _, each := range s {
 		value = append(value, each.A)
 	}
 	return value
-
 }
 
 // Bs 获取B的列表
-func (s SomeSlice) Bs() []string {	
-	value := make([]string, 0, len(s))	
+func (s SomeSlice) Bs() []string {
+	value := make([]string, 0, len(s))
 	for _, each := range s {
 		value = append(value, each.B)
 	}
 	return value
-
 }
 
 // Cs 获取C的列表
-func (s SomeSlice) Cs() []*Some {	
-	value := make([]*Some, 0, len(s))	
+func (s SomeSlice) Cs() []*Some {
+	value := make([]*Some, 0, len(s))
 	for _, each := range s {
 		value = append(value, each.C)
 	}
 	return value
-
 }
-
 
 // Collect 获取最终的列表
 func (s SomeSlice) Collect() []Some {
 	return s
 }
-	
-// SomePSlice	Some的PSlice		
+
+// SomePSlice Some的PSlice
 type SomePSlice []*Some
+
+// AOfSomePMap AOfSomePMap
+type AOfSomePMap map[string]SomePSlice
+
+// FlatMap FlatMap
+func (m AOfSomePMap) FlatMap(fn func([]*Some)) {
+	for _, list := range m {
+		fn(list)
+	}
+}
+
+// BOfSomePMap BOfSomePMap
+type BOfSomePMap map[string]SomePSlice
+
+// FlatMap FlatMap
+func (m BOfSomePMap) FlatMap(fn func([]*Some)) {
+	for _, list := range m {
+		fn(list)
+	}
+}
+
+// COfSomePMap COfSomePMap
+type COfSomePMap map[*Some]SomePSlice
+
+// FlatMap FlatMap
+func (m COfSomePMap) FlatMap(fn func([]*Some)) {
+	for _, list := range m {
+		fn(list)
+	}
+}
+
+// SomePResult SomePResult
+type SomePResult struct {
+	value     *Some
+	isPresent bool
+}
+
+// IsPresent 是否存在
+func (r SomePResult) IsPresent() bool {
+	return r.isPresent
+}
+
+// Get 获取值
+func (r SomePResult) Get() *Some {
+	return r.value
+}
 
 // Concat 拼接
 func (s SomePSlice) Concat(given []*Some) SomePSlice {
-	value := make([]*Some, len(s)+len(given))
-	copy(value, s)
-	copy(value[len(s):], given)
-	return SomePSlice(value)
+	result := make([]*Some, len(s)+len(given))
+	copy(result, s)
+	copy(result[len(s):], given)
+	return result
 }
 
-// Drop 丢弃前n个
-func (s SomePSlice) Drop(n int) SomePSlice {
+// Limit 取前n个
+func (s SomePSlice) Limit(n int) SomePSlice {
+	result := make([]*Some, 0, len(s))
+	for idx, each := range s {
+		if idx < n {
+			result = append(result, each)
+		}
+	}
+	return result
+}
+
+// Peek Peek
+func (s SomePSlice) Peek(fn func(*Some)) {
+	for _, each := range s {
+		fn(each)
+	}
+}
+
+// Skip 丢弃前n个
+func (s SomePSlice) Skip(n int) SomePSlice {
 	if n < 0 {
 		n = 0
 	}
@@ -458,121 +481,140 @@ func (s SomePSlice) Drop(n int) SomePSlice {
 }
 
 // Filter 过滤
-func (s SomePSlice) Filter(fn func(int, *Some) bool) SomePSlice {
-	value := make([]*Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each) {
-			value = append(value, each)
+func (s SomePSlice) Filter(filters ...func(*Some) bool) SomePSlice {
+	result := make([]*Some, 0, len(s))
+	for _, each := range s {
+		valid := true
+		for _, filter := range filters {
+			if !filter(each) {
+				valid = false
+			}
+		}
+		if valid {
+			result = append(result, each)
 		}
 	}
-	return SomePSlice(value)
+	return result
 }
 
-
-// FilterByA 通过过滤器过滤
-func (s SomePSlice) FilterByA(fn func(int, string) bool) SomePSlice {
-	value := make([]*Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each.A) {
-			value = append(value, each)
+// GroupByA 通过A分组
+func (s SomePSlice) GroupByA(comparator func(string, string) bool) AOfSomePMap {
+	result := make(map[string]SomePSlice, len(s))
+	skip := make(map[int]struct{})
+	for i, outter := range s {
+		if _, skip := skip[i]; skip {
+			continue
 		}
-	}
-	return SomePSlice(value)
-}
-
-// FilterByB 通过过滤器过滤
-func (s SomePSlice) FilterByB(fn func(int, string) bool) SomePSlice {
-	value := make([]*Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each.B) {
-			value = append(value, each)
+		for j, inner := range s[i:] {
+			if comparator(outter.A, inner.A) {
+				skip[j] = struct{}{}
+			}
 		}
+		result[outter.A] = append(result[outter.A], outter)
 	}
-	return SomePSlice(value)
+	return result
 }
 
-// FilterByC 通过过滤器过滤
-func (s SomePSlice) FilterByC(fn func(int, *Some) bool) SomePSlice {
-	value := make([]*Some, 0, len(s))
-	for i, each := range s {
-		if fn(i, each.C) {
-			value = append(value, each)
+// GroupByB 通过B分组
+func (s SomePSlice) GroupByB(comparator func(string, string) bool) BOfSomePMap {
+	result := make(map[string]SomePSlice, len(s))
+	skip := make(map[int]struct{})
+	for i, outter := range s {
+		if _, skip := skip[i]; skip {
+			continue
 		}
+		for j, inner := range s[i:] {
+			if comparator(outter.B, inner.B) {
+				skip[j] = struct{}{}
+			}
+		}
+		result[outter.B] = append(result[outter.B], outter)
 	}
-	return SomePSlice(value)
+	return result
 }
 
+// GroupByC 通过C分组
+func (s SomePSlice) GroupByC(comparator func(*Some, *Some) bool) COfSomePMap {
+	result := make(map[*Some]SomePSlice, len(s))
+	skip := make(map[int]struct{})
+	for i, outter := range s {
+		if _, skip := skip[i]; skip {
+			continue
+		}
+		for j, inner := range s[i:] {
+			if comparator(outter.C, inner.C) {
+				skip[j] = struct{}{}
+			}
+		}
+		result[outter.C] = append(result[outter.C], outter)
+	}
+	return result
+}
 
 // First 获取第一个元素
-func (s SomePSlice) First() (*Some, error) {
+func (s SomePSlice) First() SomePResult {
 	if len(s) <= 0 {
-		return nil, errors.New("empty")
+		var defaultReturn *Some
+		return SomePResult{value: defaultReturn, isPresent: false}
 	}
-	return s[0], nil
+	return SomePResult{value: s[0], isPresent: true}
 }
 
 // Last 获取最后一个元素
-func (s SomePSlice) Last() (*Some, error) {
+func (s SomePSlice) Last(value *Some) SomePResult {
 	if len(s) <= 0 {
-		return nil, errors.New("empty")
-	} 
-	return s[len(s)-1], nil
+		var defaultReturn *Some
+		return SomePResult{value: defaultReturn, isPresent: false}
+	}
+	return SomePResult{value: s[len(s)-1], isPresent: true}
 }
 
 // Map 对每个元素进行操作
-func (s SomePSlice) Map(fn func(int, *Some) *Some) SomePSlice {
-	value := make([]*Some, len(s))
+func (s SomePSlice) Map(fn func(*Some) *Some) SomePSlice {
+	result := make([]*Some, len(s))
 	for i, each := range s {
-		value[i] = fn(i, each)
+		result[i] = fn(each)
 	}
-	return SomePSlice(value)
+	return result
 }
 
 // Reduce reduce
-func (s SomePSlice) Reduce(fn func(*Some, *Some, int) *Some, initial *Some) *Some {
+func (s SomePSlice) Reduce(fn func(*Some, *Some) *Some, initial *Some) *Some {
 	final := initial
-	for i, each := range s {
-		final = fn(final, each, i)
+	for _, each := range s {
+		final = fn(final, each)
 	}
 	return final
 }
 
 // Reverse 逆序
 func (s SomePSlice) Reverse() SomePSlice {
-	value := make([]*Some, len(s))
+	result := make([]*Some, len(s))
 	for i, each := range s {
-		value[len(s)-1-i] = each
+		result[len(s)-1-i] = each
 	}
-	return SomePSlice(value)
+	return result
 }
 
-// UniqueBy 通过比较器唯一
-func (s SomePSlice) UniqueBy(compare func(*Some, *Some)bool) SomePSlice {
-	value := make([]*Some, 0, len(s))
-	seen := make(map[int]struct{})
+// Distinct 去重
+func (s SomePSlice) Distinct(comparator func(*Some, *Some) bool) SomePSlice {
+	result := make([]*Some, len(s))
+	skip := make(map[int]struct{})
 	for i, outter := range s {
-		dup := false
-		if _, exist := seen[i]; exist {
+		if _, skip := skip[i]; skip {
 			continue
-		}		
-		for j, inner := range s {
-			if i == j {
-				continue
-			}
-			if compare(inner, outter) {
-				seen[j] = struct{}{}				
-				dup = true
+		}
+		for j, inner := range s[i:] {
+			if comparator(outter, inner) {
+				skip[j] = struct{}{}
 			}
 		}
-		if dup {
-			seen[i] = struct{}{}
-		}
-		value = append(value, outter)			
+		result = append(result, outter)
 	}
-	return SomePSlice(value)
+	return result
 }
 
-// Append 在尾部添加
+// Append 在尾部添加元素
 func (s SomePSlice) Append(given *Some) SomePSlice {
 	return append(s, given)
 }
@@ -582,176 +624,51 @@ func (s SomePSlice) Len() int {
 	return len(s)
 }
 
-// IsEmpty 是否为空
+// IsEmpty 判断是否为空
 func (s SomePSlice) IsEmpty() bool {
 	return len(s) == 0
 }
 
-// IsNotEmpty 是否非空
+// IsNotEmpty 判断是否非空
 func (s SomePSlice) IsNotEmpty() bool {
 	return len(s) != 0
 }
 
-// SortBy 根据比较器排序
-func (s SomePSlice) SortBy(less func(*Some, *Some) bool) SomePSlice {
-	value := make([]*Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return less(value[i], value[j])
-	})
-	
-	return s 
-}
-
-// All 是否所有元素满足条件
-func (s SomePSlice) All(fn func(int, *Some) bool) bool {
-	for i, each := range s {
-		if !fn(i, each) {
-			return false
+// AllMatch 是否所有元素满足添加
+func (s SomePSlice) AllMatch(matchFuncs ...func(*Some) bool) bool {
+	for _, each := range s {
+		for _, matchFunc := range matchFuncs {
+			if !matchFunc(each) {
+				return false
+			}
 		}
 	}
 	return true
 }
 
+// AnyMatch 是否有元素满足条件
+func (s SomePSlice) AnyMatch(matchFuncs ...func(*Some) bool) bool {
+	for _, each := range s {
+		for _, matchFunc := range matchFuncs {
+			if matchFunc(each) {
+				return true
+			}
+		}
+	}
+	return false
+}
 
-// AllByA 是否所有元素的A满足条件
-func (s SomePSlice) AllByA(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if !fn(i, each.A){
-			return false
+// NoneMatch 是否没有元素满足条件
+func (s SomePSlice) NoneMatch(matchFuncs ...func(*Some) bool) bool {
+	for _, each := range s {
+		for _, matchFunc := range matchFuncs {
+			if matchFunc(each) {
+				return false
+			}
 		}
 	}
 	return true
 }
-
-// AllByB 是否所有元素的B满足条件
-func (s SomePSlice) AllByB(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if !fn(i, each.B){
-			return false
-		}
-	}
-	return true
-}
-
-// AllByC 是否所有元素的C满足条件
-func (s SomePSlice) AllByC(fn func(int, *Some) bool) bool {
-	for i, each := range s {
-		if !fn(i, each.C){
-			return false
-		}
-	}
-	return true
-}
-
-
-
-
-// AllByA 是否所有元素的A满足条件
-func (s SomeSlice) AllByA(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if !fn(i, each.A){
-			return false
-		}
-	}
-	return true
-}
-
-// AllByB 是否所有元素的B满足条件
-func (s SomeSlice) AllByB(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if !fn(i, each.B){
-			return false
-		}
-	}
-	return true
-}
-
-// AllByC 是否所有元素的C满足条件
-func (s SomeSlice) AllByC(fn func(int, *Some) bool) bool {
-	for i, each := range s {
-		if !fn(i, each.C){
-			return false
-		}
-	}
-	return true
-}
-
-
-// Any 是否有元素满足条件
-func (s SomePSlice) Any(fn func(int, *Some) bool) bool {
-	for i, each := range s {
-		if fn(i, each) {
-			return true
-		}
-	}
-	return false
-}
-
-
-
-// AnyByA 是否有元素的A满足条件
-func (s SomePSlice) AnyByA(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if fn(i, each.A) {
-			return true
-		}
-	}
-	return false
-}
-
-// AnyByB 是否有元素的B满足条件
-func (s SomePSlice) AnyByB(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if fn(i, each.B) {
-			return true
-		}
-	}
-	return false
-}
-
-// AnyByC 是否有元素的C满足条件
-func (s SomePSlice) AnyByC(fn func(int, *Some) bool) bool {
-	for i, each := range s {
-		if fn(i, each.C) {
-			return true
-		}
-	}
-	return false
-}
-
-
-
-// AnyByA 是否有元素的A满足条件
-func (s SomeSlice) AnyByA(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if fn(i, each.A) {
-			return true
-		}
-	}
-	return false
-}
-
-// AnyByB 是否有元素的B满足条件
-func (s SomeSlice) AnyByB(fn func(int, string) bool) bool {
-	for i, each := range s {
-		if fn(i, each.B) {
-			return true
-		}
-	}
-	return false
-}
-
-// AnyByC 是否有元素的C满足条件
-func (s SomeSlice) AnyByC(fn func(int, *Some) bool) bool {
-	for i, each := range s {
-		if fn(i, each.C) {
-			return true
-		}
-	}
-	return false
-}
-
 
 // Paginate 分页
 func (s SomePSlice) Paginate(size int) [][]*Some {
@@ -772,47 +689,50 @@ func (s SomePSlice) Paginate(size int) [][]*Some {
 
 // Preappend 在首部添加元素
 func (s SomePSlice) Preappend(given *Some) SomePSlice {
-	value := make([]*Some, len(s)+1)
-	value[0] = given
-	copy(value[1:], s)
-	return SomePSlice(value)
+	result := make([]*Some, len(s)+1)
+	result[0] = given
+	copy(result[1:], s)
+	return result
 }
 
 // Max 获取最大元素
-func (s SomePSlice) Max(bigger func(*Some, *Some) bool) (*Some, error) {
+func (s SomePSlice) Max(comparator func(*Some, *Some) bool) SomePResult {
 	if len(s) <= 0 {
-		return nil, errors.New("empty")
+		var defaultReturn *Some
+		return SomePResult{value: defaultReturn, isPresent: false}
 	}
 	max := s[0]
 	for _, each := range s {
-		if bigger(each, max) {
-			max = max
+		if comparator(each, max) {
+			max = each
 		}
 	}
-	return max, nil
+	return SomePResult{value: max, isPresent: true}
 }
 
 // Min 获取最小元素
-func (s SomePSlice) Min(less func(*Some, *Some) bool) (*Some, error) {
+func (s SomePSlice) Min(comparator func(*Some, *Some) bool) SomePResult {
 	if len(s) <= 0 {
-		return nil, errors.New("empty")
+		var defaultReturn *Some
+		return SomePResult{value: defaultReturn, isPresent: false}
 	}
 	min := s[0]
 	for _, each := range s {
-		if less(each, min) {
+		if comparator(each, min) {
 			min = each
 		}
 	}
-	return min, nil
+	return SomePResult{value: min, isPresent: true}
 }
 
-// Random 随机获取元素
-func (s SomePSlice) Random() (*Some, error) {
+// Random 随机获取一个元素
+func (s SomePSlice) Random() SomePResult {
 	if len(s) <= 0 {
-		return nil, errors.New("empty")
+		var defaultReturn *Some
+		return SomePResult{value: defaultReturn, isPresent: false}
 	}
 	n := rand.Intn(len(s))
-	return s[n], nil
+	return SomePResult{value: s[n], isPresent: true}
 }
 
 // Shuffle 打乱列表
@@ -820,222 +740,43 @@ func (s SomePSlice) Shuffle() SomePSlice {
 	if len(s) <= 0 {
 		return s
 	}
-	value := make([]*Some, len(s))
-	copy(value, s)
-	rand.Shuffle(len(value), func(i, j int) {
-		value[i], value[j] = value[j], value[i] 
+
+	result := make([]*Some, len(s))
+	copy(result, s)
+	rand.Shuffle(len(result), func(i, j int) {
+		result[i], result[j] = result[j], result[i]
 	})
-	
-	return SomePSlice(value)
+	return result
 }
 
-
-
-// SortByA 根据元素的A排序
-func (s SomePSlice) SortByA() SomePSlice {
-	value := make([]*Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return value[i].A < value[j].A
-	})
-	return SomePSlice(value)
-}
-
-
-
-// SortByB 根据元素的B排序
-func (s SomePSlice) SortByB() SomePSlice {
-	value := make([]*Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return value[i].B < value[j].B
-	})
-	return SomePSlice(value)
-}
-
-
-
-// SortByC 根据元素的C和比较器排序
-func (s SomePSlice) SortByC(less func(*Some, *Some) bool) SomePSlice {
-	value := make([]*Some, len(s))
-	copy(value, s)
-	sort.Slice(value, func(i, j int) bool {
-		return less(value[i].C, value[j].C)
-	})
-	return SomePSlice(value)
-}
-
-
-
-
-
-// UniqueByA 根据元素的A唯一
-func (s SomePSlice) UniqueByA() SomePSlice {
-	value := make([]*Some, 0, len(s))
-	seen := make(map[string]struct{})
-	for _, each := range s {
-		if _, dup := seen[each.A]; dup {
-			continue
-		}
-		value = append(value, each)
-		
-		seen[each.A] = struct{}{}	
-	}
-	return SomePSlice(value)
-}
-
-
-
-// UniqueByB 根据元素的B唯一
-func (s SomePSlice) UniqueByB() SomePSlice {
-	value := make([]*Some, 0, len(s))
-	seen := make(map[string]struct{})
-	for _, each := range s {
-		if _, dup := seen[each.B]; dup {
-			continue
-		}
-		value = append(value, each)
-		
-		seen[each.B] = struct{}{}	
-	}
-	return SomePSlice(value)
-}
-
-
-
-
-// UniqueByC 根据元素的C和比较器唯一
-func (s SomePSlice) UniqueByC(compare func (*Some, *Some) bool) SomePSlice {
-	value := make([]*Some, 0, len(s))
-	seen := make(map[int]struct{})
-	for i, outter := range s {
-		dup := false
-		if _, exist := seen[i]; exist {
-			continue
-		}		
-		for j,inner :=range s {
-			if i == j {
-				continue
-			}
-			if compare(inner.C, outter.C) {
-				seen[j] = struct{}{}				
-				dup = true
-			}
-		}
-		if dup {
-			seen[i] = struct{}{}
-		}
-		value = append(value, outter)			
-	}
-	return SomePSlice(value)
-}
-
-
-
-
-
-
-
-// ASlice 获取A的Slice
-func (s SomePSlice) ASlice() commons.StringSlice {	
-	value := make([]string, 0, len(s))	
-	for _, each := range s {
-		value = append(value, each.A)
-	}
-	newSlice := commons.StringSlice(value)
-	return newSlice
-}
-
-
-
-
-
-// BSlice 获取B的Slice
-func (s SomePSlice) BSlice() commons.StringSlice {	
-	value := make([]string, 0, len(s))	
-	for _, each := range s {
-		value = append(value, each.B)
-	}
-	newSlice := commons.StringSlice(value)
-	return newSlice
-}
-
-
-
-
-
-// CPSlice 获取C的PSlice
-func (s SomePSlice) CPSlice() SomePSlice {	
-	value := make([]*Some, 0, len(s))	
-	for _, each := range s {
-		value = append(value, each.C)
-	}
-	newSlice := SomePSlice(value)
-	return newSlice
-}
-
-
-
-
-
-// As 获取A列表
-func (s SomePSlice) As() []string {	
-	value := make([]string, 0, len(s))	
+// As 获取A的列表
+func (s SomePSlice) As() []string {
+	value := make([]string, 0, len(s))
 	for _, each := range s {
 		value = append(value, each.A)
 	}
 	return value
-
 }
 
-// Bs 获取B列表
-func (s SomePSlice) Bs() []string {	
-	value := make([]string, 0, len(s))	
+// Bs 获取B的列表
+func (s SomePSlice) Bs() []string {
+	value := make([]string, 0, len(s))
 	for _, each := range s {
 		value = append(value, each.B)
 	}
 	return value
-
 }
 
-// Cs 获取C列表
-func (s SomePSlice) Cs() []*Some {	
-	value := make([]*Some, 0, len(s))	
+// Cs 获取C的列表
+func (s SomePSlice) Cs() []*Some {
+	value := make([]*Some, 0, len(s))
 	for _, each := range s {
 		value = append(value, each.C)
 	}
 	return value
-
 }
 
-
-
-
-// A2Some A到Some的map
-func (s SomePSlice) A2Some() map[string]*Some {
-	result := make(map[string]*Some, len(s))
-	for _, each := range s {
-		result[each.A] = each
-	}
-	return result
-}
-
-
-
-// B2Some B到Some的map
-func (s SomePSlice) B2Some() map[string]*Some {
-	result := make(map[string]*Some, len(s))
-	for _, each := range s {
-		result[each.B] = each
-	}
-	return result
-}
-
-
-
-
-
-// Collect 获取列表
+// Collect 获取最终的列表
 func (s SomePSlice) Collect() []*Some {
 	return s
 }
